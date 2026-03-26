@@ -94,6 +94,29 @@ const supportNavItems: NavItem[] = [
   { label: 'Logout', icon: LogOut, href: '/' },
 ];
 
+const helpFaqs = [
+  {
+    question: 'How do I edit my profile?',
+    answer: 'Open the profile overview card, choose Edit Profile, update your details, and press save. Your latest saved version stays in this browser.',
+  },
+  {
+    question: 'What does skill level mean?',
+    answer: 'Skill level is a quick snapshot of your current readiness. It helps the platform show an appropriate learning path and lets mentors understand your current stage.',
+  },
+  {
+    question: 'Does my progress save automatically?',
+    answer: 'Profile edits save when you press the save button. The latest saved version is stored locally in your browser until it is reset.',
+  },
+  {
+    question: 'Where can I review my curriculum and performance?',
+    answer: 'Use the Curriculum and Performance items in the left sidebar, or open them directly from the Help shortcuts.',
+  },
+  {
+    question: 'How quickly will support respond?',
+    answer: 'For routine profile and curriculum questions, expect a response within one working day. Use email support when the issue needs manual review.',
+  },
+] as const;
+
 const activityCards: ActivityCard[] = [
   {
     title: 'Performance Spike',
@@ -723,33 +746,127 @@ export default function StudentProfilePage() {
 
       {activePanel === 'help' && (
         <PanelShell title="Support" eyebrow="Help" onClose={() => setActivePanel(null)}>
-          <div className="rounded-2xl border border-white/8 bg-white/[0.04] p-4">
-            <div className="font-display text-lg font-medium text-white">Need assistance?</div>
-            <p className="mt-2 text-sm leading-relaxed text-white/58">
-              Reach the Yantra support desk for student record issues, verification requests, or curriculum questions.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-3">
-              <a
-                href="mailto:support@yantra.ai?subject=Student%20Profile%20Support"
-                className="rounded-full border border-white/12 bg-white/[0.05] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-white transition-colors hover:bg-white/[0.09] cursor-pointer"
-              >
-                Email support
-              </a>
-              <button
-                type="button"
-                className="rounded-full border border-white/12 bg-white/[0.05] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-white transition-colors hover:bg-white/[0.09] cursor-pointer"
-                onClick={() => {
-                  focusSection(CURRICULUM_SECTION_ID, 'curriculum', 'Opened the curriculum section for review.');
-                }}
-              >
-                Review curriculum
-              </button>
+          <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-white/[0.04] p-5">
+            <div className="pointer-events-none absolute right-[-18%] top-[-26%] h-40 w-40 rounded-full bg-white/[0.06] blur-[80px]" />
+
+            <div className="relative z-10">
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-[1.2rem] border border-white/10 bg-white/[0.06]">
+                  <HelpCircle size={20} className="text-white/72" />
+                </div>
+
+                <div>
+                  <div className="font-display text-xl font-semibold text-white">Student Support Desk</div>
+                  <p className="mt-2 text-sm leading-relaxed text-white/58">
+                    Get help with profile updates, curriculum access, progress questions, and record issues without leaving
+                    this page.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-5 flex flex-wrap gap-2">
+                {['Profile Edits', 'Curriculum Access', 'Performance Questions'].map((item) => (
+                  <span
+                    key={item}
+                    className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-white/62"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                <div className="rounded-[1.25rem] border border-white/8 bg-white/[0.03] p-4">
+                  <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/36">Response Time</div>
+                  <div className="mt-2 text-sm text-white">Within one working day</div>
+                </div>
+                <div className="rounded-[1.25rem] border border-white/8 bg-white/[0.03] p-4">
+                  <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/36">Profile Storage</div>
+                  <div className="mt-2 text-sm text-white">Saved in this browser</div>
+                </div>
+              </div>
+
+              <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <a
+                  href="mailto:support@yantra.ai?subject=Student%20Profile%20Support"
+                  className="rounded-[1.25rem] border border-white/10 bg-white/[0.05] px-4 py-4 transition-colors hover:bg-white/[0.09] cursor-pointer"
+                >
+                  <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">Contact</div>
+                  <div className="mt-2 font-display text-lg text-white">Email support</div>
+                  <div className="mt-1 text-sm text-white/50">Reach the support desk for manual help.</div>
+                </a>
+
+                <button
+                  type="button"
+                  className="rounded-[1.25rem] border border-white/10 bg-white/[0.05] px-4 py-4 text-left transition-colors hover:bg-white/[0.09] cursor-pointer"
+                  onClick={() => {
+                    focusSection(CURRICULUM_SECTION_ID, 'curriculum', 'Opened the curriculum section for review.');
+                  }}
+                >
+                  <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">Shortcut</div>
+                  <div className="mt-2 font-display text-lg text-white">Review curriculum</div>
+                  <div className="mt-1 text-sm text-white/50">Jump directly to the current mastery track.</div>
+                </button>
+
+                <button
+                  type="button"
+                  className="rounded-[1.25rem] border border-white/10 bg-white/[0.05] px-4 py-4 text-left transition-colors hover:bg-white/[0.09] cursor-pointer"
+                  onClick={() => {
+                    focusSection(PERFORMANCE_SECTION_ID, 'performance', 'Opened performance insights.');
+                  }}
+                >
+                  <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">Shortcut</div>
+                  <div className="mt-2 font-display text-lg text-white">Open performance</div>
+                  <div className="mt-1 text-sm text-white/50">Review the latest progress and activity signals.</div>
+                </button>
+
+                <button
+                  type="button"
+                  className="rounded-[1.25rem] border border-white/10 bg-white/[0.05] px-4 py-4 text-left transition-colors hover:bg-white/[0.09] cursor-pointer"
+                  onClick={() => {
+                    focusSection(PROFILE_SECTION_ID, 'overview', 'Returned to profile overview.');
+                  }}
+                >
+                  <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">Shortcut</div>
+                  <div className="mt-2 font-display text-lg text-white">Back to profile</div>
+                  <div className="mt-1 text-sm text-white/50">Return to the editable student record card.</div>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-white/8 bg-white/[0.04] p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="font-display text-lg font-medium text-white">FAQs</div>
+                <p className="mt-2 text-sm leading-relaxed text-white/54">
+                  Quick answers to the most common student support questions.
+                </p>
+              </div>
+              <div className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-white/58">
+                {helpFaqs.length} Topics
+              </div>
+            </div>
+
+            <div className="mt-5 space-y-3">
+              {helpFaqs.map((faq) => (
+                <details
+                  key={faq.question}
+                  className="group overflow-hidden rounded-[1.4rem] border border-white/8 bg-white/[0.03] p-4 transition-colors open:bg-white/[0.05]"
+                >
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/78">{faq.question}</span>
+                    <ChevronRight size={16} className="shrink-0 text-white/38 transition-transform duration-300 group-open:rotate-90 group-open:text-white/72" />
+                  </summary>
+                  <p className="mt-3 border-t border-white/6 pt-3 text-sm leading-relaxed text-white/56">{faq.answer}</p>
+                </details>
+              ))}
             </div>
           </div>
         </PanelShell>
       )}
 
-      <aside className="fixed left-0 top-0 hidden h-full w-64 flex-col border-r border-white/10 bg-[#131313] px-4 pb-8 pt-28 lg:flex">
+      <aside className="fixed left-0 top-0 z-30 hidden h-full w-64 flex-col border-r border-white/10 bg-[#131313] px-4 pb-8 pt-28 lg:flex">
         <div className="mb-12 flex flex-col gap-2 px-2">
           <div className="font-display text-xl font-bold text-white">YANTRA</div>
           <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">Institutional Portal</div>
