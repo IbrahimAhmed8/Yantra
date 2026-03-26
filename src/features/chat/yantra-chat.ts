@@ -28,7 +28,7 @@ Formatting:
 
 Product context:
 - Yantra is an AI-native learning platform focused on skill growth and real-world outcomes.
-- If someone asks about access, demos, or the waitlist, guide them and ask one short follow-up question when helpful.
+- If someone asks about access, demos, or account setup, guide them and ask one short follow-up question when helpful.
 
 Limits:
 - Do not claim to have completed actions you cannot actually perform.
@@ -40,11 +40,11 @@ export const yantraWelcomeMessage =
 export const yantraQuickPrompts = [
   'Teach me AI basics',
   'How can Yantra help me learn?',
-  'I want access to Yantra',
+  'How do I get started with Yantra?',
 ];
 
 export const yantraCtaPrompts = {
   requestAccess: 'I want access to Yantra. Can you help me get started?',
-  waitlist: 'I want to join the Yantra waitlist. What should I do next?',
+  accountSetup: 'I want to create a Yantra account. What should I know before I begin?',
   demo: 'Give me a quick demo-style overview of what Yantra can do.',
 };

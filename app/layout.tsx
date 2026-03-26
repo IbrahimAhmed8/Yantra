@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import 'katex/dist/katex.min.css';
+import 'lenis/dist/lenis.css';
 import '../src/styles/globals.css';
+import { ExperienceProvider } from '@/src/features/motion/ExperienceProvider';
 
 export const metadata: Metadata = {
   title: 'Yantra',
@@ -14,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -24,7 +26,7 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-black text-white antialiased selection:bg-white selection:text-black">
-        {children}
+        <ExperienceProvider>{children}</ExperienceProvider>
       </body>
     </html>
   );

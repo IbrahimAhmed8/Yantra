@@ -16,11 +16,26 @@
 }
 
 @layer base {
+  html {
+    background-color: var(--color-bg);
+  }
+
   body {
-    cursor: none;
     background-color: var(--color-bg);
     color: var(--color-text);
     overflow-x: hidden;
+  }
+
+  html[data-yantra-overlay='true'],
+  body[data-yantra-overlay='true'] {
+    overflow: hidden;
+  }
+
+  @media (pointer: fine) {
+    body[data-yantra-cursor='custom'],
+    body[data-yantra-cursor='custom'] * {
+      cursor: none !important;
+    }
   }
   
   ::-webkit-scrollbar {
@@ -36,6 +51,18 @@
   ::-webkit-scrollbar-thumb:hover {
     background: var(--color-muted);
   }
+}
+
+html.lenis {
+  scroll-behavior: auto;
+}
+
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
 }
 
 .input-field:focus ~ .input-label,

@@ -12,6 +12,7 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
+import { useOverlayLock } from '@/src/features/motion/ExperienceProvider';
 import {
   yantraQuickPrompts,
   yantraWelcomeMessage,
@@ -76,6 +77,7 @@ function ChatPanel({
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            data-lenis-prevent
             className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-md md:px-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -151,7 +153,7 @@ function ChatPanel({
                   </div>
                 </div>
 
-                <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 md:px-6 md:py-5">
+                <div data-lenis-prevent className="min-h-0 flex-1 overflow-y-auto px-4 py-4 md:px-6 md:py-5">
                   <div className="space-y-4">
                     {messages.map((message, index) => (
                       <div
@@ -277,6 +279,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
+  useOverlayLock('chat-widget', isOpen);
+
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
@@ -288,18 +292,6 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
     const frame = window.requestAnimationFrame(() => inputRef.current?.focus());
     return () => window.cancelAnimationFrame(frame);
-  }, [isOpen]);
-
-  useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    }
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
   }, [isOpen]);
 
   useEffect(() => {

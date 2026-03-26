@@ -19,9 +19,10 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react';
-import { motion, useInView, useMotionValue, useSpring } from 'motion/react';
+import { motion, useInView } from 'motion/react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ChatProvider, useChatWidget } from '@/src/features/chat/ChatWidget';
+import { useOverlayLock } from '@/src/features/motion/ExperienceProvider';
 
 type OverviewCard = {
   label: string;
@@ -186,51 +187,6 @@ const aiPrompts = [
   'Open my next room',
 ];
 
-function DashboardCursor() {
-  const [isHovered, setIsHovered] = useState(false);
-  const cursorX = useMotionValue(-100);
-  const cursorY = useMotionValue(-100);
-  const cursorXSpring = useSpring(cursorX, { damping: 30, stiffness: 420, mass: 0.42 });
-  const cursorYSpring = useSpring(cursorY, { damping: 30, stiffness: 420, mass: 0.42 });
-
-  useEffect(() => {
-    const updateMousePosition = (event: MouseEvent) => {
-      cursorX.set(event.clientX - 7);
-      cursorY.set(event.clientY - 7);
-    };
-
-    const handleMouseOver = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      setIsHovered(Boolean(target.closest('a, button, input, textarea, .hoverable')));
-    };
-
-    window.addEventListener('mousemove', updateMousePosition);
-    window.addEventListener('mouseover', handleMouseOver);
-
-    return () => {
-      window.removeEventListener('mousemove', updateMousePosition);
-      window.removeEventListener('mouseover', handleMouseOver);
-    };
-  }, [cursorX, cursorY]);
-
-  return (
-    <>
-      <motion.div
-        className="pointer-events-none fixed left-0 top-0 z-[110] hidden h-3.5 w-3.5 rounded-full bg-white mix-blend-difference md:block"
-        style={{ x: cursorXSpring, y: cursorYSpring }}
-        animate={{ scale: isHovered ? 2.8 : 1 }}
-        transition={{ scale: { type: 'spring', stiffness: 320, damping: 24 } }}
-      />
-      <motion.div
-        className="pointer-events-none fixed left-0 top-0 z-[109] hidden rounded-full border border-white/18 md:block"
-        style={{ x: cursorXSpring, y: cursorYSpring, translateX: -17, translateY: -17, width: 40, height: 40 }}
-        animate={{ scale: isHovered ? 1.14 : 1, opacity: isHovered ? 0.82 : 0.3 }}
-        transition={{ type: 'spring', stiffness: 260, damping: 22 }}
-      />
-    </>
-  );
-}
-
 function DashboardBackground() {
   return (
     <div className="pointer-events-none fixed inset-0 z-[-1] overflow-hidden bg-[#050505]">
@@ -314,6 +270,8 @@ function DashboardNav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
+  useOverlayLock('dashboard-mobile-nav', mobileMenuOpen);
+
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 18);
     window.addEventListener('scroll', handleScroll);
@@ -386,7 +344,8 @@ function DashboardNav() {
 
       {mobileMenuOpen && (
         <motion.div
-          className="fixed inset-0 z-[70] flex flex-col bg-black/92 p-6 backdrop-blur-2xl md:hidden"
+          data-lenis-prevent
+          className="fixed inset-0 z-[70] flex flex-col overflow-y-auto bg-black/92 p-6 backdrop-blur-2xl md:hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -896,7 +855,6 @@ function DashboardExperience() {
   return (
     <div className="relative min-h-screen bg-black text-white">
       <DashboardBackground />
-      <DashboardCursor />
       <DashboardNav />
 
       <main className="mx-auto flex w-full max-w-[1440px] flex-col gap-24 px-5 pb-20 md:gap-32 md:px-8 md:pb-24">

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface": "#131313",
+              "error-container": "#93000a",
+              "on-primary-fixed": "#ffffff",
+              "primary": "#ffffff",
+              "surface-container-highest": "#353535",
+              "on-surface": "#e2e2e2",
+              "outline-variant": "#474747",
+              "on-tertiary-container": "#000000",
+              "error": "#ffb4ab",
+              "on-error-container": "#ffdad6",
+              "surface-container-low": "#1b1b1b",
+              "on-error": "#690005",
+              "primary-fixed": "#5d5f5f",
+              "inverse-on-surface": "#303030",
+              "surface-container-high": "#2a2a2a",
+              "on-primary": "#1a1c1c",
+              "inverse-primary": "#5d5f5f",
+              "secondary-fixed-dim": "#abaab4",
+              "surface-dim": "#131313",
+              "primary-container": "#d4d4d4",
+              "on-secondary-fixed-variant": "#3a3b43",
+              "inverse-surface": "#e2e2e2",
+              "tertiary-container": "#919094",
+              "outline": "#919191",
+              "surface-container-lowest": "#0e0e0e",
+              "on-tertiary-fixed": "#ffffff",
+              "on-tertiary-fixed-variant": "#e4e1e5",
+              "on-background": "#e2e2e2",
+              "tertiary-fixed": "#5f5e61",
+              "on-surface-variant": "#c6c6c6",
+              "surface-bright": "#393939",
+              "surface-container": "#1f1f1f",
+              "on-secondary": "#1a1b22",
+              "background": "#131313",
+              "on-secondary-container": "#e3e1ec",
+              "secondary-container": "#46464e",
+              "primary-fixed-dim": "#454747",
+              "tertiary": "#e4e1e5",
+              "on-primary-container": "#000000",
+              "tertiary-fixed-dim": "#47464a",
+              "secondary-fixed": "#c6c5cf",
+              "surface-variant": "#353535",
+              "surface-tint": "#c6c6c7",
+              "on-secondary-fixed": "#1a1b22",
+              "secondary": "#c6c5cf",
+              "on-tertiary": "#1b1b1e",
+              "on-primary-fixed-variant": "#e2e2e2"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Inter"],
+              "label": ["Space Grotesk"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>.bg-radial-glow {
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.05) 0%, rgba(19, 19, 19, 1) 70%)
+    }
+.grain-overlay {
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuAvXCmGE0ivpl3OoMGEC_Q50gWFJ0rIbdogHAAUENeCA-8e4GAV8P-Zq3b5FdwtfPVvU4tkcTwV_iXBw1v4IqbU4qQ_vZJ1EkIaBLalXcmpPh1H5ooMCXVJgcs95jZ2jIeRyOub6eExHRbGyJLFKIxwoQq49s1ShVNd6o8aCog5uxqOjd2gnxJZ-tvWSvIVKunIxlqecX_xmVsud1lKCGo2n91Gc5wFQezTbZGAY0ZcGECKsvUZi2KAf2p1mnqgBSz6OXBZECz06Bhp);
+    opacity: 0.03;
+    pointer-events: none
+    }
+.glass-panel {
+    background: rgba(31, 31, 31, 0.4);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px)
+    }
+.ai-pulse {
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    animation: pulse 3s infinite ease-in-out
+    }
+@keyframes pulse {
+    0%, 100% {
+        opacity: 0.4;
+        transform: scale(1);
+        } 50% {
+        opacity: 1;
+        transform: scale(1.1);
+        }
+    }</style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary min-h-screen overflow-x-hidden">
+<!-- Global Layout Container -->
+<main class="relative min-h-screen w-full flex flex-col md:flex-row items-center justify-center p-6 md:p-12 bg-radial-glow">
+<div class="grain-overlay absolute inset-0 z-0"></div>
+<!-- Left Column: Editorial Content -->
+<div class="relative z-10 w-full md:w-1/2 flex flex-col justify-center items-start space-y-8 md:pr-12">
+<!-- Brand & AI Status -->
+<div class="flex items-center space-x-3 mb-8">
+<div class="w-2 h-2 rounded-full bg-primary ai-pulse"></div>
+<span class="font-label text-[10px] tracking-[0.2em] uppercase text-primary/60">YANTRA AI-NATIVE OS</span>
+</div>
+<!-- Main Headline -->
+<h1 class="font-headline text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter leading-[0.9] text-white">
+                RETURN TO <br/> YOUR SYSTEM
+            </h1>
+<!-- Subline -->
+<div class="max-w-md">
+<p class="font-label text-xs md:text-sm tracking-[0.15em] uppercase text-on-surface-variant/80 border-l border-white/20 pl-6 py-2">
+                    Advanced cognitive environment for <br/> deep learning and autonomous research.
+                </p>
+</div>
+<!-- Visual Decorative Element (Asymmetry) -->
+<div class="hidden md:block w-32 h-px bg-gradient-to-r from-white/30 to-transparent mt-12"></div>
+</div>
+<!-- Right Column: Auth Card -->
+<div class="relative z-10 w-full md:w-1/2 max-w-[480px] mt-12 md:mt-0 flex justify-center">
+<div class="glass-panel w-full p-8 md:p-10 rounded-lg border border-white/5 shadow-2xl">
+<!-- Auth Switcher -->
+<nav class="flex w-full mb-10 border-b border-outline-variant/20">
+<button class="flex-1 pb-4 text-center font-label text-[10px] tracking-[0.2em] uppercase text-white border-b border-white transition-all">
+                        Sign In
+                    </button>
+<button class="flex-1 pb-4 text-center font-label text-[10px] tracking-[0.2em] uppercase text-on-surface-variant hover:text-white transition-all">
+                        Create Account
+                    </button>
+</nav>
+<!-- Form -->
+<form class="space-y-6">
+<!-- Email Field -->
+<div class="space-y-2">
+<label class="block font-label text-[10px] tracking-[0.2em] uppercase text-on-surface-variant/60">Registry Email</label>
+<div class="relative group">
+<input class="w-full bg-transparent border-b border-outline-variant/40 py-3 px-0 focus:outline-none focus:border-primary transition-colors text-white placeholder:text-white/10 font-body text-sm" placeholder="identity@yantra.ai" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="space-y-2">
+<label class="block font-label text-[10px] tracking-[0.2em] uppercase text-on-surface-variant/60">Access Key</label>
+<div class="relative group flex items-center">
+<input class="w-full bg-transparent border-b border-outline-variant/40 py-3 px-0 focus:outline-none focus:border-primary transition-colors text-white placeholder:text-white/10 font-body text-sm" placeholder="••••••••••••" type="password"/>
+<button class="absolute right-0 font-label text-[10px] tracking-[0.1em] uppercase text-white/40 hover:text-white transition-colors" type="button">
+                                Show
+                            </button>
+</div>
+</div>
+<!-- Options Row -->
+<div class="flex items-center justify-between py-2">
+<label class="flex items-center space-x-3 cursor-pointer group">
+<div class="w-4 h-4 rounded-sm border border-outline-variant/60 group-hover:border-primary/60 transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined text-[10px] text-primary opacity-0 group-hover:opacity-40" data-icon="check">check</span>
+</div>
+<span class="font-label text-[9px] tracking-[0.1em] uppercase text-on-surface-variant">Remember Path</span>
+</label>
+<a class="font-label text-[9px] tracking-[0.1em] uppercase text-white/40 hover:text-white transition-colors" href="#">
+                            Forgot Password?
+                        </a>
+</div>
+<!-- CTA -->
+<button class="w-full h-14 bg-primary text-on-primary rounded-xl font-label text-[11px] font-bold tracking-[0.2em] uppercase hover:bg-surface-bright transition-all active:scale-[0.98] mt-4 flex items-center justify-center space-x-2" type="submit">
+<span>Continue your path</span>
+<span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<!-- Divider -->
+<div class="flex items-center py-4">
+<div class="flex-grow h-px bg-white/5"></div>
+<span class="px-4 font-label text-[9px] text-white/20 uppercase tracking-[0.2em]">OR</span>
+<div class="flex-grow h-px bg-white/5"></div>
+</div>
+<!-- Secondary Provider -->
+<button class="w-full h-14 border border-outline-variant/20 rounded-xl font-label text-[11px] tracking-[0.2em] uppercase text-white hover:bg-white/5 transition-all flex items-center justify-center space-x-3" type="button">
+<img class="w-4 h-4 invert opacity-60" data-alt="minimalist monochrome google icon logo in white and light gray tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUF6Mp82_JiLvThI9gxk7XJ4N476H_k6A7Ea4BqjBQgihzFUZvFGQqjmaCmTEGnSeHAXFlZimXGA4lWTRR72lGry4gZQYX4qj1xzRYazS-C_SNmlwWgjS8PSnsnzd2dS2sEG8g6EE4hYKGuzf42tkCMUtxdyO_j_kiFNNF5ZdSp14ayRRuVccMb0S396q6DQuKBO5JzDWR3lGOATeiS0pwf6_Rm_wVYaprpmQotTPzhvHgk9Ox-YQuPHR9Y91YqWA0ZoeUIPmaqhhF"/>
+<span>Authenticate with Google</span>
+</button>
+</form>
+<!-- Status Footer -->
+<div class="mt-8 pt-6 border-t border-white/5 flex items-center justify-center space-y-1">
+<p class="font-label text-[8px] tracking-[0.2em] text-white/20 uppercase text-center">
+                        SECURE AUTHENTICATION GATEWAY — TERMINAL 01-B
+                    </p>
+</div>
+</div>
+</div>
+<!-- Bottom Footer Branding (Shared Component Simulation) -->
+<footer class="absolute bottom-0 left-0 w-full py-8 px-12 hidden md:flex justify-between items-center">
+<div class="font-label text-[10px] tracking-[0.2em] text-white/30 uppercase">
+                © 2024 YANTRA AI-NATIVE OS. ALL RIGHTS RESERVED.
+            </div>
+<div class="flex space-x-8">
+<a class="font-label text-[10px] tracking-[0.2em] text-white/30 hover:text-white uppercase transition-colors" href="#">Privacy</a>
+<a class="font-label text-[10px] tracking-[0.2em] text-white/30 hover:text-white uppercase transition-colors" href="#">Terms</a>
+<a class="font-label text-[10px] tracking-[0.2em] text-white/30 hover:text-white uppercase transition-colors" href="#">Manifesto</a>
+</div>
+</footer>
+</main>
+<!-- Background Decoration -->
+<div class="fixed top-0 left-1/4 w-px h-full bg-white/5 pointer-events-none"></div>
+<div class="fixed top-1/4 left-0 w-full h-px bg-white/5 pointer-events-none"></div>
+</body></html>
