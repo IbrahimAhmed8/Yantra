@@ -25,6 +25,7 @@ import StudentProfileCard, {
   type StudentProfile,
   type StudentProfileCardHandle,
 } from './StudentProfileCard';
+import YantraAmbientBackground from './YantraAmbientBackground';
 
 type NavItem = {
   label: string;
@@ -168,6 +169,13 @@ const facultyAvatars = [
   },
 ];
 
+const profileSectionClassName =
+  'relative overflow-hidden rounded-[2rem] border border-white/8 bg-white/[0.035] p-8 shadow-[0_24px_72px_rgba(0,0,0,0.24)] backdrop-blur-[24px]';
+const profileInsetCardClassName = 'rounded-[1.75rem] border border-white/8 bg-white/[0.03] p-6';
+const profilePanelCardClassName = 'rounded-2xl border border-white/8 bg-white/[0.04] p-4';
+const profileActionButtonClassName =
+  'rounded-full border border-white/12 bg-white/[0.05] px-5 py-3 font-semibold text-white transition-colors hover:bg-white/[0.09] cursor-pointer';
+
 function isSkillLevel(value: unknown): value is StudentProfile['skillLevel'] {
   return value === 'Beginner' || value === 'Intermediate' || value === 'Advanced';
 }
@@ -210,23 +218,28 @@ function PanelShell({
   onClose: () => void;
 }) {
   return (
-    <section className="fixed right-4 top-24 z-[60] w-[min(24rem,calc(100vw-2rem))] rounded-[2rem] border border-white/10 bg-[#171717]/95 p-6 shadow-[0_30px_80px_rgba(0,0,0,0.45)] backdrop-blur-2xl md:right-8">
-      <div className="mb-5 flex items-start justify-between gap-4">
-        <div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/38">{eyebrow}</div>
-          <h3 className="mt-2 font-display text-2xl font-semibold tracking-tight text-white">{title}</h3>
+    <section className="fixed right-4 top-24 z-[60] w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-[2rem] border border-white/8 bg-black/78 p-6 shadow-[0_30px_80px_rgba(0,0,0,0.45)] backdrop-blur-[28px] md:right-8">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.14),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.04),transparent_38%,rgba(255,255,255,0.03))]" />
+      <div className="pointer-events-none absolute right-[-16%] top-[-14%] h-40 w-40 rounded-full bg-white/[0.08] blur-[90px]" />
+
+      <div className="relative z-10">
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/38">{eyebrow}</div>
+            <h3 className="mt-2 font-display text-2xl font-semibold tracking-tight text-white">{title}</h3>
+          </div>
+
+          <button
+            type="button"
+            className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-white/62 transition-colors hover:bg-white/[0.08] cursor-pointer"
+            onClick={onClose}
+          >
+            Close
+          </button>
         </div>
 
-        <button
-          type="button"
-          className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-white/62 transition-colors hover:bg-white/[0.08] cursor-pointer"
-          onClick={onClose}
-        >
-          Close
-        </button>
+        <div className="space-y-3">{children}</div>
       </div>
-
-      <div className="space-y-3">{children}</div>
     </section>
   );
 }
@@ -241,10 +254,10 @@ function NavEntry({
   isActive: boolean;
 }) {
   const sharedClassName =
-    'flex items-center gap-3 rounded-2xl px-4 py-3 transition-all duration-300 font-mono text-[10px] uppercase tracking-[0.18em]';
+    'flex items-center gap-3 rounded-2xl border border-transparent px-4 py-3 transition-all duration-300 font-mono text-[10px] uppercase tracking-[0.18em]';
   const stateClassName = isActive
-    ? 'bg-white/10 text-white'
-    : 'text-white/40 hover:bg-white/5 hover:text-white/72';
+    ? 'border-white/10 bg-white/[0.08] text-white shadow-[0_16px_36px_rgba(0,0,0,0.18)]'
+    : 'text-white/40 hover:border-white/6 hover:bg-white/[0.04] hover:text-white/72';
   const Icon = item.icon;
 
   if (item.href) {
@@ -277,35 +290,39 @@ function ActivitySection() {
         return (
           <article
             key={card.title}
-            className={`rounded-[2rem] border p-8 backdrop-blur-2xl ${
+            className={`relative overflow-hidden rounded-[2rem] border p-8 backdrop-blur-[24px] ${
               card.accent
-                ? 'border-white/20 bg-white/[0.05]'
-                : 'border-white/10 bg-white/[0.04]'
+                ? 'border-white/10 bg-white/[0.045]'
+                : 'border-white/8 bg-white/[0.035]'
             }`}
           >
-            <Icon size={26} className="mb-4 text-white/24" />
-            <h4 className="font-display text-xl font-semibold tracking-tight text-white">{card.title}</h4>
-            <p className="mt-2 text-sm font-light leading-relaxed text-white/58">{card.body}</p>
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_40%,rgba(255,255,255,0.02))]" />
 
-            {card.accent ? (
-              <div className="mt-6 flex -space-x-3">
-                {facultyAvatars.map((avatar) => (
-                  <div
-                    key={avatar.src}
-                    className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border-2 border-[#131313] bg-white/10"
-                  >
-                    <img className="h-full w-full object-cover" src={avatar.src} alt={avatar.alt} />
+            <div className="relative z-10">
+              <Icon size={26} className="mb-4 text-white/24" />
+              <h4 className="font-display text-xl font-semibold tracking-tight text-white">{card.title}</h4>
+              <p className="mt-2 text-sm font-light leading-relaxed text-white/58">{card.body}</p>
+
+              {card.accent ? (
+                <div className="mt-6 flex -space-x-3">
+                  {facultyAvatars.map((avatar) => (
+                    <div
+                      key={avatar.src}
+                      className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border-2 border-black/70 bg-white/10"
+                    >
+                      <img className="h-full w-full object-cover" src={avatar.src} alt={avatar.alt} />
+                    </div>
+                  ))}
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-black/70 bg-white/[0.08] text-[10px] font-semibold text-white/44">
+                    +4
                   </div>
-                ))}
-                <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#131313] bg-white/[0.08] text-[10px] font-semibold text-white/44">
-                  +4
                 </div>
-              </div>
-            ) : (
-              <div className="mt-6 border-t border-white/5 pt-4">
-                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/36">{card.meta}</span>
-              </div>
-            )}
+              ) : (
+                <div className="mt-6 border-t border-white/5 pt-4">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/36">{card.meta}</span>
+                </div>
+              )}
+            </div>
           </article>
         );
       })}
@@ -315,44 +332,48 @@ function ActivitySection() {
 
 function CurriculumSection() {
   return (
-    <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 backdrop-blur-2xl">
-      <div className="mb-8 flex items-center justify-between gap-4">
-        <h4 className="font-display text-xl font-semibold tracking-tight text-white">Curriculum Track</h4>
-        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/36">Mastery Path</span>
-      </div>
+    <section className={profileSectionClassName}>
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.09),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.03),transparent_40%,rgba(255,255,255,0.02))]" />
 
-      <div className="space-y-6">
-        {curriculumItems.map((item) => {
-          const Icon = item.icon;
-          const iconContainerClassName =
-            item.state === 'complete'
-              ? 'border-white bg-white text-black'
-              : item.state === 'active'
-                ? 'border-white/10 bg-white/[0.05] text-white/48'
-                : 'border-white/10 bg-white/[0.05] text-white/28';
-          const rowTextClassName = item.state === 'locked' ? 'text-white/40' : 'text-white';
-          const progressClassName = item.state === 'complete' ? 'bg-white' : 'bg-white/40';
+      <div className="relative z-10">
+        <div className="mb-8 flex items-center justify-between gap-4">
+          <h4 className="font-display text-xl font-semibold tracking-tight text-white">Curriculum Track</h4>
+          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/36">Mastery Path</span>
+        </div>
 
-          return (
-            <div key={item.title} className={`flex items-center gap-6 ${item.state === 'locked' ? 'opacity-50' : ''}`}>
-              <div
-                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border ${iconContainerClassName}`}
-              >
-                <Icon size={20} />
-              </div>
+        <div className="space-y-6">
+          {curriculumItems.map((item) => {
+            const Icon = item.icon;
+            const iconContainerClassName =
+              item.state === 'complete'
+                ? 'border-white bg-white text-black'
+                : item.state === 'active'
+                  ? 'border-white/10 bg-white/[0.05] text-white/48'
+                  : 'border-white/10 bg-white/[0.05] text-white/28';
+            const rowTextClassName = item.state === 'locked' ? 'text-white/40' : 'text-white';
+            const progressClassName = item.state === 'complete' ? 'bg-white' : 'bg-white/40';
 
-              <div className="flex-1">
-                <div className="mb-1 flex items-center justify-between gap-3">
-                  <span className={`text-sm font-medium ${rowTextClassName}`}>{item.title}</span>
-                  <span className="font-mono text-xs text-white/40">{item.value}</span>
+            return (
+              <div key={item.title} className={`flex items-center gap-6 ${item.state === 'locked' ? 'opacity-50' : ''}`}>
+                <div
+                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border ${iconContainerClassName}`}
+                >
+                  <Icon size={20} />
                 </div>
-                <div className={`h-[2px] w-full ${item.state === 'locked' ? 'bg-white/5' : 'bg-white/10'}`}>
-                  <div className={`h-full ${progressClassName}`} style={{ width: item.progressWidth }} />
+
+                <div className="flex-1">
+                  <div className="mb-1 flex items-center justify-between gap-3">
+                    <span className={`text-sm font-medium ${rowTextClassName}`}>{item.title}</span>
+                    <span className="font-mono text-xs text-white/40">{item.value}</span>
+                  </div>
+                  <div className={`h-[2px] w-full ${item.state === 'locked' ? 'bg-white/5' : 'bg-white/10'}`}>
+                    <div className={`h-full ${progressClassName}`} style={{ width: item.progressWidth }} />
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </section>
   );
@@ -370,72 +391,76 @@ function RosterSection({
   const studentInitial = profile.name.trim().charAt(0).toUpperCase() || 'A';
 
   return (
-    <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 backdrop-blur-2xl">
-      <div className="mb-8 flex items-center justify-between gap-4">
-        <div>
-          <h4 className="font-display text-xl font-semibold tracking-tight text-white">Student Roster</h4>
-          <p className="mt-2 max-w-lg text-sm leading-relaxed text-white/52">
-            A quick-access roster card for the active learner so the sidebar item always lands on visible content.
-          </p>
+    <section className={profileSectionClassName}>
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.03),transparent_40%,rgba(255,255,255,0.02))]" />
+
+      <div className="relative z-10">
+        <div className="mb-8 flex items-center justify-between gap-4">
+          <div>
+            <h4 className="font-display text-xl font-semibold tracking-tight text-white">Student Roster</h4>
+            <p className="mt-2 max-w-lg text-sm leading-relaxed text-white/52">
+              A quick-access roster card for the active learner so the sidebar item always lands on visible content.
+            </p>
+          </div>
+          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/36">Current Learner</span>
         </div>
-        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/36">Current Learner</span>
-      </div>
 
-      <article className="rounded-[1.75rem] border border-white/8 bg-white/[0.03] p-6">
-        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-[1.25rem] border border-white/12 bg-white/[0.06]">
-              <span className="font-display text-2xl font-bold text-white">{studentInitial}</span>
-            </div>
+        <article className={profileInsetCardClassName}>
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex h-16 w-16 items-center justify-center rounded-[1.25rem] border border-white/12 bg-white/[0.06]">
+                <span className="font-display text-2xl font-bold text-white">{studentInitial}</span>
+              </div>
 
-            <div>
-              <div className="font-display text-2xl font-semibold text-white">{profile.name}</div>
-              <div className="mt-2 text-sm text-white/52">
-                {profile.classDesignation} | {profile.skillLevel} | {profile.progress}% complete
+              <div>
+                <div className="font-display text-2xl font-semibold text-white">{profile.name}</div>
+                <div className="mt-2 text-sm text-white/52">
+                  {profile.classDesignation} | {profile.skillLevel} | {profile.progress}% complete
+                </div>
               </div>
             </div>
+
+            <div className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-white/68">
+              Verified Student
+            </div>
           </div>
 
-          <div className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-white/68">
-            Verified Student
+          <div className="mt-6 flex flex-wrap gap-3">
+            <button
+              type="button"
+              className="rounded-full bg-white px-5 py-3 font-semibold text-black transition-transform duration-300 hover:scale-[0.98] cursor-pointer"
+              onClick={onOpenProfile}
+            >
+              Open Profile Overview
+            </button>
+            <button type="button" className={profileActionButtonClassName} onClick={onEditProfile}>
+              Edit Record
+            </button>
           </div>
-        </div>
-
-        <div className="mt-6 flex flex-wrap gap-3">
-          <button
-            type="button"
-            className="rounded-full bg-white px-5 py-3 font-semibold text-black transition-transform duration-300 hover:scale-[0.98] cursor-pointer"
-            onClick={onOpenProfile}
-          >
-            Open Profile Overview
-          </button>
-          <button
-            type="button"
-            className="rounded-full border border-white/12 bg-white/[0.05] px-5 py-3 font-semibold text-white transition-colors hover:bg-white/[0.09] cursor-pointer"
-            onClick={onEditProfile}
-          >
-            Edit Record
-          </button>
-        </div>
-      </article>
+        </article>
+      </div>
     </section>
   );
 }
 
 function PerformanceSection() {
   return (
-    <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 backdrop-blur-2xl">
-      <div className="mb-8 flex items-center justify-between gap-4">
-        <div>
-          <h4 className="font-display text-xl font-semibold tracking-tight text-white">Performance Insights</h4>
-          <p className="mt-2 max-w-lg text-sm leading-relaxed text-white/52">
-            Review the student&apos;s latest momentum, upcoming review windows, and progress movement in one place.
-          </p>
-        </div>
-        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/36">Live Signals</span>
-      </div>
+    <section className={profileSectionClassName}>
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.03),transparent_40%,rgba(255,255,255,0.02))]" />
 
-      <ActivitySection />
+      <div className="relative z-10">
+        <div className="mb-8 flex items-center justify-between gap-4">
+          <div>
+            <h4 className="font-display text-xl font-semibold tracking-tight text-white">Performance Insights</h4>
+            <p className="mt-2 max-w-lg text-sm leading-relaxed text-white/52">
+              Review the student&apos;s latest momentum, upcoming review windows, and progress movement in one place.
+            </p>
+          </div>
+          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/36">Live Signals</span>
+        </div>
+
+        <ActivitySection />
+      </div>
     </section>
   );
 }
@@ -556,13 +581,10 @@ export default function StudentProfilePage() {
   };
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#131313] text-white [cursor:default]">
-      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        <div className="absolute left-[-10%] top-[-8%] h-[28rem] w-[28rem] rounded-full bg-white/[0.05] blur-[130px]" />
-        <div className="absolute right-[-10%] top-[20%] h-[24rem] w-[24rem] rounded-full bg-white/[0.035] blur-[120px]" />
-      </div>
+    <div className="relative min-h-screen overflow-x-hidden bg-black text-white selection:bg-white selection:text-black [cursor:default]">
+      <YantraAmbientBackground />
 
-      <nav className="fixed left-0 top-0 z-50 flex h-20 w-full items-center justify-between border-b border-white/10 bg-[#131313]/80 px-4 backdrop-blur-2xl md:px-8">
+      <nav className="fixed left-0 top-0 z-50 flex h-20 w-full items-center justify-between border-b border-white/8 bg-black/72 px-4 backdrop-blur-2xl md:px-8">
         <Link href="/dashboard" className="font-display text-2xl font-bold tracking-tight text-white uppercase cursor-pointer">
           YANTRA
         </Link>
@@ -627,7 +649,7 @@ export default function StudentProfilePage() {
 
       {activePanel === 'notifications' && (
         <PanelShell title="Updates" eyebrow="Notifications" onClose={() => setActivePanel(null)}>
-          <div className="rounded-2xl border border-white/8 bg-white/[0.04] p-4">
+          <div className={profilePanelCardClassName}>
             <div className="font-display text-lg font-medium text-white">Performance digest</div>
             <p className="mt-2 text-sm leading-relaxed text-white/58">
               {profile.name} crossed a {profile.progress}% syllabus milestone and weekly momentum is trending upward.
@@ -635,15 +657,15 @@ export default function StudentProfilePage() {
             <button
               type="button"
               className="mt-4 rounded-full border border-white/12 bg-white/[0.05] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-white transition-colors hover:bg-white/[0.09] cursor-pointer"
-                onClick={() => {
-                  focusSection(PERFORMANCE_SECTION_ID, 'performance', 'Opened performance insights.');
-                }}
+              onClick={() => {
+                focusSection(PERFORMANCE_SECTION_ID, 'performance', 'Opened performance insights.');
+              }}
             >
               View performance
             </button>
           </div>
 
-          <div className="rounded-2xl border border-white/8 bg-white/[0.04] p-4">
+          <div className={profilePanelCardClassName}>
             <div className="font-display text-lg font-medium text-white">Curriculum alert</div>
             <p className="mt-2 text-sm leading-relaxed text-white/58">
               Advanced Algebra II is the current in-progress module and the next review window opens this week.
@@ -651,9 +673,9 @@ export default function StudentProfilePage() {
             <button
               type="button"
               className="mt-4 rounded-full border border-white/12 bg-white/[0.05] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-white transition-colors hover:bg-white/[0.09] cursor-pointer"
-                onClick={() => {
-                  focusSection(CURRICULUM_SECTION_ID, 'curriculum', 'Opened curriculum track.');
-                }}
+              onClick={() => {
+                focusSection(CURRICULUM_SECTION_ID, 'curriculum', 'Opened curriculum track.');
+              }}
             >
               Review track
             </button>
@@ -706,7 +728,7 @@ export default function StudentProfilePage() {
 
       {activePanel === 'roster' && (
         <PanelShell title="Student Roster" eyebrow="Quick Access" onClose={() => setActivePanel(null)}>
-          <div className="rounded-2xl border border-white/8 bg-white/[0.04] p-4">
+          <div className={profilePanelCardClassName}>
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="font-display text-lg font-medium text-white">{profile.name}</div>
@@ -866,7 +888,7 @@ export default function StudentProfilePage() {
         </PanelShell>
       )}
 
-      <aside className="fixed left-0 top-0 z-30 hidden h-full w-64 flex-col border-r border-white/10 bg-[#131313] px-4 pb-8 pt-28 lg:flex">
+      <aside className="fixed left-0 top-0 z-30 hidden h-full w-64 flex-col border-r border-white/8 bg-black/62 px-4 pb-8 pt-28 backdrop-blur-2xl lg:flex">
         <div className="mb-12 flex flex-col gap-2 px-2">
           <div className="font-display text-xl font-bold text-white">YANTRA</div>
           <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">Institutional Portal</div>
@@ -898,7 +920,7 @@ export default function StudentProfilePage() {
       <main className="relative z-10 min-h-screen px-4 pb-12 pt-28 md:px-12 lg:pl-64">
         <div className="mx-auto max-w-6xl">
           {statusMessage ? (
-            <div className="mb-6 rounded-full border border-white/10 bg-white/[0.05] px-4 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-white/72">
+            <div className="mb-6 rounded-full border border-white/10 bg-white/[0.05] px-4 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-white/72 shadow-[0_16px_36px_rgba(0,0,0,0.16)]">
               {statusMessage}
             </div>
           ) : null}
@@ -920,6 +942,10 @@ export default function StudentProfilePage() {
           </div>
 
           <section className="mb-12" id={PROFILE_SECTION_ID}>
+            <div className="mb-5 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.045] px-5 py-2 backdrop-blur-xl">
+              <span className="h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_16px_rgba(255,255,255,0.72)]" />
+              <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-white/42">Student Identity / Synced Theme</span>
+            </div>
             <h1 className="font-display text-5xl font-bold tracking-tight text-white md:text-7xl">Student Profile</h1>
             <p className="mt-4 max-w-xl text-base font-light leading-relaxed text-white/58">
               Academic tracking and personal identity management for the Yantra ecosystem. Manage core student data and
