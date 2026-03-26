@@ -4,7 +4,7 @@
 
 - `/dashboard`
 - Entry file: `app/dashboard/page.tsx`
-- Main implementation: `src/components/dashboard/StudentDashboard.tsx`
+- Main implementation: `src/features/dashboard/StudentDashboard.tsx`
 
 ## Purpose
 

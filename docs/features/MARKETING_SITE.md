@@ -4,7 +4,7 @@
 
 - `/`
 - Entry file: `app/page.tsx`
-- Main implementation: `src/App.tsx`
+- Main implementation: `src/features/marketing/MarketingLandingPage.tsx`
 
 ## Purpose
 
@@ -17,7 +17,7 @@ It is currently responsible for:
 - driving waitlist and demo-style intent
 - providing entry points into the AI chat experience
 
-## Main Sections In `src/App.tsx`
+## Main Sections
 
 - navigation
 - hero
@@ -38,14 +38,14 @@ It is currently responsible for:
 
 ## Current Weaknesses
 
-- implemented in one large component file
+- still implemented in one large feature file
 - content is static
 - no CMS or structured content source
 - no routing to deeper marketing pages yet
 
 ## Recommended Future Work
 
-- split `src/App.tsx` into feature sections
+- split `src/features/marketing/MarketingLandingPage.tsx` into smaller section files
 - move static content into dedicated data/config files
 - add a direct dashboard link when appropriate
 - add deeper public pages if product messaging expands

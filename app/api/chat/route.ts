@@ -1,6 +1,6 @@
 import { GoogleGenAI, type Content } from '@google/genai';
 import { NextResponse } from 'next/server';
-import { YANTRA_MODEL, yantraSystemPrompt, type YantraChatMessage } from '@/lib/yantra-chat';
+import { YANTRA_MODEL, yantraSystemPrompt, type YantraChatMessage } from '@/src/features/chat/yantra-chat';
 
 export const runtime = 'nodejs';
 

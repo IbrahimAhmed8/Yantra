@@ -4,7 +4,7 @@
 
 - Framework: Next.js 16 App Router
 - UI: React 19
-- Styling: Tailwind CSS v4 via `src/index.css`
+- Styling: Tailwind CSS v4 via `src/styles/globals.css`
 - Motion: `motion`
 - Icons: `lucide-react`
 - AI Provider: Google Gemini through `@google/genai`
@@ -16,21 +16,21 @@
 
 - Route: `/`
 - Entry: `app/page.tsx`
-- Main implementation: `src/App.tsx`
+- Main implementation: `src/features/marketing/MarketingLandingPage.tsx`
 - Purpose: public-facing landing page for positioning, access, and waitlist/demo CTAs
 
 ### Student Dashboard
 
 - Route: `/dashboard`
 - Entry: `app/dashboard/page.tsx`
-- Main implementation: `src/components/dashboard/StudentDashboard.tsx`
+- Main implementation: `src/features/dashboard/StudentDashboard.tsx`
 - Purpose: immersive student-facing dashboard concept with roadmap, rooms, and contextual AI entry points
 
 ### Chat Assistant
 
-- Client UI: `src/components/chat/ChatWidget.tsx`
+- Client UI: `src/features/chat/ChatWidget.tsx`
 - Server route: `app/api/chat/route.ts`
-- Shared prompt/config: `lib/yantra-chat.ts`
+- Shared prompt/config: `src/features/chat/yantra-chat.ts`
 - Purpose: modal AI teacher experience available from the landing page and dashboard
 
 ## Request Flow
@@ -47,9 +47,10 @@
 
 ### Frontend
 
-- The public site is still implemented in a single large file: `src/App.tsx`.
-- The dashboard already lives in its own component folder and is easier to extend.
-- Shared visual language is centralized in `src/index.css` and route layout wiring lives in `app/layout.tsx`.
+- The public site currently lives in one large feature file: `src/features/marketing/MarketingLandingPage.tsx`.
+- The dashboard is isolated in `src/features/dashboard/`.
+- Chat UI and chat prompt config are isolated in `src/features/chat/`.
+- Shared visual language is centralized in `src/styles/globals.css` and route layout wiring lives in `app/layout.tsx`.
 
 ### Backend
 
@@ -66,16 +67,17 @@
 
 - The repo has been migrated from Vite to Next.js.
 - Do not reintroduce Vite config or Vite-only packages unless the architecture is intentionally changed again.
-- Some root-level assets and legacy files still exist or are pending cleanup. Those are documented in `reference/SOURCE_ASSETS.md` and `engineering/CODEBASE_MAP.md`.
+- Reference assets now live under `docs/reference/`.
 
 ## Recommended Evolution
 
 Near-term architectural direction:
 
 - keep `app/` for route wiring and API routes
-- keep `lib/` for shared non-UI logic
-- split `src/App.tsx` into feature folders when approved
-- move toward domain folders such as `src/features/marketing`, `src/features/chat`, `src/features/dashboard`
+- keep feature-specific code in `src/features/`
+- keep styles in `src/styles/`
+- keep long-term project context in `docs/`
+- split `src/features/marketing/MarketingLandingPage.tsx` into smaller section files when approved
 - add persistence before making the dashboard truly dynamic
 
 ## Not Built Yet

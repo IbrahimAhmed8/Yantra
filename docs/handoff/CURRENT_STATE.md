@@ -34,16 +34,16 @@ That is a good place to be, but new contributors should not mistake UI direction
 
 ## Known Structural Reality
 
-- `src/App.tsx` is still a large landing-page file
-- the dashboard is already isolated in its own component folder
-- chat is cleanly separated into widget UI, API route, and shared prompt config
-- project and design references still live at the repo root
+- `src/features/marketing/MarketingLandingPage.tsx` is still a large landing-page file
+- the dashboard is isolated in `src/features/dashboard/`
+- chat is isolated in `src/features/chat/`
+- design and planning references have been moved into `docs/reference/`
 
-## Important Root Assets
+## Important Reference Assets
 
-- `Dashboard/` contains the dashboard design references
-- `Yantra_AI_Build_Plan.pdf` contains the broader product strategy
-- `tmp_yantra_pdf.txt` is a text extraction of that PDF
+- `docs/reference/dashboard-sample/` contains the dashboard design references
+- `docs/reference/build-plan/Yantra_AI_Build_Plan.pdf` contains the broader product strategy
+- `docs/reference/build-plan/tmp_yantra_pdf.txt` is a text extraction of that PDF
 
 These are useful and should not be deleted without approval.
 

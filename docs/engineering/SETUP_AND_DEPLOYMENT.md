@@ -60,6 +60,13 @@ npm run build
 
 - `GEMINI_API_KEY`
 
+## File Organization Notes
+
+- route entrypoints belong in `app/`
+- feature code belongs in `src/features/`
+- global styling belongs in `src/styles/`
+- reference materials belong in `docs/reference/`
+
 ## Migration Notes
 
 This repo used to be Vite-based and is now Next.js-based.

@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, useInView, animate, useMotionValue, useSpring } from 'motion/react';
 import { Menu, X, BookOpen, Globe, Palette, ArrowRight } from 'lucide-react';
-import { ChatProvider, useChatWidget } from '@/src/components/chat/ChatWidget';
-import { yantraCtaPrompts } from '@/lib/yantra-chat';
+import { ChatProvider, useChatWidget } from '@/src/features/chat/ChatWidget';
+import { yantraCtaPrompts } from '@/src/features/chat/yantra-chat';
 
 const productLinks = {
   home: '#about',
@@ -621,7 +621,7 @@ function Footer() {
   );
 }
 
-export default function App() {
+export default function MarketingLandingPage() {
   useEffect(() => {
     if (window.location.pathname !== '/') {
       window.history.replaceState({}, '', `/${window.location.hash}`);

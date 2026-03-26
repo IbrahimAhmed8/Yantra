@@ -1,20 +1,37 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Yantra
 
-# Run and deploy your AI Studio app
+Yantra is a Next.js-based AI learning platform prototype with a public marketing site, a student dashboard concept, and a Gemini-powered AI teacher chat flow.
 
-This contains everything you need to run your app locally.
+## Main Routes
 
-View your app in AI Studio: https://ai.studio/apps/268e2a99-a26e-4627-9467-51921c1b1900
+- `/` public marketing site
+- `/dashboard` student dashboard
+- `/api/chat` AI chat endpoint
 
-## Run Locally
+## Project Structure
 
-**Prerequisites:**  Node.js
+- `app/` route entrypoints and API routes
+- `src/features/` product feature implementations
+- `src/styles/` global styling
+- `docs/` project handbook, roadmap, handoff notes, and reference assets
 
+## Start Here
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+If you are new to the repo, read:
+
+1. `docs/README.md`
+2. `docs/handoff/CURRENT_STATE.md`
+3. `docs/engineering/CODEBASE_MAP.md`
+
+## Local Setup
+
+```bash
+npm install
+npm run dev
+```
+
+Add a Gemini key in your environment:
+
+```env
+GEMINI_API_KEY=YOUR_KEY_HERE
+```

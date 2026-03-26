@@ -1,0 +1,873 @@
+
+--- PAGE 1 ---
+
+CONFIDENTIAL    FULL PRODUCT BUILD PLAN    v1.0    2025
+YANTRA
+AI Learning Platform
+Full Product Build Plan — Architecture, AI Reasoning Stack, Practice Rooms, Multi-LLM Orchestration,
+Smartboard Integration & Go-to-Market Strategy
+Version
+Status
+Author
+Year
+v1.0
+Active Development
+Yantra Team
+2025–2026
+
+
+--- PAGE 2 ---
+
+YANTRA AI — CONFIDENTIAL BUILD PLAN    PAGE 2
+YANTRA AI LEARNING PLATFORM
+yantra.ai    2025–2026
+TABLE OF CONTENTS
+What's Inside
+#
+Section
+Description
+01
+Vision & Mission
+Platform purpose, target users, problem statement
+02
+Platform Overview
+Core modules, feature map, UX philosophy
+03
+AI Architecture
+Multi-LLM stack, reasoning engine, memory system
+04
+Practice Rooms (Voids)
+Interactive sandboxes, tool ecosystem, lab types
+05
+AI Teacher Persona
+Personality engine, pedagogy logic, feedback loops
+06
+Tool Suite
+Web search, code runner, quiz AI, visual explainer
+07
+Smartboard Integration
+Kiosk mode, classroom sync, teacher dashboard
+08
+Curriculum Design
+AI/ML tracks, CS fundamentals, project paths
+09
+Tech Stack
+Frontend, backend, infra, APIs, open source choices
+10
+Roadmap & Milestones
+3-phase build, sprint plan, MVP to v3.0
+11
+Business & Growth
+Monetisation, schools pipeline, partnerships
+12
+Appendix
+API references, glossary, research citations
+
+
+--- PAGE 3 ---
+
+YANTRA AI — CONFIDENTIAL BUILD PLAN    PAGE 3
+YANTRA AI LEARNING PLATFORM
+yantra.ai    2025–2026
+01 — VISION & MISSION
+Why Yantra Exists
+The global skills gap in AI and computer science is not a content problem — it is a guidance problem. Millions of
+students have access to YouTube, Wikipedia, and free courses, yet most quit within weeks because nobody is
+guiding them. Yantra fixes this by deploying an AI teacher that knows exactly where each student is, where they
+need to go, and how to get them there — while making the journey hands-on, interactive, and genuinely fun.
+The Core Problem We Solve
+Problem
+Current Reality
+Yantra Solution
+No personalisation
+Same video for everyone
+AI adapts to each learner in real time
+Passive learning
+Watch-and-forget content
+Practice Rooms with live coding & AI feedback
+No guidance
+Students don't know what to learn next
+Skill engine + dynamic roadmaps
+No proof of skill
+Certificates no employer trusts
+Project-based credentials + AI evaluation
+Schools can't afford AI tools
+Too expensive or too complex
+Smartboard-ready, zero setup required
+AI education is abstract
+Hard to understand without hands-on context
+Build real AI models inside the platform
+Mission Statement
+"Yantra empowers every learner — from a 12-year-old in a government school to a career-switcher in their 30s —
+to understand, build, and deploy artificial intelligence through a system that teaches like the best human teacher,
+but is always available, always patient, and always improving."
+Target Users
+User Segment
+Use Case
+Key Feature
+School students (12–18)
+Learn AI fundamentals on smartboards
+Classroom mode + guided tracks
+College students (18–25)
+Deep dive into ML, build portfolios
+Practice Rooms + project labs
+Self-learners (any age)
+Skill up at own pace from home
+Adaptive roadmaps + certificates
+Teachers & educators
+Assign lessons, track class progress
+Teacher dashboard + analytics
+Institutions / schools
+Integrate AI education into curriculum
+LMS integration + smartboard SDK
+Hiring companies
+Find pre-screened AI talent
+Skill signals + job-matching API
+
+
+--- PAGE 4 ---
+
+YANTRA AI — CONFIDENTIAL BUILD PLAN    PAGE 4
+YANTRA AI LEARNING PLATFORM
+yantra.ai    2025–2026
+02 — PLATFORM OVERVIEW
+Core Modules
+Yantra is not a course platform. It is a learning operating system — a continuous environment where an AI
+teacher guides the student through concepts, checks understanding, hands them the keyboard, watches them
+practice, gives feedback, and awards proof of skill. Six modules work together to make this possible:
+Module
+What It Does
+Key Components
+■  AI Teacher
+Persistent intelligent tutor
+Multi-LLM, memory, persona engine
+■  Practice Rooms (Voids)
+Hands-on sandboxes for building AI
+Code runner, model trainer, debugger
+■  Skill Roadmap
+Personalised learning path
+Skill graph, diagnosis quiz, next-step AI
+■  Tool Suite
+AI-powered learning tools
+Web search, quiz maker, visual explainer
+■  Smartboard Mode
+Classroom-optimised interface
+Kiosk UI, teacher sync, group mode
+■  Analytics & Certs
+Track progress, prove skills
+Learning metrics, AI-graded projects
+Platform Architecture Diagram (Textual)
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+■ USER INTERFACES ■
+■ Web App ■ Smartboard Kiosk ■ Mobile PWA ■ Embed SDK ■
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+■
+■■■■■■■■■■■■■■■■■■■■■■■▼■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+■ ORCHESTRATION LAYER ■
+■ Request router → Tool selector → Context manager ■
+■ Conversation memory → Student profile loader ■
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+■ ■ ■
+■■■■■■■▼■■■■■■■ ■■■■■■■▼■■■■■■■ ■■■■■■▼■■■■■■■■■■■■■■■■■■■
+■ AI TEACHER ■ ■ SKILL ■ ■ PRACTICE ROOMS (VOIDS) ■
+■ PERSONA ■ ■ ENGINE ■ ■ Code / Model / Debug ■
+■ Claude API ■ ■ Diagnosis ■ ■ Python Sandbox (Pyodide)■
+■ + Memory ■ ■ Roadmap ■ ■ TensorFlow.js / ONNX ■
+■■■■■■■■■■■■■■■ ■■■■■■■■■■■■■■■ ■■■■■■■■■■■■■■■■■■■■■■■■■■
+■ ■ ■
+■■■■■■■▼■■■■■■■■■■■■■■■▼■■■■■■■■■■■■■■■▼■■■■■■■■■■■■■■■■■■■■
+■ TOOL LAYER ■
+■ Web Search ■ Code Runner ■ Quiz AI ■ Visual Explainer ■
+■ File Upload ■ Model Viewer ■ Dataset Explorer ■
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+■
+■■■■■■■■■■■■■■■■■■■■■■■▼■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+■ DATA LAYER ■
+■ Curriculum DB ■ Student Profiles ■ LLM APIs ■ Analytics ■
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+
+--- PAGE 5 ---
+
+YANTRA AI — CONFIDENTIAL BUILD PLAN    PAGE 5
+YANTRA AI LEARNING PLATFORM
+yantra.ai    2025–2026
+03 — AI ARCHITECTURE
+Multi-LLM Reasoning Stack
+Yantra does NOT rely on a single LLM. Different tasks require different models optimised for speed, reasoning
+depth, code generation, or cost. The orchestration layer routes each request to the best model automatically,
+combining outputs where needed.
+LLM Routing Strategy
+Task
+Model Used
+Why This Model
+Fallback
+Teacher conversation
+Claude 3.5 Sonnet
+Best instruction-following, safe, nuanced
+GPT-4o
+Deep reasoning (proofs, math)
+Claude 3 Opus / o1
+Extended thinking, multi-step logic
+Gemini 1.5 Pro
+Code generation & review
+Claude 3.5 Sonnet
+Strongest coding model available
+DeepSeek Coder
+Fast Q&A / quiz grading
+Claude Haiku / Gemini Flash
+Low latency, cheap, accurate enough
+GPT-4o mini
+Web search synthesis
+Gemini 1.5 Pro
+Long context window, grounded search
+Perplexity API
+Image / diagram explanation
+Claude 3.5 Sonnet Vision
+Strong multimodal understanding
+GPT-4o Vision
+Student skill diagnosis
+Fine-tuned classifier + LLM
+Custom scoring + explanation
+GPT-4o mini
+Roadmap generation
+Claude Sonnet + RAG
+Curriculum knowledge + reasoning
+Custom model v2
+Reasoning Architecture — Chain of Thought + Tool Use
+When a student asks a complex question (e.g. "How does backpropagation actually update weights?"), the system
+does NOT just call an LLM and return text. It runs a multi-step reasoning pipeline:
+Step
+Action
+Model / Tool
+1. Intent classification
+Is this a concept question, code task, or practice request?
+Fast classifier (Haiku)
+2. Context loading
+Load student's skill level, past mistakes, learning style
+Profile DB + RAG
+3. Knowledge retrieval
+Pull relevant curriculum nodes + external docs
+Vector search + Web search
+4. Reasoning
+Generate a pedagogically sound explanation at the right level
+Claude Sonnet
+5. Tool selection
+Decide if a code example, diagram, or quiz is needed
+Tool-use router
+6. Response assembly
+Combine text + code + visuals into one response
+Orchestrator
+7. Memory update
+Store what the student just learned
+Student profile writer
+8. Next-step suggestion
+Suggest what to study or practice next
+Skill engine
+
+
+--- PAGE 6 ---
+
+YANTRA AI — CONFIDENTIAL BUILD PLAN    PAGE 6
+YANTRA AI LEARNING PLATFORM
+yantra.ai    2025–2026
+Memory System
+The AI teacher maintains three types of memory per student, enabling true personalisation across sessions:
+Memory Type
+What's Stored
+Updated When
+Working memory
+Current conversation context (last 20 turns)
+Every message
+Episodic memory
+Past lessons, mistakes, topics covered
+End of each session
+Semantic memory
+Skill graph — what student knows & doesn't know
+After quiz / practice
+
+
+--- PAGE 7 ---
+
+YANTRA AI — CONFIDENTIAL BUILD PLAN    PAGE 7
+YANTRA AI LEARNING PLATFORM
+yantra.ai    2025–2026
+04 — PRACTICE ROOMS (VOIDS)
+Hands-On AI Labs
+Practice Rooms — called Voids internally — are the most important differentiator of Yantra. Instead of reading
+about neural networks, students build one. Instead of watching a video about gradient descent, they drag a slider
+and watch the loss curve change in real time. The AI teacher is present inside every Void, watching what the
+student does, catching mistakes before they compound, and celebrating wins.
+The 8 Core Void Types
+Void Name
+What Students Do
+AI Role
+Tech Used
+■ Python Void
+Write & run Python in browser, complete challenges
+Reviews code, fixes bugs, explains line-by-line
+Pyodide (Python in WASM)
+■ Neural Net Builder
+Drag-and-drop layers, train on real datasets
+Explains each layer's purpose, reads training curves
+TensorFlow.js
+■ Data Explorer
+Load CSVs, visualise, clean, engineer features
+Spots patterns, suggests next steps
+Pandas (Pyodide) + Plotly
+■ Model Inspector
+Load pre-trained models, inspect weights & activations
+Explains what each neuron learned
+ONNX.js + visualiser
+■ Prompt Engineer
+Design, test, iterate on LLM prompts
+Rates prompt quality, explains failures
+Claude / Gemini API
+■ Project Builder
+Build end-to-end AI apps (image classifier, chatbot, etc.)
+Acts as pair programmer, code reviewer
+Full stack sandbox
+■ Algorithm Void
+Visualise sorting, search, graph algorithms step by step
+Explains each step, quizzes student
+Custom JS visualiser
+■ Deploy Void
+Deploy model as API, get a real URL
+Guides deployment, explains cloud concepts
+Serverless functions
+How Voids Work Technically
+Each Void is a browser-based sandbox — no installation, no sign-up friction, works on a school Chromebook or
+smartboard. The key insight is that modern WebAssembly lets us run a full Python interpreter and even train
+neural networks inside the browser tab:
+Component
+Technology
+Why
+Python runtime
+Pyodide (CPython → WASM)
+Run real Python in browser, no server needed
+ML training
+TensorFlow.js
+GPU-accelerated ML directly in the browser
+Model inference
+ONNX Runtime Web
+Run pre-trained models (BERT, ResNet) client-side
+Code editor
+Monaco Editor (VS Code engine)
+Professional IDE experience, free & open source
+Visualisations
+Plotly.js + D3.js
+Interactive charts, model diagrams, data plots
+AI feedback
+Anthropic API (streaming)
+Real-time line-by-line code review as student types
+File system
+Browser IndexedDB + localStorage
+Persist student projects across sessions
+Collaboration
+WebRTC + Yjs CRDT
+Real-time pair programming with classmates
+
+
+--- PAGE 8 ---
+
+YANTRA AI — CONFIDENTIAL BUILD PLAN    PAGE 8
+YANTRA AI LEARNING PLATFORM
+yantra.ai    2025–2026
+The Void Loop — How a Session Flows
+STUDENT ENTERS VOID
+■
+▼
+AI scans student profile → sets difficulty level
+■
+▼
+Challenge presented (auto-generated by AI, matched to skill level)
+■
+▼
+Student writes code / builds model / explores data
+■
+■■■ AI watches in real time (keystroke analysis)
+■ ■
+■ ■■■ Error detected → gentle hint, not solution
+■ ■■■ Pattern matched → "nice, you're using X, did you know Y?"
+■ ■■■ Stuck for 2+ min → offer deeper explanation
+■
+▼
+Student runs / submits
+■
+▼
+AI evaluates output → structured feedback (what worked, what didn't, why)
+■
+▼
+Skill graph updated → roadmap adjusted → next challenge suggested
+
+
+--- PAGE 9 ---
+
+YANTRA AI — CONFIDENTIAL BUILD PLAN    PAGE 9
+YANTRA AI LEARNING PLATFORM
+yantra.ai    2025–2026
+05 — AI TEACHER PERSONA
+The Personality Engine
+The AI teacher is not a search engine with a chat interface. It has a persistent personality, a teaching
+philosophy, and adaptive communication style. The persona is implemented as a carefully crafted system
+prompt combined with a dynamic context injection layer that loads the student's profile, current topic, and
+emotional state before every response.
+Core Personality Traits
+Trait
+Behaviour
+Example
+Patient
+Never rushes, always willing to re-explain differently
+"Let me try explaining this a different way..."
+Encouraging
+Celebrates small wins, never makes student feel dumb
+"That's a great first attempt — here's one tweak:"
+Socratic
+Asks questions back to build understanding, not just answers
+"What do you think happens if we change the learning rate?"
+Contextual
+Knows what the student learned last session
+"Last time you struggled with activation functions — today we'll fix that"
+Honest
+Says when it doesn't know, corrects mistakes clearly
+"Actually that's a common misconception — let me clarify"
+Age-aware
+Speaks differently to a 13-year-old vs a 25-year-old
+Adjusts vocabulary, examples, complexity automatically
+Pedagogical Framework
+Yantra's AI teaching approach is grounded in established learning science: Bloom's Taxonomy (remember →
+understand → apply → analyse → evaluate → create), spaced repetition for long-term retention, active recall
+over passive reading, and worked examples before independent practice.
+Learning Science Principle
+How Yantra Implements It
+Spaced repetition
+AI re-introduces topics at optimal intervals based on forgetting curve model
+Active recall
+Quiz Void triggered after every major concept, not just at end of module
+Worked examples → fading
+AI shows full solution first, then provides partial scaffolding, then blank
+Interleaving
+Practice mixes multiple topics to strengthen connections between concepts
+Growth mindset language
+System prompt explicitly avoids fixed-mindset phrases, celebrates effort not talent
+Zone of proximal development
+Skill engine keeps challenges 15–25% above current ability (Vygotsky sweet spot)
+
+
+--- PAGE 10 ---
+
+YANTRA AI — CONFIDENTIAL BUILD PLAN    PAGE 10
+YANTRA AI LEARNING PLATFORM
+yantra.ai    2025–2026
+06 — TOOL SUITE
+AI-Powered Learning Tools
+The AI teacher has access to a growing set of tools it can invoke automatically during a conversation. Tool
+selection is handled by the orchestration layer — the student never has to manually open a tool. The AI decides
+when a diagram would help more than text, when a quiz is appropriate, or when live code would make the concept
+click.
+Tool
+Trigger
+What It Does
+Web Search
+Student asks about recent AI news, paper, or model
+Searches web in real time, synthesises results, cites sources
+Code Runner
+Student wants to see code work, or AI wants to demo a concept
+Executes Python/JS in browser sandbox, streams output
+Quiz Generator
+End of a topic, or when AI detects shaky understanding
+Generates 5-question adaptive quiz, grades, explains wrong answers
+Visual Explainer
+Concept has a spatial or sequential structure (neural nets, trees, sorting)
+Generates SVG diagrams and animations inside chat
+Dataset Loader
+Student needs real data to practice on
+Loads from Kaggle / HuggingFace, previews, describes statistics
+Model Card Reader
+Student asks about a specific AI model
+Pulls model card from HuggingFace, explains architecture and use
+Paper Summariser
+Student asks about an academic paper (e.g. 'Attention Is All You Need')
+Fetches paper, extracts key contributions, explains accessibly
+Debugger
+Student's code throws an error in a Void
+Reads error + code context, pinpoints root cause, suggests fix
+Flashcard Maker
+Student wants to revise key terms
+Generates spaced-repetition flashcard deck from session content
+
+
+--- PAGE 11 ---
+
+YANTRA AI — CONFIDENTIAL BUILD PLAN    PAGE 11
+YANTRA AI LEARNING PLATFORM
+yantra.ai    2025–2026
+07 — SMARTBOARD INTEGRATION
+Classroom-First Design
+Smartboards in Indian and global schools run Android, Windows, or Linux — and all of them have a full browser.
+Yantra's Classroom Mode is a fullscreen web app that works out of the box on any smartboard without installing
+anything. The school just opens a URL. The teacher logs in, selects today's topic, and the AI takes over.
+Feature
+Description
+Kiosk mode URL
+Single URL loads fullscreen classroom UI, no distractions, touch-optimised
+Teacher dashboard
+Teacher sees all student screens simultaneously, can spotlight one student's Void
+Live class mode
+AI teacher presents concept to whole class on big screen, students follow on tablets
+Student sync
+Students' individual sessions sync with the classroom board — teacher can 'pull' any student's work
+Offline mode
+Core content cached via Service Worker — works even without stable internet
+Voice interaction
+Web Speech API enables voice questions to the AI teacher (great for smartboard use)
+Touch gestures
+All Voids fully touch-optimised — pinch to zoom code, tap to run, swipe to next challenge
+Class analytics
+Teacher sees real-time class progress, who's stuck, who's ahead, topic heatmap
+Embedding Yantra in Other School Software
+For schools using an LMS (Learning Management System like Moodle, Google Classroom, or custom software),
+Yantra provides an iframe embed SDK and a REST API so any platform can add an AI teacher with 10 lines of
+code:
+data-topic="neural-networks"
+data-student-id="{{student_id}}"
+data-mode="classroom">
+<br/> Yantra.init({ apiKey: "YOUR_KEY", theme: "dark" });<br/>
+
+
+--- PAGE 12 ---
+
+YANTRA AI — CONFIDENTIAL BUILD PLAN    PAGE 12
+YANTRA AI LEARNING PLATFORM
+yantra.ai    2025–2026
+08 — CURRICULUM DESIGN
+Learning Tracks & Content Map
+Track
+Level
+Duration
+Key Topics
+AI Foundations
+Beginner (12+)
+4 weeks
+What is AI, history, types of ML, real applications
+Python for AI
+Beginner–Intermediate
+6 weeks
+Python basics, NumPy, Pandas, Matplotlib, data wrangling
+Machine Learning Core
+Intermediate
+8 weeks
+Regression, classification, clustering, model evaluation
+Deep Learning
+Intermediate–Advanced
+10 weeks
+Neural nets, CNNs, RNNs, transformers, backprop
+Natural Language Processing
+Advanced
+6 weeks
+Tokenisation, embeddings, fine-tuning LLMs, RAG
+Computer Vision
+Advanced
+6 weeks
+Image classification, object detection, segmentation
+AI Ethics & Safety
+All levels
+2 weeks
+Bias, fairness, alignment, societal impact
+Build & Deploy AI Apps
+Intermediate+
+8 weeks
+End-to-end projects, APIs, deployment, monitoring
+CS Fundamentals
+Beginner
+6 weeks
+Algorithms, data structures, complexity, problem solving
+Prompt Engineering
+Beginner–Intermediate
+3 weeks
+Zero-shot, few-shot, chain-of-thought, agent design
+
+
+--- PAGE 13 ---
+
+YANTRA AI — CONFIDENTIAL BUILD PLAN    PAGE 13
+YANTRA AI LEARNING PLATFORM
+yantra.ai    2025–2026
+09 — TECH STACK
+Full Technical Architecture
+Frontend
+Technology
+Purpose
+Why Chosen
+React 19 + TypeScript
+Main UI framework
+You already use it, large ecosystem, fast
+Tailwind CSS v4
+Styling system
+Already in codebase, utility-first, dark mode native
+Framer Motion / Motion
+Animations & transitions
+Already installed, polished feel
+Monaco Editor
+Code editor in Voids
+VS Code engine, free, syntax highlighting for 50+ languages
+Pyodide (WebAssembly)
+Python runner in browser
+No server needed, runs real CPython, NumPy, Pandas
+TensorFlow.js
+ML training in browser
+Train small models client-side, no GPU server cost
+Plotly.js
+Data visualisation
+Interactive charts for Data Explorer Void
+Lucide React
+Icon system
+Already installed, consistent look
+Backend
+Technology
+Purpose
+Why Chosen
+Node.js + Express
+API server
+Already in package.json, JavaScript consistency
+Supabase (PostgreSQL)
+Database & auth
+Free tier, realtime, row-level security, great DX
+Redis
+Session cache, rate limiting
+Fast in-memory store for conversation state
+Pinecone / pgvector
+Vector database for RAG
+Semantic search over curriculum content
+Cloudflare Workers
+Edge functions, low latency
+Global CDN, free tier, JS runtime
+AI & ML APIs
+Service
+Used For
+Tier
+Anthropic Claude API
+Primary AI teacher, code review, reasoning
+Paid (start with free credits)
+Google Gemini API
+Web search grounding, long-context tasks
+Free tier available
+OpenAI API
+Fallback teacher, embeddings
+Pay per token
+HuggingFace Inference
+Open-source models, code generation
+Free tier for small models
+Serper.dev / Brave API
+Web search tool
+Free tier (2500 queries/mo)
+Pyodide CDN
+Python WASM runtime
+Completely free, self-hosted option
+
+
+--- PAGE 14 ---
+
+YANTRA AI — CONFIDENTIAL BUILD PLAN    PAGE 14
+YANTRA AI LEARNING PLATFORM
+yantra.ai    2025–2026
+10 — ROADMAP & MILESTONES
+Build in Three Phases
+Phase 1 — MVP (Months 1–3)
+Month
+What to Build
+Done When
+Month 1
+AI teacher chat UI + Claude API integration + system prompt persona
+Student can have a meaningful tutoring conversation about AI
+Month 1
+Basic Python Void — Monaco editor + Pyodide runner + AI code feedback
+Student can write Python, run it, get AI feedback
+Month 2
+Skill diagnosis quiz + basic roadmap generator
+New user gets a personalised learning path in 5 minutes
+Month 2
+Smartboard kiosk mode — fullscreen UI, touch optimised
+Works on school smartboard without installation
+Month 3
+Student profiles + session memory (Supabase)
+AI remembers what student learned last time
+Month 3
+Neural Net Builder Void (TensorFlow.js)
+Student can build and train a simple neural network visually
+Phase 2 — Full Platform (Months 4–8)
+Month
+What to Build
+Done When
+Month 4
+All 8 Void types fully functional
+Students have full hands-on lab suite
+Month 4
+Web search tool + paper summariser + dataset loader
+AI teacher can reference real-world content
+Month 5
+Multi-LLM routing (Claude + Gemini + fast fallback)
+System auto-selects best model per task
+Month 5
+Teacher dashboard + class analytics
+Schools can assign lessons, track progress
+Month 6
+Complete curriculum (10 tracks, 500+ lessons)
+Full AI/CS education programme available
+Month 7
+Project Builder Void + Deploy Void
+Students ship real AI apps
+Month 8
+Certificate system + portfolio generator
+Students have proof of skills for employers
+Phase 3 — Scale (Months 9–18)
+Focus
+Goal
+School partnerships
+10 pilot schools using Yantra in classrooms by month 12
+Mobile app (PWA)
+Students can learn on phones with full Void support
+Custom fine-tuning
+Train Yantra-specific teaching model on platform interaction data
+LMS integrations
+Moodle, Google Classroom, Canvas plugins for institutional adoption
+Community Voids
+Students share and remix their AI projects with others
+Hiring partner API
+Companies search for students by skill, not just grades
+
+
+--- PAGE 15 ---
+
+YANTRA AI — CONFIDENTIAL BUILD PLAN    PAGE 15
+YANTRA AI LEARNING PLATFORM
+yantra.ai    2025–2026
+11 — BUSINESS & GROWTH
+Monetisation & Growth Strategy
+Revenue Stream
+Model
+Target
+Price Point
+School / institution licence
+Annual SaaS per school
+Government & private schools
+■50K–■2L/year per school
+Student premium
+Freemium — free basic, paid advanced
+Individual learners
+■299–■999/month
+Certification
+Per-certificate fee
+Job seekers, career switchers
+■499–■1999 per cert
+API access
+Per-token / per-call
+EdTech companies, devs
+Usage-based
+Employer hiring
+Job board + skill screening
+Companies hiring AI talent
+■10K–■50K per hire
+Government programmes
+CSR / NEP 2020 alignment
+State education boards
+Project-based grant
+Why Now — Market Timing
+India's National Education Policy (NEP 2020) mandates AI and coding in schools from Class 6 onwards. The
+government's PM SHRI scheme is upgrading 14,500 schools with smart classrooms. Every school that gets a
+smartboard needs software to run on it. Globally, the AI education market is projected to reach $47 billion by 2030
+(HolonIQ). Yantra is positioned at the exact intersection of this demand.
+Competitive Advantages
+Advantage
+Why It Matters
+Practice Rooms (Voids)
+No competitor offers browser-based ML training + AI coaching in one place
+Multi-LLM architecture
+Not locked to one provider — cheaper, faster, more resilient
+Smartboard-native
+Designed for classroom hardware from day one, not retrofitted
+India-first pricing
+Priced for Indian schools and students, not just premium markets
+Open curriculum
+Curriculum published openly — builds trust with educators and institutions
+Built by a student
+Authentic voice — Yantra was built by someone who needed it, not a corporation
+
+
+--- PAGE 16 ---
+
+YANTRA AI — CONFIDENTIAL BUILD PLAN    PAGE 16
+YANTRA AI LEARNING PLATFORM
+yantra.ai    2025–2026
+12 — APPENDIX
+References, Glossary & Key APIs
+Key API Endpoints to Integrate
+API
+URL / Package
+Free Tier
+Anthropic Claude
+api.anthropic.com/v1/messages
+Free credits on signup
+Google Gemini
+generativelanguage.googleapis.com
+15 RPM free
+Pyodide (Python WASM)
+cdn.jsdelivr.net/pyodide/v0.27.0/full/
+Completely free CDN
+TensorFlow.js
+cdn.jsdelivr.net/npm/@tensorflow/tfjs
+Completely free
+Monaco Editor
+cdn.jsdelivr.net/npm/monaco-editor
+Completely free
+Serper (web search)
+serper.dev
+2500 free queries/month
+HuggingFace Models
+huggingface.co/api/models
+Free inference API
+Supabase (database)
+supabase.com
+500MB free, 50K MAU
+Research Foundations
+ Vygotsky (1978) — Zone of Proximal Development: keep challenges just above current ability
+ Bloom et al. (1956) — Taxonomy of Educational Objectives: structure learning in 6 levels
+ Ebbinghaus (1885) — Forgetting Curve: space repetition to fight memory decay
+ Sweller (1988) — Cognitive Load Theory: don't overwhelm working memory
+ Bandura (1977) — Self-Efficacy: small wins build confidence that compound over time
+ HolonIQ (2024) — AI in Education Market Report: $47B market by 2030
+ UNESCO (2023) — Generative AI in Education: guidance on safe deployment in classrooms
+Glossary
+Term
+Definition
+Void
+Yantra's name for a Practice Room — a browser-based interactive AI lab
+Orchestrator
+The layer that routes requests to the right LLM or tool
+Skill graph
+A map of all topics and the student's current mastery of each
+RAG
+Retrieval-Augmented Generation — AI retrieves relevant content before answering
+Pyodide
+CPython compiled to WebAssembly — runs real Python inside a browser tab
+System prompt
+Instructions given to an LLM before the conversation to shape its behaviour
+
+
+--- PAGE 17 ---
+
+YANTRA AI — CONFIDENTIAL BUILD PLAN    PAGE 17
+YANTRA AI LEARNING PLATFORM
+yantra.ai    2025–2026
+Term
+Definition
+Spaced repetition
+Reviewing material at increasing intervals to maximise long-term retention
+Fine-tuning
+Training a pre-built LLM on custom data to specialise its behaviour
+WASM
+WebAssembly — binary format that lets non-JavaScript code run in browsers at near-native speed
+ Built with purpose by a 15-year-old who believes every student deserves a great AI teacher. Yantra is open to
+school pilots, developer contributors, and institutional partners. The future of education is not a course — it is a
+ conversation.
+

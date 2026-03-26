@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { motion, useInView, useMotionValue, useSpring } from 'motion/react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { ChatProvider, useChatWidget } from '@/src/components/chat/ChatWidget';
+import { ChatProvider, useChatWidget } from '@/src/features/chat/ChatWidget';
 
 type OverviewCard = {
   label: string;

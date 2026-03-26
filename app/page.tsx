@@ -1,5 +1,5 @@
-import App from '../src/App';
+import MarketingLandingPage from '@/src/features/marketing/MarketingLandingPage';
 
 export default function Page() {
-  return <App />;
+  return <MarketingLandingPage />;
 }

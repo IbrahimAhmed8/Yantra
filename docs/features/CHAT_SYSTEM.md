@@ -12,9 +12,9 @@ It gives the product:
 
 ## Main Files
 
-- client UI: `src/components/chat/ChatWidget.tsx`
+- client UI: `src/features/chat/ChatWidget.tsx`
 - server route: `app/api/chat/route.ts`
-- shared prompt and chat constants: `lib/yantra-chat.ts`
+- shared prompt and chat constants: `src/features/chat/yantra-chat.ts`
 
 ## How It Works
 

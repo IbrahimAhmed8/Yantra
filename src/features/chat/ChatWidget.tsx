@@ -16,7 +16,7 @@ import {
   yantraQuickPrompts,
   yantraWelcomeMessage,
   type YantraChatMessage,
-} from '@/lib/yantra-chat';
+} from '@/src/features/chat/yantra-chat';
 
 type OpenChatOptions = {
   draft?: string;

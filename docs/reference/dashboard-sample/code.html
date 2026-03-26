@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>YANTRA | Student OS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #131313;
+            color: #e2e2e2;
+        }
+        .font-headline { font-family: 'Space Grotesk', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(31, 31, 31, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .text-glow {
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "on-primary": "#1a1c1c",
+                "surface-bright": "#393939",
+                "surface-container-lowest": "#0e0e0e",
+                "outline": "#919191",
+                "surface-container-high": "#2a2a2a",
+                "on-surface": "#e2e2e2",
+                "primary-container": "#d4d4d4",
+                "surface-variant": "#353535",
+                "on-surface-variant": "#c6c6c6",
+                "background": "#131313",
+                "surface": "#131313",
+                "surface-container": "#1f1f1f",
+                "primary": "#ffffff",
+                "surface-container-low": "#1b1b1b",
+                "outline-variant": "#474747",
+              },
+              fontFamily: {
+                "headline": ["Space Grotesk"],
+                "body": ["Inter"],
+                "label": ["Space Grotesk"]
+              },
+              borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface selection:bg-primary selection:text-on-primary">
+<!-- Top Navigation Shell -->
+<nav class="fixed top-0 w-full z-50 bg-surface/60 dark:bg-[#131313]/60 backdrop-blur-xl border-b border-white/10 flex justify-between items-center h-20 px-8 w-full">
+<div class="flex items-center gap-12">
+<span class="text-2xl font-black tracking-tighter text-white uppercase font-headline">YANTRA</span>
+<div class="hidden md:flex items-center gap-8 font-headline font-bold tracking-tight">
+<a class="text-white border-b-2 border-white pb-1" href="#">Overview</a>
+<a class="text-white/50 hover:text-white transition-colors" href="#">Skills</a>
+<a class="text-white/50 hover:text-white transition-colors" href="#">Rooms</a>
+<a class="text-white/50 hover:text-white transition-colors" href="#">Yantra AI</a>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="px-6 py-2.5 bg-primary text-on-primary rounded-full font-headline font-bold text-sm hover:scale-95 transition-all duration-200 uppercase tracking-wider">
+                Open Yantra AI
+            </button>
+<div class="w-10 h-10 rounded-full border border-white/20 overflow-hidden">
+<img alt="Student Avatar" data-alt="close-up portrait of a young man with a focused expression in a minimalist studio setting with soft side lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYIRc0VNKgN_2DhooGf08U--coyUuMqD0RzBQMqyUDgodacJ_EwG_04FpWqYJW3fVTAei02bgrezyuHQm-KLsZOvJZIH6sPb_-RM7GZ3ejvaQFedHTopQZzyrKlIDQoWX73OzV7IeK_BJNrOa537NqqseODu_DO87XefV5KDgfpQrylKiELIKKOaTmLZLhTPbLi-nrjp78snlM-XsUQLak8pzta_u66ZRixTH6BZqXAGdBGY_w5gUAHDvjSRHuyqyvHHkZrdd56wJ6"/>
+</div>
+</div>
+</nav>
+<main class="pt-32 pb-24 px-8 max-w-[1440px] mx-auto space-y-32">
+<!-- Hero Section -->
+<section class="relative flex flex-col md:flex-row justify-between items-end gap-12">
+<div class="max-w-3xl space-y-6">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_8px_white]"></span>
+<span class="font-label uppercase tracking-[0.3em] text-[10px] text-white/40">STUDENT OS // SYSTEM ACTIVE</span>
+</div>
+<h1 class="text-7xl md:text-8xl font-headline font-bold tracking-tighter text-white leading-[0.9]">
+                    Welcome back,<br/>Aarav.
+                </h1>
+<p class="text-xl text-white/50 max-w-xl font-light leading-relaxed">
+                    Yantra tracks your progress, shows what to learn next, and keeps every practice room tied to real outcomes.
+                </p>
+</div>
+<!-- Progress Summary Card -->
+<div class="w-full md:w-80 glass-panel p-8 rounded-lg space-y-6 relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-32 h-32 bg-white/5 blur-3xl -mr-16 -mt-16 group-hover:bg-white/10 transition-colors"></div>
+<div class="space-y-1">
+<p class="font-label uppercase tracking-widest text-[10px] text-white/40">Current Path</p>
+<h3 class="font-headline font-bold text-xl">AI Foundations</h3>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-end">
+<span class="text-4xl font-headline font-bold">65%</span>
+<span class="font-label text-[10px] text-white/60 mb-1">7-DAY STREAK</span>
+</div>
+<div class="h-1 w-full bg-white/10 rounded-full overflow-hidden">
+<div class="h-full bg-white w-[65%] shadow-[0_0_10px_white]"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- 01 Overview Section -->
+<section class="relative">
+<div class="absolute -top-20 -left-10 text-[18rem] font-headline font-black text-white/[0.02] select-none pointer-events-none">01</div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 relative z-10">
+<!-- Stat Cards -->
+<div class="glass-panel p-8 rounded-lg hover:bg-white/[0.04] transition-all duration-500">
+<p class="font-label uppercase tracking-widest text-[10px] text-white/40 mb-4">Current Track</p>
+<p class="text-xl font-headline font-bold text-white">AI Foundations</p>
+</div>
+<div class="glass-panel p-8 rounded-lg hover:bg-white/[0.04] transition-all duration-500">
+<p class="font-label uppercase tracking-widest text-[10px] text-white/40 mb-4">Skills Progress</p>
+<p class="text-xl font-headline font-bold text-white">6/18 concepts</p>
+</div>
+<div class="glass-panel p-8 rounded-lg hover:bg-white/[0.04] transition-all duration-500 border-primary/20 bg-white/[0.02]">
+<p class="font-label uppercase tracking-widest text-[10px] text-white/40 mb-4">Next Session</p>
+<p class="text-xl font-headline font-bold text-white">Neural Networks</p>
+</div>
+<div class="glass-panel p-8 rounded-lg hover:bg-white/[0.04] transition-all duration-500">
+<p class="font-label uppercase tracking-widest text-[10px] text-white/40 mb-4">Weekly Momentum</p>
+<p class="text-xl font-headline font-bold text-white">4 sessions</p>
+</div>
+</div>
+</section>
+<!-- 02 Skills Roadmap Section -->
+<section class="relative space-y-12">
+<div class="absolute -top-24 -left-10 text-[18rem] font-headline font-black text-white/[0.02] select-none pointer-events-none">02</div>
+<div class="flex justify-between items-end relative z-10">
+<h2 class="text-5xl font-headline font-bold tracking-tight text-white">Skill Roadmap</h2>
+<a class="font-label uppercase tracking-widest text-xs text-white/60 hover:text-white transition-colors" href="#">View full syllabus —&gt;</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+<!-- Skill Card 1 -->
+<div class="group glass-panel p-8 rounded-lg space-y-8 border-white/5 hover:border-white/20 transition-all duration-500">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-white/40 group-hover:text-white transition-colors">terminal</span>
+<span class="font-label text-[10px] px-2 py-1 bg-white/10 rounded-full text-white">STRONG</span>
+</div>
+<div>
+<h4 class="text-2xl font-headline font-bold mb-2">Python Basics</h4>
+<div class="flex gap-1">
+<div class="h-1 flex-1 bg-white rounded-full"></div>
+<div class="h-1 flex-1 bg-white rounded-full"></div>
+<div class="h-1 flex-1 bg-white rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Skill Card 2 -->
+<div class="group glass-panel p-8 rounded-lg space-y-8 border-white/10 bg-white/[0.02] hover:border-white/30 transition-all duration-500">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-white/40 group-hover:text-white transition-colors">psychology</span>
+<span class="font-label text-[10px] px-2 py-1 bg-white/20 rounded-full text-white">IN PROGRESS</span>
+</div>
+<div>
+<h4 class="text-2xl font-headline font-bold mb-2">Logic Building</h4>
+<div class="flex gap-1">
+<div class="h-1 flex-1 bg-white rounded-full"></div>
+<div class="h-1 flex-1 bg-white rounded-full"></div>
+<div class="h-1 flex-1 bg-white/10 rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Skill Card 3 -->
+<div class="group glass-panel p-8 rounded-lg space-y-8 border-white/5 hover:border-white/20 transition-all duration-500">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-white/40 group-hover:text-white transition-colors">auto_awesome</span>
+<span class="font-label text-[10px] px-2 py-1 bg-white/10 rounded-full text-white/60 uppercase">Started</span>
+</div>
+<div>
+<h4 class="text-2xl font-headline font-bold mb-2">ML Foundations</h4>
+<div class="flex gap-1">
+<div class="h-1 flex-1 bg-white rounded-full"></div>
+<div class="h-1 flex-1 bg-white/10 rounded-full"></div>
+<div class="h-1 flex-1 bg-white/10 rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Skill Card 4 -->
+<div class="group glass-panel p-8 rounded-lg space-y-8 border-white/5 hover:border-white/20 transition-all duration-500">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-white/40 group-hover:text-white transition-colors">database</span>
+<span class="font-label text-[10px] px-2 py-1 bg-white/10 rounded-full text-white/60">IN PROGRESS</span>
+</div>
+<div>
+<h4 class="text-2xl font-headline font-bold mb-2">Data Handling</h4>
+<div class="flex gap-1">
+<div class="h-1 flex-1 bg-white rounded-full"></div>
+<div class="h-1 flex-1 bg-white/10 rounded-full"></div>
+<div class="h-1 flex-1 bg-white/10 rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Skill Card 5 (Locked) -->
+<div class="group glass-panel p-8 rounded-lg space-y-8 border-white/5 opacity-40 grayscale transition-all duration-500">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined">lock</span>
+<span class="font-label text-[10px] px-2 py-1 bg-white/5 rounded-full text-white/40">LOCKED</span>
+</div>
+<div>
+<h4 class="text-2xl font-headline font-bold mb-2">Neural Networks</h4>
+<div class="flex gap-1">
+<div class="h-1 flex-1 bg-white/5 rounded-full"></div>
+<div class="h-1 flex-1 bg-white/5 rounded-full"></div>
+<div class="h-1 flex-1 bg-white/5 rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Skill Card 6 (Locked) -->
+<div class="group glass-panel p-8 rounded-lg space-y-8 border-white/5 opacity-40 grayscale transition-all duration-500">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined">lock</span>
+<span class="font-label text-[10px] px-2 py-1 bg-white/5 rounded-full text-white/40">LOCKED</span>
+</div>
+<div>
+<h4 class="text-2xl font-headline font-bold mb-2">Prompt Design</h4>
+<div class="flex gap-1">
+<div class="h-1 flex-1 bg-white/5 rounded-full"></div>
+<div class="h-1 flex-1 bg-white/5 rounded-full"></div>
+<div class="h-1 flex-1 bg-white/5 rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 03 Practice Rooms Section -->
+<section class="relative space-y-12">
+<div class="absolute -top-24 -left-10 text-[18rem] font-headline font-black text-white/[0.02] select-none pointer-events-none">03</div>
+<div class="flex justify-between items-end relative z-10">
+<h2 class="text-5xl font-headline font-bold tracking-tight text-white">Practice Rooms</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+<!-- Room Card 1 -->
+<div class="group relative overflow-hidden h-[400px] rounded-lg glass-panel flex flex-col justify-end p-10 hover:border-white/30 transition-all duration-700">
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover opacity-20 group-hover:scale-110 group-hover:opacity-30 transition-all duration-1000" data-alt="abstract digital matrix with neon lines and deep dark void background representting code and programming environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNDUm9XGEBnufgKMj5mnPMz77ZAM79wLfdJJhA4G4vKva1uhzHz9SGVtGbiulJvrP4tec0GDTyo1jbCBfYVA_c7J6sLiEN1MprdItngPHmZX3AE-U4OsKcw7JBKPObTln6lBs2PnCBxb-Ca3SVVUfb-_fTaXNTQYbSeypcd6NFnerjz1c_golcSe480W3MSpJorupDEiR583tk68GafGcbX9GAcOe8h2NbVe-MbPae7TL0and1cIRZ0IqkGV_2uR09unFDzccR5gr8"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
+</div>
+<div class="relative z-10 space-y-4">
+<span class="font-label text-[10px] px-3 py-1 bg-white text-black rounded-full font-bold">AVAILABLE NOW</span>
+<h3 class="text-4xl font-headline font-bold">Python Room</h3>
+<p class="text-white/60 font-light max-w-sm">Immersive sandbox for refining logic and data structure implementation with real-time AI linting.</p>
+<button class="mt-4 px-8 py-4 bg-white/5 hover:bg-white text-white hover:text-black rounded-full font-headline font-bold transition-all duration-300 border border-white/10">Enter Room</button>
+</div>
+</div>
+<!-- Room Card 2 -->
+<div class="group relative overflow-hidden h-[400px] rounded-lg glass-panel flex flex-col justify-end p-10 border-white/20 transition-all duration-700">
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover opacity-20 group-hover:scale-110 group-hover:opacity-40 transition-all duration-1000" data-alt="visual representation of neural networks with glowing nodes and interconnected web of lines in a dark monochromatic setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5y_j84H6TsLW0kAQHc58AHDYPfGcI0k7BOgNJbcecQbx6sg_FGVPYDD2tPcZgpmFN7viyMnI4VmNDMrMl4X-ep5rWgNS4tcuSkpn6ylcQfks2x-quNewE3zcU0P1ayJrplgeh9dA2929avBVf6Kvb6P6b1RzqzqWI3pkgkK8encrCpz4PzSdN-92d4IUo8zao94uAvxPKdpx5DAfG1PPDWlU-AiDNngq3Z2nD-3-Tk_XweNXi41lJxvsL9MUXkyQTWsOyAV-JgupA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
+</div>
+<div class="relative z-10 space-y-4">
+<span class="font-label text-[10px] px-3 py-1 bg-white/20 text-white rounded-full font-bold border border-white/20 backdrop-blur-md">RECOMMENDED NEXT</span>
+<h3 class="text-4xl font-headline font-bold">Neural Net Builder</h3>
+<p class="text-white/60 font-light max-w-sm">Visual node editor to construct and train your first perceptrons and multi-layer networks.</p>
+<button class="mt-4 px-8 py-4 bg-primary text-on-primary rounded-full font-headline font-bold hover:scale-105 transition-all duration-300">Enter Room</button>
+</div>
+</div>
+<!-- Room Card 3 -->
+<div class="group relative overflow-hidden h-[340px] rounded-lg glass-panel flex flex-col justify-end p-10 hover:border-white/20 transition-all duration-700">
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover opacity-10 group-hover:scale-110 transition-all duration-1000" data-alt="clean minimal data visualization dashboard with monochrome line charts and abstract geometric patterns" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBesDlTiEYfHIafvFImiyBJmTM9ZyVOhDLXz3ZMHiiYpdcvKKJhN2PZEvffPAohcZ0pKY5NELwbGweHQUjZHiLOWf2UnzVHTrwKFRP89-i0z5n5HmncRzqhBithkEYFnXi4yZhR2A9hfiLuTJUzsAWrcTCgC8Qj8lLB02FucJe5uHfYYuhqutXfmZX_dVQtTMVV5emnC6Q7J6ctVdDvvrEpaQelRuncFhEV9vBAKq0DA3JaeWhfwRCZ8JhVdOTInUWx6VkjmP-dDAgy"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
+</div>
+<div class="relative z-10 space-y-4">
+<h3 class="text-3xl font-headline font-bold">Data Explorer</h3>
+<p class="text-white/60 font-light max-w-sm">Load datasets and visualize correlations with AI-suggested insights.</p>
+<button class="mt-4 px-6 py-3 bg-white/5 hover:bg-white text-white hover:text-black rounded-full font-headline font-bold transition-all duration-300 border border-white/10 text-sm">Enter Room</button>
+</div>
+</div>
+<!-- Room Card 4 -->
+<div class="group relative overflow-hidden h-[340px] rounded-lg glass-panel flex flex-col justify-end p-10 hover:border-white/20 transition-all duration-700">
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover opacity-10 group-hover:scale-110 transition-all duration-1000" data-alt="ethereal smoky flowing white light against deep black background representing creativity and inspiration" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAgj5NKfCF3yiQPDoT4pVyWkDiwhzZKXLvpsAE_LZsrhsZfJWd4WlcrAWG9q61ZlOkNfL8H2cxE_RvtXJNVws1coqxHV5DiV-2QVTXKGmYbTUrr3CBAmM7kTe0vVe6GcV4EQHNTD2PTIQFIZ_yT0wjsj6pY39LNz3tOW1N0GVsaVjAvq5DklYCxfPnqt01Y_fKjrBQ9fBVyIiWIbLCaf1FbguZTA16YCc4Q5kcDZMqbsho0EAAwGJnVR3J29n_n1DIKr_cyGm4yKGM"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
+</div>
+<div class="relative z-10 space-y-4">
+<h3 class="text-3xl font-headline font-bold">Prompt Lab</h3>
+<p class="text-white/60 font-light max-w-sm">Master the art of prompt engineering for various LLM architectures.</p>
+<button class="mt-4 px-6 py-3 bg-white/5 hover:bg-white text-white hover:text-black rounded-full font-headline font-bold transition-all duration-300 border border-white/10 text-sm">Enter Room</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Yantra AI Panel (Contextual Assistant) -->
+<section class="relative pt-16 border-t border-white/10">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-12">
+<div class="md:col-span-4 space-y-6">
+<div class="flex items-center gap-3">
+<span class="w-3 h-3 rounded-full bg-white shadow-[0_0_12px_white]"></span>
+<h2 class="text-3xl font-headline font-bold text-white tracking-tight uppercase">Yantra AI</h2>
+</div>
+<p class="text-white/50 text-lg leading-relaxed">Your AI teacher for concepts, practice, and next steps. Always active, always context-aware.</p>
+<button class="w-full py-4 border border-white/10 hover:bg-white/5 rounded-full font-headline font-bold uppercase tracking-widest text-xs transition-all duration-300">Open Full AI Chat</button>
+</div>
+<div class="md:col-span-8 glass-panel p-8 rounded-lg space-y-8">
+<div class="space-y-4">
+<p class="font-label uppercase tracking-widest text-[10px] text-white/40">Suggested Commands</p>
+<div class="flex flex-wrap gap-3">
+<button class="px-5 py-3 rounded-full bg-white/5 border border-white/5 hover:border-white/20 hover:bg-white/10 transition-all duration-300 text-sm font-medium">Explain backpropagation simply</button>
+<button class="px-5 py-3 rounded-full bg-white/5 border border-white/5 hover:border-white/20 hover:bg-white/10 transition-all duration-300 text-sm font-medium">What should I learn next?</button>
+<button class="px-5 py-3 rounded-full bg-white/5 border border-white/5 hover:border-white/20 hover:bg-white/10 transition-all duration-300 text-sm font-medium">Open my next room</button>
+</div>
+</div>
+<div class="relative group">
+<div class="absolute inset-0 bg-white/5 blur-xl group-focus-within:bg-white/10 transition-all"></div>
+<div class="relative flex items-center glass-panel rounded-full px-6 py-4 border-white/10 focus-within:border-white/40 transition-all">
+<input class="bg-transparent border-none focus:ring-0 w-full text-white placeholder:text-white/20 font-light" placeholder="Ask Yantra about your progress or a concept..." type="text"/>
+<button class="ml-4 material-symbols-outlined text-white/40 hover:text-white transition-colors">arrow_upward</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="px-8 py-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex items-center gap-8">
+<span class="text-xl font-headline font-black text-white/20 uppercase tracking-tighter">YANTRA</span>
+<div class="flex gap-6 text-[10px] font-label text-white/30 uppercase tracking-[0.2em]">
+<a class="hover:text-white transition-colors" href="#">Privacy</a>
+<a class="hover:text-white transition-colors" href="#">Terms</a>
+<a class="hover:text-white transition-colors" href="#">System Status</a>
+</div>
+</div>
+<div class="text-[10px] font-label text-white/20 uppercase tracking-[0.2em]">
+            © 2024 YANTRA INTELLIGENCE SYSTEMS. ALL RIGHTS RESERVED.
+        </div>
+</footer>
+</body></html>

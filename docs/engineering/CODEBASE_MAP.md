@@ -9,18 +9,24 @@ Yantra/
 |   |-- dashboard/page.tsx
 |   |-- layout.tsx
 |   `-- page.tsx
-|-- lib/
-|   `-- yantra-chat.ts
+|-- docs/
+|   |-- engineering/
+|   |-- features/
+|   |-- handoff/
+|   |-- product/
+|   `-- reference/
 |-- src/
-|   |-- App.tsx
-|   |-- index.css
-|   `-- components/
-|       |-- chat/ChatWidget.tsx
-|       `-- dashboard/StudentDashboard.tsx
+|   |-- features/
+|   |   |-- chat/
+|   |   |   |-- ChatWidget.tsx
+|   |   |   `-- yantra-chat.ts
+|   |   |-- dashboard/StudentDashboard.tsx
+|   |   `-- marketing/MarketingLandingPage.tsx
+|   `-- styles/globals.css
 |-- package.json
 |-- next.config.ts
 |-- tsconfig.json
-`-- docs/
+`-- README.md
 ```
 
 ## Folder Roles
@@ -31,32 +37,31 @@ Yantra/
 - global layout
 - server API route for chat
 
-### `lib/`
+### `src/features/`
 
-- shared configuration and reusable non-UI constants
-- current example: chat model name, prompts, quick actions
+- product-facing feature implementation
+- organized by surface instead of keeping everything flat
 
-### `src/`
+### `src/styles/`
 
-- actual UI implementation
-- landing page still lives in `src/App.tsx`
-- reusable UI/state logic is under `src/components/`
+- global styling and shared theme tokens
 
 ### `docs/`
 
 - product, engineering, reference, and handoff documentation
 - intended to become the onboarding surface for future contributors
 
-## Root-Level Reference And Legacy Items
+## Reference And Legacy Items
 
-These are intentionally left in place for now because you asked not to delete anything without permission:
+Current non-runtime reference assets now live in `docs/reference/`:
 
-- `Dashboard/`
-  sample dashboard design inputs and reference image
-- `Yantra_AI_Build_Plan.pdf`
-  product vision and long-range build plan
-- `tmp_yantra_pdf.txt`
-  extracted text from the build plan PDF
+- `docs/reference/dashboard-sample/`
+  dashboard design inputs and visual references
+- `docs/reference/build-plan/`
+  broader build-plan PDF and extracted text
+
+Legacy/local workspace artifacts still present in the root:
+
 - `dist/`
   likely old build artifact from the previous tooling setup
 - `node_modules_broken/`
@@ -64,9 +69,9 @@ These are intentionally left in place for now because you asked not to delete an
 
 ## Current File-Organization Pain Points
 
-- `src/App.tsx` is too large and currently mixes multiple landing-page sections in one file.
-- Design references and planning artifacts live at the repo root instead of under a dedicated project-docs area.
+- `src/features/marketing/MarketingLandingPage.tsx` is still large and combines multiple landing-page sections in one file.
 - Some old root files are already outside the active Next.js runtime and should be reviewed before cleanup.
+- There are local legacy deletions in the workspace that have not been intentionally resolved yet.
 
 ## Safe Next Organization Steps
 
@@ -76,16 +81,15 @@ These are recommendations only. They are not executed yet.
 
 - keep all new documentation under `docs/`
 - keep new route code in `app/`
-- keep route-specific UI in `src/components/` or future `src/features/`
+- keep route-specific UI in `src/features/`
+- keep global styles in `src/styles/`
 
 ### Cleanup moves that should happen only after approval
 
-- move `Dashboard/` into `docs/reference/dashboard-sample/`
-- move `Yantra_AI_Build_Plan.pdf` into `docs/reference/build-plan/`
-- move `tmp_yantra_pdf.txt` into `docs/reference/build-plan/`
 - review whether `dist/` should be removed from version control
 - review whether `node_modules_broken/` should be removed from the workspace
-- recreate a root `README.md` that points into `docs/`
+- review old deleted legacy files and decide whether to archive, restore, or remove them intentionally
+- split the landing page into smaller files if desired
 
 ## Suggested Future Structure
 
@@ -97,13 +101,11 @@ Yantra/
 |   |-- handoff/
 |   |-- product/
 |   `-- reference/
-|-- lib/
 |-- src/
 |   |-- features/
+|   |   |-- chat/
 |   |   |-- dashboard/
-|   |   |-- marketing/
-|   |   `-- chat/
-|   |-- shared/
+|   |   `-- marketing/
 |   `-- styles/
 `-- public/
 ```
