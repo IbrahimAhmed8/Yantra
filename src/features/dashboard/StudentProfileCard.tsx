@@ -21,6 +21,11 @@ type StudentProfileCardProps = {
   onSave: (profile: StudentProfile) => void;
 };
 
+const profileCardSurfaceClassName =
+  'relative overflow-hidden rounded-[2rem] border border-white/8 bg-white/[0.045] p-8 shadow-[0_24px_72px_rgba(0,0,0,0.24)] backdrop-blur-[28px]';
+const profileCardInputClassName =
+  'w-full rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-white outline-none transition-all focus:border-white/40 focus:bg-white/[0.07] cursor-text';
+
 const StudentProfileCard = forwardRef<StudentProfileCardHandle, StudentProfileCardProps>(function StudentProfileCard(
   { profile, onSave },
   ref,
@@ -70,10 +75,12 @@ const StudentProfileCard = forwardRef<StudentProfileCardHandle, StudentProfileCa
 
   return (
     <section className="group relative lg:col-span-5">
-      <div className="absolute -inset-10 rounded-full bg-white/[0.05] opacity-0 blur-[100px] transition-opacity duration-700 group-hover:opacity-100" />
+      <div className="absolute -inset-10 rounded-full bg-white/[0.06] opacity-0 blur-[110px] transition-opacity duration-700 group-hover:opacity-100" />
 
-      <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 backdrop-blur-[40px]">
+      <div className={profileCardSurfaceClassName}>
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/18 to-transparent" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08)_0%,transparent_52%)]" />
+        <div className="pointer-events-none absolute right-[-16%] top-[-14%] h-36 w-36 rounded-full bg-white/[0.08] blur-[80px]" />
 
         {!isEditing ? (
           <div className="relative space-y-8">
@@ -148,7 +155,7 @@ const StudentProfileCard = forwardRef<StudentProfileCardHandle, StudentProfileCa
                   type="text"
                   value={draft.name}
                   onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
-                  className="w-full rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-white outline-none transition-all focus:border-white/40 cursor-text"
+                  className={profileCardInputClassName}
                 />
               </div>
 
@@ -158,7 +165,7 @@ const StudentProfileCard = forwardRef<StudentProfileCardHandle, StudentProfileCa
                   type="text"
                   value={draft.classDesignation}
                   onChange={(event) => setDraft((current) => ({ ...current, classDesignation: event.target.value }))}
-                  className="w-full rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-white outline-none transition-all focus:border-white/40 cursor-text"
+                  className={profileCardInputClassName}
                 />
               </div>
 
@@ -173,7 +180,7 @@ const StudentProfileCard = forwardRef<StudentProfileCardHandle, StudentProfileCa
                         skillLevel: event.target.value as StudentProfile['skillLevel'],
                       }))
                     }
-                    className="w-full appearance-none rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-white outline-none transition-all focus:border-white/40 cursor-pointer"
+                    className="w-full appearance-none rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-white outline-none transition-all focus:border-white/40 focus:bg-white/[0.07] cursor-pointer"
                   >
                     <option value="Beginner">Beginner</option>
                     <option value="Intermediate">Intermediate</option>
