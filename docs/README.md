@@ -14,6 +14,8 @@ Use it as the first stop before making product, design, or engineering changes.
   Local setup, environment variables, build commands, and Vercel deployment guidance.
 - `engineering/WORKFLOW.md`
   Contribution workflow, documentation expectations, and safe cleanup rules.
+- `engineering/SUPABASE_SETUP.md`
+  First-time Supabase setup, SQL, environment variables, and auth activation steps.
 - `features/MARKETING_SITE.md`
   Breakdown of the public landing page and its current responsibilities.
 - `features/DASHBOARD.md`

@@ -199,6 +199,12 @@ const aiPrompts = [
   'Open my next room',
 ];
 
+type StudentDashboardProps = {
+  fullName: string;
+  firstName: string;
+  email: string;
+};
+
 function SectionShell({
   id,
   number,
@@ -245,7 +251,7 @@ function SectionShell({
   );
 }
 
-function DashboardNav() {
+function DashboardNav({ fullName }: Pick<StudentDashboardProps, 'fullName'>) {
   const { openChat } = useChatWidget();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -310,7 +316,7 @@ function DashboardNav() {
               <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/12 bg-white/[0.06] text-white/70">
                 <UserCircle2 size={16} />
               </div>
-              <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/58">Aarav</div>
+              <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/58">{fullName}</div>
             </Link>
           </div>
 
@@ -388,7 +394,7 @@ function DashboardNav() {
   );
 }
 
-function HeroSection() {
+function HeroSection({ firstName }: Pick<StudentDashboardProps, 'firstName'>) {
   const { openChat } = useChatWidget();
   const statRef = useRef<HTMLDivElement>(null);
   const statInView = useInView(statRef, { once: true, margin: '-60px' });
@@ -410,7 +416,7 @@ function HeroSection() {
           <h1 className="max-w-4xl font-display text-[3.8rem] font-semibold leading-[0.9] tracking-tight text-white sm:text-[5rem] md:text-[7rem]">
             Welcome back,
             <br />
-            Aarav.
+            {firstName}.
           </h1>
 
           <p className="max-w-2xl text-lg font-light leading-relaxed text-white/56 md:text-[1.35rem]">
@@ -1039,14 +1045,14 @@ function DashboardFooter() {
   );
 }
 
-function DashboardExperience() {
+function DashboardExperience({ fullName, firstName }: StudentDashboardProps) {
   return (
     <div className="relative min-h-screen bg-black text-white">
       <YantraAmbientBackground />
-      <DashboardNav />
+      <DashboardNav fullName={fullName} />
 
       <main className="mx-auto flex w-full max-w-[1440px] flex-col gap-24 px-5 pb-20 md:gap-32 md:px-8 md:pb-24">
-        <HeroSection />
+        <HeroSection firstName={firstName} />
         <OverviewSection />
         <SkillsSection />
         <RoomsSection />
@@ -1058,10 +1064,10 @@ function DashboardExperience() {
   );
 }
 
-export default function StudentDashboard() {
+export default function StudentDashboard({ fullName, firstName, email }: StudentDashboardProps) {
   return (
     <ChatProvider>
-      <DashboardExperience />
+      <DashboardExperience fullName={fullName || email || 'Yantra Learner'} firstName={firstName || 'Learner'} email={email} />
     </ChatProvider>
   );
 }

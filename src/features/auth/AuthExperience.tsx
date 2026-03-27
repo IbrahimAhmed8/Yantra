@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import {
   ArrowRight,
@@ -12,6 +13,7 @@ import {
   Waypoints,
 } from 'lucide-react';
 import { useState, type FormEvent, type ReactNode } from 'react';
+import { createClient as createSupabaseBrowserClient } from '@/src/lib/supabase/client';
 
 type AuthMode = 'login' | 'signup';
 
@@ -40,7 +42,7 @@ const authContent = {
     helper: 'Return to your dashboard',
     chips: ['AI-guided', 'Private dashboard', 'Secure access'],
     footer: 'SECURE AUTHENTICATION GATEWAY — TERMINAL 01-B',
-    ghostCta: 'View dashboard preview',
+    ghostCta: 'Back to platform',
   },
   signup: {
     eyebrow: 'EARLY ACCESS / ACCOUNT CREATION',
@@ -186,8 +188,17 @@ function AuthInput({
   );
 }
 
-export default function AuthExperience({ mode }: { mode: AuthMode }) {
+export default function AuthExperience({
+  mode,
+  initialStatus = null,
+  supabaseConfigured,
+}: {
+  mode: AuthMode;
+  initialStatus?: AuthStatus;
+  supabaseConfigured: boolean;
+}) {
   const content = authContent[mode];
+  const router = useRouter();
   const [fields, setFields] = useState<AuthFields>({
     fullName: '',
     email: '',
@@ -198,7 +209,8 @@ export default function AuthExperience({ mode }: { mode: AuthMode }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof AuthFields, string>>>({});
-  const [status, setStatus] = useState<AuthStatus>(null);
+  const [status, setStatus] = useState<AuthStatus>(initialStatus);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const updateField = <K extends keyof AuthFields>(key: K, value: AuthFields[K]) => {
     setFields((current) => ({
@@ -235,7 +247,7 @@ export default function AuthExperience({ mode }: { mode: AuthMode }) {
     return nextErrors;
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const nextErrors = validate();
@@ -249,13 +261,69 @@ export default function AuthExperience({ mode }: { mode: AuthMode }) {
       return;
     }
 
-    setStatus({
-      kind: 'success',
-      message:
-        mode === 'login'
-          ? 'Preview mode only. Sign-in wiring comes next, but the flow and validation are now ready for backend connection.'
-          : 'Preview mode only. Account creation UI is ready, and Supabase wiring can be added next without redesigning this flow.',
-    });
+    if (!supabaseConfigured) {
+      setStatus({
+        kind: 'error',
+        message: 'Supabase is not configured yet. Add your Supabase URL and anon key to activate auth.',
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const supabase = createSupabaseBrowserClient();
+
+      if (mode === 'login') {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: fields.email.trim(),
+          password: fields.password,
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        router.replace('/dashboard');
+        router.refresh();
+        return;
+      }
+
+      const redirectTo = `${window.location.origin}/auth/confirm?next=/dashboard`;
+      const { data, error } = await supabase.auth.signUp({
+        email: fields.email.trim(),
+        password: fields.password,
+        options: {
+          emailRedirectTo: redirectTo,
+          data: {
+            full_name: fields.fullName.trim(),
+          },
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data.session) {
+        router.replace('/dashboard');
+        router.refresh();
+        return;
+      }
+
+      setStatus({
+        kind: 'success',
+        message:
+          'Account created. Check your email for the confirmation link, then come back and log in to enter Yantra.',
+      });
+    } catch (error) {
+      setStatus({
+        kind: 'error',
+        message: error instanceof Error ? error.message : 'Yantra could not complete authentication right now.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleForgotPassword = () => {
@@ -268,7 +336,7 @@ export default function AuthExperience({ mode }: { mode: AuthMode }) {
   const handleGooglePreview = () => {
     setStatus({
       kind: 'info',
-      message: 'Google sign-in is shown as a design placeholder right now. No external auth provider is connected in this phase.',
+      message: 'Google sign-in is not wired yet in this pass. Email and password auth is now live through Supabase.',
     });
   };
 
@@ -382,7 +450,9 @@ export default function AuthExperience({ mode }: { mode: AuthMode }) {
               <div className="mb-6 md:mb-8">
                 <p className="font-display text-[2rem] font-medium tracking-tight text-white md:text-3xl">{content.helper}</p>
                 <p className="mt-2 max-w-md text-[13px] leading-relaxed text-white/50 md:text-sm">
-                  This is a frontend-first auth surface with validation and state previews only. Real account wiring comes in the next backend phase.
+                  {supabaseConfigured
+                    ? 'This access layer is now connected to Supabase with session cookies, protected routes, and a synced student profile record.'
+                    : 'This auth surface is ready, but it still needs your Supabase project URL and anon key before sign-in can go live.'}
                 </p>
               </div>
 
@@ -493,16 +563,23 @@ export default function AuthExperience({ mode }: { mode: AuthMode }) {
                 <div className="space-y-5 pt-2">
                   <button
                     type="submit"
-                    className="hoverable flex h-14 w-full items-center justify-center gap-2 rounded-[1.2rem] bg-white font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-black transition-all duration-300 hover:scale-[0.99]"
+                    disabled={isSubmitting || !supabaseConfigured}
+                    className="hoverable flex h-14 w-full items-center justify-center gap-2 rounded-[1.2rem] bg-white font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-black transition-all duration-300 hover:scale-[0.99] disabled:cursor-not-allowed disabled:bg-white/35"
                   >
-                    <span>{content.kicker}</span>
+                    <span>
+                      {isSubmitting
+                        ? mode === 'login'
+                          ? 'Signing in...'
+                          : 'Creating account...'
+                        : content.kicker}
+                    </span>
                     <ArrowRight size={15} />
                   </button>
 
                   <div className="flex items-center justify-between gap-4 text-[10px] uppercase tracking-[0.2em] text-white/34">
-                    <span className="font-mono">{mode === 'login' ? 'Preview flow active' : 'UI-first account flow'}</span>
+                    <span className="font-mono">{mode === 'login' ? 'Secure session flow' : 'Email verification ready'}</span>
                     <Link
-                      href={mode === 'login' ? '/dashboard' : '/'}
+                      href="/"
                       className="hoverable font-mono text-white/54 transition-colors hover:text-white"
                     >
                       {content.ghostCta}

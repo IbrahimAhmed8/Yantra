@@ -2,14 +2,7 @@
 
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { BadgeCheck, PencilLine, School } from 'lucide-react';
-
-export type StudentProfile = {
-  name: string;
-  classDesignation: string;
-  skillLevel: 'Beginner' | 'Intermediate' | 'Advanced';
-  progress: number;
-  academicYear: string;
-};
+import { type StudentProfile } from './student-profile-model';
 
 export type StudentProfileCardHandle = {
   openEditor: () => void;
@@ -18,7 +11,7 @@ export type StudentProfileCardHandle = {
 
 type StudentProfileCardProps = {
   profile: StudentProfile;
-  onSave: (profile: StudentProfile) => void;
+  onSave: (profile: StudentProfile) => Promise<void> | void;
 };
 
 const profileCardSurfaceClassName =
@@ -32,6 +25,7 @@ const StudentProfileCard = forwardRef<StudentProfileCardHandle, StudentProfileCa
 ) {
   const [draft, setDraft] = useState<StudentProfile>(profile);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     setDraft(profile);
@@ -60,15 +54,21 @@ const StudentProfileCard = forwardRef<StudentProfileCardHandle, StudentProfileCa
     setIsEditing((current) => !current);
   };
 
-  const handleSaveProfile = () => {
+  const handleSaveProfile = async () => {
     const nextProfile = {
       ...draft,
       progress: Math.max(0, Math.min(100, draft.progress)),
     };
 
-    setDraft(nextProfile);
-    setIsEditing(false);
-    onSave(nextProfile);
+    setIsSaving(true);
+
+    try {
+      await onSave(nextProfile);
+      setDraft(nextProfile);
+      setIsEditing(false);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const studentInitial = profile.name.trim().charAt(0).toUpperCase() || 'A';
@@ -208,15 +208,17 @@ const StudentProfileCard = forwardRef<StudentProfileCardHandle, StudentProfileCa
             <div className="flex flex-col gap-3 pt-6">
               <button
                 type="button"
-                className="w-full rounded-[1.5rem] bg-white py-4 font-semibold text-black transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                className="w-full rounded-[1.5rem] bg-white py-4 font-semibold text-black transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-white/45 cursor-pointer"
                 onClick={handleSaveProfile}
+                disabled={isSaving}
               >
-                Save Profile
+                {isSaving ? 'Saving Profile...' : 'Save Profile'}
               </button>
               <button
                 type="button"
                 className="w-full rounded-[1.5rem] border border-white/10 bg-white/[0.05] py-4 font-semibold text-white transition-all duration-300 hover:bg-white/[0.1] cursor-pointer"
                 onClick={handleToggleEdit}
+                disabled={isSaving}
               >
                 Cancel
               </button>

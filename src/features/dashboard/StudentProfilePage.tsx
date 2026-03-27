@@ -21,11 +21,9 @@ import {
   Users,
   type LucideIcon,
 } from 'lucide-react';
-import StudentProfileCard, {
-  type StudentProfile,
-  type StudentProfileCardHandle,
-} from './StudentProfileCard';
+import StudentProfileCard, { type StudentProfileCardHandle } from './StudentProfileCard';
 import YantraAmbientBackground from './YantraAmbientBackground';
+import { defaultStudentProfile, type StudentProfile } from './student-profile-model';
 
 type NavItem = {
   label: string;
@@ -61,16 +59,11 @@ type CurriculumItem = {
 type ActiveSection = 'overview' | 'roster' | 'curriculum' | 'performance' | 'help';
 
 type PanelKey = 'notifications' | 'settings' | 'help' | 'roster' | null;
-
-const initialProfile: StudentProfile = {
-  name: 'Aarav Sharma',
-  classDesignation: 'Class 10',
-  skillLevel: 'Intermediate',
-  progress: 65,
-  academicYear: '2024',
+type StudentProfilePageProps = {
+  initialProfileData: StudentProfile;
+  defaultProfileData: StudentProfile;
 };
 
-const STUDENT_PROFILE_STORAGE_KEY = 'yantra.student-profile.v1';
 const PROFILE_SECTION_ID = 'profile-overview';
 const ROSTER_SECTION_ID = 'student-roster';
 const PERFORMANCE_SECTION_ID = 'performance-insights';
@@ -92,13 +85,13 @@ const sideNavItems: NavItem[] = [
 
 const supportNavItems: NavItem[] = [
   { label: 'Help', icon: HelpCircle, action: 'help' },
-  { label: 'Logout', icon: LogOut, href: '/' },
+  { label: 'Logout', icon: LogOut, href: '/auth/signout' },
 ];
 
 const helpFaqs = [
   {
     question: 'How do I edit my profile?',
-    answer: 'Open the profile overview card, choose Edit Profile, update your details, and press save. Your latest saved version stays in this browser.',
+    answer: 'Open the profile overview card, choose Edit Profile, update your details, and press save. Your latest record syncs to your Yantra account.',
   },
   {
     question: 'What does skill level mean?',
@@ -106,7 +99,7 @@ const helpFaqs = [
   },
   {
     question: 'Does my progress save automatically?',
-    answer: 'Profile edits save when you press the save button. The latest saved version is stored locally in your browser until it is reset.',
+    answer: 'Profile edits save when you press the save button. The latest saved version is stored on your Yantra account and follows your session.',
   },
   {
     question: 'Where can I review my curriculum and performance?',
@@ -175,36 +168,6 @@ const profileInsetCardClassName = 'rounded-[1.75rem] border border-white/8 bg-wh
 const profilePanelCardClassName = 'rounded-2xl border border-white/8 bg-white/[0.04] p-4';
 const profileActionButtonClassName =
   'rounded-full border border-white/12 bg-white/[0.05] px-5 py-3 font-semibold text-white transition-colors hover:bg-white/[0.09] cursor-pointer';
-
-function isSkillLevel(value: unknown): value is StudentProfile['skillLevel'] {
-  return value === 'Beginner' || value === 'Intermediate' || value === 'Advanced';
-}
-
-function normalizeStoredProfile(value: unknown): StudentProfile | null {
-  if (!value || typeof value !== 'object') {
-    return null;
-  }
-
-  const candidate = value as Partial<StudentProfile>;
-
-  if (
-    typeof candidate.name !== 'string' ||
-    typeof candidate.classDesignation !== 'string' ||
-    typeof candidate.academicYear !== 'string' ||
-    typeof candidate.progress !== 'number' ||
-    !isSkillLevel(candidate.skillLevel)
-  ) {
-    return null;
-  }
-
-  return {
-    name: candidate.name,
-    classDesignation: candidate.classDesignation,
-    academicYear: candidate.academicYear,
-    skillLevel: candidate.skillLevel,
-    progress: Math.max(0, Math.min(100, candidate.progress)),
-  };
-}
 
 function PanelShell({
   title,
@@ -465,30 +428,24 @@ function PerformanceSection() {
   );
 }
 
-export default function StudentProfilePage() {
-  const [profile, setProfile] = useState<StudentProfile>(initialProfile);
+export default function StudentProfilePage({
+  initialProfileData,
+  defaultProfileData,
+}: StudentProfilePageProps) {
+  const [profile, setProfile] = useState<StudentProfile>(initialProfileData);
+  const [defaultProfileState, setDefaultProfileState] = useState<StudentProfile>(defaultProfileData);
   const [activePanel, setActivePanel] = useState<PanelKey>(null);
   const [activeSection, setActiveSection] = useState<ActiveSection>('overview');
   const [statusMessage, setStatusMessage] = useState('');
   const profileCardRef = useRef<StudentProfileCardHandle>(null);
 
   useEffect(() => {
-    try {
-      const storedValue = window.localStorage.getItem(STUDENT_PROFILE_STORAGE_KEY);
-      if (!storedValue) {
-        return;
-      }
+    setProfile(initialProfileData);
+  }, [initialProfileData]);
 
-      const parsedValue = JSON.parse(storedValue);
-      const normalizedProfile = normalizeStoredProfile(parsedValue);
-
-      if (normalizedProfile) {
-        setProfile(normalizedProfile);
-      }
-    } catch {
-      window.localStorage.removeItem(STUDENT_PROFILE_STORAGE_KEY);
-    }
-  }, []);
+  useEffect(() => {
+    setDefaultProfileState(defaultProfileData);
+  }, [defaultProfileData]);
 
   useEffect(() => {
     if (!statusMessage) {
@@ -504,6 +461,40 @@ export default function StudentProfilePage() {
 
   const showStatusMessage = (message: string) => {
     setStatusMessage(message);
+  };
+
+  const persistProfile = async (nextProfile: StudentProfile, successMessage: string) => {
+    const response = await fetch('/api/profile', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(nextProfile),
+    });
+
+    const payload = (await response.json()) as {
+      error?: string;
+      profile?: StudentProfile;
+      defaultProfile?: StudentProfile;
+    };
+
+    if (!response.ok || !payload.profile) {
+      if (response.status === 401) {
+        window.location.href = '/login?message=Your%20session%20expired.%20Please%20log%20in%20again.&kind=error';
+      }
+
+      throw new Error(payload.error || 'Yantra could not save the student profile right now.');
+    }
+
+    setProfile(payload.profile);
+
+    if (payload.defaultProfile) {
+      setDefaultProfileState(payload.defaultProfile);
+    }
+
+    setActivePanel(null);
+    setActiveSection('overview');
+    showStatusMessage(successMessage);
   };
 
   const scrollToSection = (sectionId: string) => {
@@ -572,12 +563,13 @@ export default function StudentProfilePage() {
     openRosterView();
   };
 
-  const handleSaveProfile = (nextProfile: StudentProfile) => {
-    setProfile(nextProfile);
-    window.localStorage.setItem(STUDENT_PROFILE_STORAGE_KEY, JSON.stringify(nextProfile));
-    setActivePanel(null);
-    setActiveSection('overview');
-    showStatusMessage('Student profile saved to this browser.');
+  const handleSaveProfile = async (nextProfile: StudentProfile) => {
+    try {
+      await persistProfile(nextProfile, 'Student profile saved to your Yantra account.');
+    } catch (error) {
+      showStatusMessage(error instanceof Error ? error.message : 'Yantra could not save the current profile.');
+      throw error;
+    }
   };
 
   return (
@@ -703,17 +695,17 @@ export default function StudentProfilePage() {
           <button
             type="button"
             className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-left transition-colors hover:bg-white/[0.08] cursor-pointer"
-            onClick={() => {
-              setProfile(initialProfile);
-              profileCardRef.current?.closeEditor();
-              window.localStorage.removeItem(STUDENT_PROFILE_STORAGE_KEY);
-              setActivePanel(null);
-              setActiveSection('overview');
-              showStatusMessage('Profile reset to the default record.');
+            onClick={async () => {
+              try {
+                await persistProfile(defaultProfileState || defaultStudentProfile, 'Profile reset to the default record.');
+                profileCardRef.current?.closeEditor();
+              } catch (error) {
+                showStatusMessage(error instanceof Error ? error.message : 'Yantra could not reset the current profile.');
+              }
             }}
           >
             <div className="font-display text-lg font-medium text-white">Reset profile</div>
-            <div className="mt-1 text-sm text-white/52">Clear saved browser data and restore the original record.</div>
+            <div className="mt-1 text-sm text-white/52">Restore the default student record saved for this account.</div>
           </button>
 
           <Link
@@ -804,7 +796,7 @@ export default function StudentProfilePage() {
                 </div>
                 <div className="rounded-[1.25rem] border border-white/8 bg-white/[0.03] p-4">
                   <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/36">Profile Storage</div>
-                  <div className="mt-2 text-sm text-white">Saved in this browser</div>
+                  <div className="mt-2 text-sm text-white">Saved to Yantra cloud</div>
                 </div>
               </div>
 
@@ -985,7 +977,7 @@ export default function StudentProfilePage() {
               Back to Dashboard
             </Link>
             <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/34">
-              Student record edits now persist in this browser until reset.
+              Student record edits now sync to your Yantra account.
             </div>
           </div>
         </div>
