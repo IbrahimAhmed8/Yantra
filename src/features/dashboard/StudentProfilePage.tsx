@@ -23,6 +23,7 @@ import {
 import StudentProfileCard, { type StudentProfileCardHandle } from './StudentProfileCard';
 import YantraAmbientBackground from './YantraAmbientBackground';
 import { defaultStudentProfile, type StudentProfile } from './student-profile-model';
+import { startRouteTransition } from '@/src/features/motion/ExperienceProvider';
 
 type NavItem = {
   label: string;
@@ -441,6 +442,7 @@ export default function StudentProfilePage({
 
     if (!response.ok || !payload.profile) {
       if (response.status === 401) {
+        startRouteTransition({ href: '/login', label: 'Returning to Login' });
         window.location.href = '/login?message=Your%20session%20expired.%20Please%20log%20in%20again.&kind=error';
       }
 

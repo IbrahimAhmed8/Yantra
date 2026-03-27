@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { createClient as createSupabaseBrowserClient } from '@/src/lib/supabase/client';
+import { startRouteTransition } from '@/src/features/motion/ExperienceProvider';
 
 type AuthMode = 'login' | 'signup';
 
@@ -408,6 +409,7 @@ export default function AuthExperience({
           throw error;
         }
 
+        startRouteTransition({ href: '/dashboard', label: 'Opening Dashboard' });
         router.replace('/dashboard');
         router.refresh();
         return;
@@ -430,6 +432,7 @@ export default function AuthExperience({
       }
 
       if (data.session) {
+        startRouteTransition({ href: '/dashboard', label: 'Opening Dashboard' });
         router.replace('/dashboard');
         router.refresh();
         return;

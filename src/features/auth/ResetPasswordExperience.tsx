@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import { ArrowRight, CheckCircle2, Eye, EyeOff, Orbit, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { startRouteTransition } from '@/src/features/motion/ExperienceProvider';
 import { createClient as createSupabaseBrowserClient, createTransientClient } from '@/src/lib/supabase/client';
 
 type ResetStatus =
@@ -262,6 +263,7 @@ export default function ResetPasswordExperience({ supabaseConfigured }: { supaba
       }
 
       await supabase.auth.signOut();
+      startRouteTransition({ href: '/login', label: 'Returning to Login' });
       router.replace('/login?message=Access%20key%20rotated.%20Log%20in%20with%20your%20new%20password.&kind=success');
       router.refresh();
     } catch (error) {
