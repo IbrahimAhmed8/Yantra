@@ -9,6 +9,9 @@ create table if not exists public.profiles (
   progress integer not null default 0 check (progress >= 0 and progress <= 100),
   academic_year text not null default to_char(now(), 'YYYY'),
   user_role text,
+  age_range text,
+  primary_learning_goals text[] not null default '{}'::text[],
+  learning_pace text,
   onboarding_completed boolean not null default false,
   onboarding_completed_at timestamptz,
   created_at timestamptz not null default timezone('utc', now()),
@@ -17,17 +20,28 @@ create table if not exists public.profiles (
 
 alter table public.profiles
   add column if not exists user_role text,
+  add column if not exists age_range text,
+  add column if not exists primary_learning_goals text[] default '{}'::text[],
+  add column if not exists learning_pace text,
   add column if not exists onboarding_completed boolean default false,
   add column if not exists onboarding_completed_at timestamptz;
 
 update public.profiles
 set onboarding_completed = coalesce(onboarding_completed, false);
 
+update public.profiles
+set primary_learning_goals = coalesce(primary_learning_goals, '{}'::text[]);
+
 alter table public.profiles
+  alter column primary_learning_goals set default '{}'::text[],
+  alter column primary_learning_goals set not null,
   alter column onboarding_completed set default false,
   alter column onboarding_completed set not null;
 
 alter table public.profiles drop constraint if exists profiles_user_role_check;
+alter table public.profiles drop constraint if exists profiles_age_range_check;
+alter table public.profiles drop constraint if exists profiles_learning_pace_check;
+alter table public.profiles drop constraint if exists profiles_primary_learning_goals_check;
 
 alter table public.profiles
   add constraint profiles_user_role_check
@@ -39,8 +53,43 @@ alter table public.profiles
       'Self-Learner (Any Age)',
       'Teacher / Educator',
       'Institution / School',
-      'Hiring Company'
+      'Hiring Company',
+      'School Student (Class 8-12)',
+      'College Student (Undergraduate)',
+      'Graduate / Postgraduate (I have a degree)',
+      'Working Professional'
     )
+  );
+
+alter table public.profiles
+  add constraint profiles_age_range_check
+  check (
+    age_range is null
+    or age_range in ('Under 16', '16-18', '19-22', '23-28', '29+')
+  );
+
+alter table public.profiles
+  add constraint profiles_learning_pace_check
+  check (
+    learning_pace is null
+    or learning_pace in ('Light', 'Focused', 'Intensive')
+  );
+
+alter table public.profiles
+  add constraint profiles_primary_learning_goals_check
+  check (
+    primary_learning_goals <@ array[
+      'Artificial Intelligence & ML',
+      'Web Development',
+      'App Development',
+      'Data Science & Analytics',
+      'Cloud & DevOps',
+      'Cybersecurity',
+      'UI/UX Design',
+      'Digital Marketing',
+      'Entrepreneurship & Startups'
+    ]::text[]
+    and cardinality(primary_learning_goals) <= 3
   );
 
 create or replace function public.set_profiles_updated_at()

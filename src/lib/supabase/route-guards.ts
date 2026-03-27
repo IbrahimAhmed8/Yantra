@@ -28,7 +28,13 @@ export async function redirectAuthenticatedUserToApp() {
   const result = await getAuthenticatedProfile();
 
   if (result) {
-    redirect(result.supportsOnboardingSchema ? getAuthenticatedAppPath(result.profile) : '/dashboard');
+    redirect(
+      result.supportsOnboardingSchema
+        ? getAuthenticatedAppPath(result.profile, {
+            requireProfileDetails: result.supportsEnhancedOnboardingSchema,
+          })
+        : '/dashboard',
+    );
   }
 
   return null;
@@ -37,7 +43,7 @@ export async function redirectAuthenticatedUserToApp() {
 export async function requireAuthenticatedProfile({
   unauthenticatedRedirect,
   requireOnboarding = false,
-  onboardingRedirect = '/onboarding?message=Choose%20your%20Yantra%20role%20before%20continuing.&kind=info',
+  onboardingRedirect = '/onboarding?message=Complete%20your%20Yantra%20onboarding%20before%20continuing.&kind=info',
   supabaseRedirect,
 }: RequireAuthenticatedProfileOptions): Promise<AuthenticatedProfileResult> {
   requireSupabaseConfigured(supabaseRedirect);
@@ -48,7 +54,13 @@ export async function requireAuthenticatedProfile({
     redirect(unauthenticatedRedirect);
   }
 
-  if (requireOnboarding && result.supportsOnboardingSchema && !isOnboardingComplete(result.profile)) {
+  if (
+    requireOnboarding &&
+    result.supportsOnboardingSchema &&
+    !isOnboardingComplete(result.profile, {
+      requireProfileDetails: result.supportsEnhancedOnboardingSchema,
+    })
+  ) {
     redirect(onboardingRedirect);
   }
 

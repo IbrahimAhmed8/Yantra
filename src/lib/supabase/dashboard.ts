@@ -130,6 +130,17 @@ function isMissingDashboardSchemaError(error: unknown) {
   );
 }
 
+function isDashboardAccessError(error: unknown) {
+  const code = getErrorCode(error);
+  const message = getErrorMessage(error);
+
+  return code === '42501' || message.includes('permission denied') || message.includes('row-level security');
+}
+
+function isRecoverableDashboardError(error: unknown) {
+  return isMissingDashboardSchemaError(error) || isDashboardAccessError(error);
+}
+
 function mapPathRow(row: DashboardPathRow): StudentDashboardPath {
   return {
     pathTitle: row.path_title,
@@ -346,7 +357,7 @@ async function seedDashboardData(userId: string) {
     return true;
   }
 
-  if (isMissingDashboardSchemaError(error)) {
+  if (isRecoverableDashboardError(error)) {
     return false;
   }
 
@@ -380,7 +391,7 @@ export async function getAuthenticatedDashboardData() {
   const initialLoad = await loadDashboardRows(profileResult.user.id);
 
   if (initialLoad.error) {
-    if (isMissingDashboardSchemaError(initialLoad.error)) {
+    if (isRecoverableDashboardError(initialLoad.error)) {
       return fallback;
     }
 
@@ -399,7 +410,7 @@ export async function getAuthenticatedDashboardData() {
     const reloaded = await loadDashboardRows(profileResult.user.id);
 
     if (reloaded.error) {
-      if (isMissingDashboardSchemaError(reloaded.error)) {
+      if (isRecoverableDashboardError(reloaded.error)) {
         return fallback;
       }
 

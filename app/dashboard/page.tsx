@@ -6,7 +6,7 @@ export default async function DashboardPage() {
   await requireAuthenticatedProfile({
     unauthenticatedRedirect: '/login?message=Log%20in%20to%20open%20your%20dashboard.&kind=info',
     requireOnboarding: true,
-    onboardingRedirect: '/onboarding?message=Choose%20your%20Yantra%20role%20before%20entering%20the%20dashboard.&kind=info',
+    onboardingRedirect: '/onboarding?message=Complete%20your%20Yantra%20onboarding%20before%20entering%20the%20dashboard.&kind=info',
   });
 
   const result = await getAuthenticatedDashboardData();

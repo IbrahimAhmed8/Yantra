@@ -4,6 +4,7 @@ import Lenis from 'lenis';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'motion/react';
 import {
+  Suspense,
   createContext,
   Suspense,
   useCallback,

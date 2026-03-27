@@ -24,7 +24,11 @@ export default async function OnboardingPage({ searchParams }: OnboardingPagePro
     redirect('/dashboard');
   }
 
-  if (isOnboardingComplete(result.profile)) {
+  if (
+    isOnboardingComplete(result.profile, {
+      requireProfileDetails: result.supportsEnhancedOnboardingSchema,
+    })
+  ) {
     redirect('/dashboard');
   }
 

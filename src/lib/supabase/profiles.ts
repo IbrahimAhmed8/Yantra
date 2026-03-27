@@ -1,13 +1,16 @@
 import type { User } from '@supabase/supabase-js';
 import {
   defaultStudentProfile,
+  normalizeAgeRange,
+  normalizeLearningPace,
+  normalizePrimaryLearningGoals,
   normalizeUserRole,
   sanitizeStudentProfile,
   type StudentProfile,
 } from '@/src/features/dashboard/student-profile-model';
 import { createClient } from './server';
 
-type ProfileRow = {
+type EnhancedProfileRow = {
   id: string;
   email: string | null;
   full_name: string | null;
@@ -16,13 +19,24 @@ type ProfileRow = {
   progress: number | null;
   academic_year: string | null;
   user_role: string | null;
+  age_range: string | null;
+  primary_learning_goals: string[] | null;
+  learning_pace: string | null;
   onboarding_completed: boolean | null;
   onboarding_completed_at: string | null;
   created_at?: string | null;
   updated_at?: string | null;
 };
 
-type LegacyProfileRow = Omit<ProfileRow, 'user_role' | 'onboarding_completed' | 'onboarding_completed_at'>;
+type OnboardingProfileRow = Omit<
+  EnhancedProfileRow,
+  'age_range' | 'primary_learning_goals' | 'learning_pace'
+>;
+
+type LegacyProfileRow = Omit<
+  EnhancedProfileRow,
+  'user_role' | 'age_range' | 'primary_learning_goals' | 'learning_pace' | 'onboarding_completed' | 'onboarding_completed_at'
+>;
 
 function deriveFullName(user: User) {
   const metadataName =
@@ -57,12 +71,15 @@ function buildDefaultStudentProfileForUserContext(user: User, profile: StudentPr
   return sanitizeStudentProfile({
     ...defaultProfile,
     userRole: profile.userRole,
+    ageRange: profile.ageRange,
+    primaryLearningGoals: profile.primaryLearningGoals,
+    learningPace: profile.learningPace,
     onboardingCompleted: profile.onboardingCompleted,
     onboardingCompletedAt: profile.onboardingCompletedAt,
   });
 }
 
-function mapProfileRowToStudentProfile(row: ProfileRow | null, user: User) {
+function mapProfileRowToStudentProfile(row: Partial<EnhancedProfileRow> | null, user: User) {
   const seededProfile = buildDefaultStudentProfile(user);
 
   if (!row) {
@@ -76,12 +93,41 @@ function mapProfileRowToStudentProfile(row: ProfileRow | null, user: User) {
     progress: typeof row.progress === 'number' ? row.progress : seededProfile.progress,
     academicYear: row.academic_year || seededProfile.academicYear,
     userRole: normalizeUserRole(row.user_role),
+    ageRange: normalizeAgeRange(row.age_range),
+    primaryLearningGoals: normalizePrimaryLearningGoals(row.primary_learning_goals),
+    learningPace: normalizeLearningPace(row.learning_pace),
     onboardingCompleted: Boolean(row.onboarding_completed),
-    onboardingCompletedAt: row.onboarding_completed_at,
+    onboardingCompletedAt: row.onboarding_completed_at ?? null,
   });
 }
 
-function mapStudentProfileToRow(user: User, profile: StudentProfile): Omit<ProfileRow, 'created_at' | 'updated_at'> {
+function mapStudentProfileToEnhancedRow(
+  user: User,
+  profile: StudentProfile,
+): Omit<EnhancedProfileRow, 'created_at' | 'updated_at'> {
+  const safeProfile = sanitizeStudentProfile(profile);
+
+  return {
+    id: user.id,
+    email: user.email ?? null,
+    full_name: safeProfile.name,
+    class_designation: safeProfile.classDesignation,
+    skill_level: safeProfile.skillLevel,
+    progress: safeProfile.progress,
+    academic_year: safeProfile.academicYear,
+    user_role: safeProfile.userRole,
+    age_range: safeProfile.ageRange,
+    primary_learning_goals: safeProfile.primaryLearningGoals,
+    learning_pace: safeProfile.learningPace,
+    onboarding_completed: safeProfile.onboardingCompleted,
+    onboarding_completed_at: safeProfile.onboardingCompletedAt,
+  };
+}
+
+function mapStudentProfileToOnboardingRow(
+  user: User,
+  profile: StudentProfile,
+): Omit<OnboardingProfileRow, 'created_at' | 'updated_at'> {
   const safeProfile = sanitizeStudentProfile(profile);
 
   return {
@@ -123,9 +169,59 @@ function isMissingSessionError(error: unknown) {
   return error.name === 'AuthSessionMissingError' || error.message.toLowerCase().includes('auth session missing');
 }
 
+function getErrorCode(error: unknown) {
+  if (!error || typeof error !== 'object' || !('code' in error)) {
+    return '';
+  }
+
+  return String((error as { code?: unknown }).code ?? '');
+}
+
+function getErrorMessage(error: unknown) {
+  if (error instanceof Error) {
+    return error.message.toLowerCase();
+  }
+
+  if (!error || typeof error !== 'object' || !('message' in error)) {
+    return '';
+  }
+
+  return String((error as { message?: unknown }).message ?? '').toLowerCase();
+}
+
+function isMissingProfilesStorageError(error: unknown) {
+  const code = getErrorCode(error);
+  const message = getErrorMessage(error);
+
+  return (
+    code === '42P01' ||
+    code === 'PGRST205' ||
+    message.includes('relation') ||
+    message.includes('could not find the table') ||
+    message.includes('does not exist')
+  );
+}
+
+function isProfileAccessError(error: unknown) {
+  const code = getErrorCode(error);
+  const message = getErrorMessage(error);
+
+  return code === '42501' || message.includes('permission denied') || message.includes('row-level security');
+}
+
+function isRecoverableProfileStorageError(error: unknown) {
+  return isMissingProfilesStorageError(error) || isProfileAccessError(error);
+}
+
 function isSupabaseSchemaError(
   error: unknown,
-  column: 'user_role' | 'onboarding_completed' | 'onboarding_completed_at',
+  column:
+    | 'user_role'
+    | 'onboarding_completed'
+    | 'onboarding_completed_at'
+    | 'age_range'
+    | 'primary_learning_goals'
+    | 'learning_pace',
 ) {
   if (!error || typeof error !== 'object') {
     return false;
@@ -150,6 +246,14 @@ function isMissingOnboardingSchemaError(error: unknown) {
   );
 }
 
+function isMissingEnhancedOnboardingSchemaError(error: unknown) {
+  return (
+    isSupabaseSchemaError(error, 'age_range') ||
+    isSupabaseSchemaError(error, 'primary_learning_goals') ||
+    isSupabaseSchemaError(error, 'learning_pace')
+  );
+}
+
 async function supportsOnboardingProfileSchema(supabase: Awaited<ReturnType<typeof createClient>>) {
   const { error } = await supabase.from('profiles').select('onboarding_completed').limit(1);
 
@@ -158,6 +262,23 @@ async function supportsOnboardingProfileSchema(supabase: Awaited<ReturnType<type
   }
 
   if (isMissingOnboardingSchemaError(error)) {
+    return false;
+  }
+
+  throw error;
+}
+
+async function supportsEnhancedOnboardingProfileSchema(supabase: Awaited<ReturnType<typeof createClient>>) {
+  const { error } = await supabase
+    .from('profiles')
+    .select('age_range, primary_learning_goals, learning_pace')
+    .limit(1);
+
+  if (!error) {
+    return true;
+  }
+
+  if (isMissingEnhancedOnboardingSchemaError(error)) {
     return false;
   }
 
@@ -191,43 +312,73 @@ export async function getAuthenticatedProfile() {
 
   const supabase = await createClient();
   const defaultProfile = buildDefaultStudentProfile(user);
-  const supportsOnboardingSchema = await supportsOnboardingProfileSchema(supabase);
 
-  const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
+  try {
+    const supportsOnboardingSchema = await supportsOnboardingProfileSchema(supabase);
+    const supportsEnhancedOnboardingSchema = supportsOnboardingSchema
+      ? await supportsEnhancedOnboardingProfileSchema(supabase)
+      : false;
 
-  if (error) {
-    throw error;
-  }
+    const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
 
-  const existingProfile = (data as ProfileRow | null) ?? null;
-
-  if (!existingProfile) {
-    const { data: insertedData, error: insertError } = supportsOnboardingSchema
-      ? await supabase.from('profiles').insert(mapStudentProfileToRow(user, defaultProfile)).select('*').single()
-      : await supabase.from('profiles').insert(mapStudentProfileToLegacyRow(user, defaultProfile)).select('*').single();
-
-    if (insertError) {
-      throw insertError;
+    if (error) {
+      throw error;
     }
 
-    const insertedProfile = mapProfileRowToStudentProfile(insertedData as ProfileRow, user);
+    const existingProfile = (data as Partial<EnhancedProfileRow> | null) ?? null;
+
+    if (!existingProfile) {
+      const { data: insertedData, error: insertError } = supportsEnhancedOnboardingSchema
+        ? await supabase
+            .from('profiles')
+            .insert(mapStudentProfileToEnhancedRow(user, defaultProfile))
+            .select('*')
+            .single()
+        : supportsOnboardingSchema
+          ? await supabase
+              .from('profiles')
+              .insert(mapStudentProfileToOnboardingRow(user, defaultProfile))
+              .select('*')
+              .single()
+          : await supabase.from('profiles').insert(mapStudentProfileToLegacyRow(user, defaultProfile)).select('*').single();
+
+      if (insertError) {
+        throw insertError;
+      }
+
+      const insertedProfile = mapProfileRowToStudentProfile(insertedData as Partial<EnhancedProfileRow>, user);
+
+      return {
+        user,
+        profile: insertedProfile,
+        defaultProfile: buildDefaultStudentProfileForUserContext(user, insertedProfile),
+        supportsOnboardingSchema,
+        supportsEnhancedOnboardingSchema,
+      };
+    }
+
+    const mappedProfile = mapProfileRowToStudentProfile(existingProfile, user);
 
     return {
       user,
-      profile: insertedProfile,
-      defaultProfile: buildDefaultStudentProfileForUserContext(user, insertedProfile),
+      profile: mappedProfile,
+      defaultProfile: buildDefaultStudentProfileForUserContext(user, mappedProfile),
       supportsOnboardingSchema,
+      supportsEnhancedOnboardingSchema,
+    };
+  } catch (error) {
+    if (!isRecoverableProfileStorageError(error)) {
+      throw error;
+    }
+
+    return {
+      user,
+      profile: defaultProfile,
+      defaultProfile: buildDefaultStudentProfileForUserContext(user, defaultProfile),
+      supportsOnboardingSchema: false,
+      supportsEnhancedOnboardingSchema: false,
     };
   }
-
-  const mappedProfile = mapProfileRowToStudentProfile(existingProfile, user);
-
-  return {
-    user,
-    profile: mappedProfile,
-    defaultProfile: buildDefaultStudentProfileForUserContext(user, mappedProfile),
-    supportsOnboardingSchema,
-  };
 }
 
 export async function updateAuthenticatedProfile(profile: StudentProfile) {
@@ -239,25 +390,38 @@ export async function updateAuthenticatedProfile(profile: StudentProfile) {
 
   const supabase = await createClient();
   const supportsOnboardingSchema = await supportsOnboardingProfileSchema(supabase);
-  const { data, error } = supportsOnboardingSchema
-    ? await supabase.from('profiles').upsert(mapStudentProfileToRow(user, profile), { onConflict: 'id' }).select('*').single()
-    : await supabase
+  const supportsEnhancedOnboardingSchema = supportsOnboardingSchema
+    ? await supportsEnhancedOnboardingProfileSchema(supabase)
+    : false;
+  const { data, error } = supportsEnhancedOnboardingSchema
+    ? await supabase
         .from('profiles')
-        .upsert(mapStudentProfileToLegacyRow(user, profile), { onConflict: 'id' })
+        .upsert(mapStudentProfileToEnhancedRow(user, profile), { onConflict: 'id' })
         .select('*')
-        .single();
+        .single()
+    : supportsOnboardingSchema
+      ? await supabase
+          .from('profiles')
+          .upsert(mapStudentProfileToOnboardingRow(user, profile), { onConflict: 'id' })
+          .select('*')
+          .single()
+      : await supabase
+          .from('profiles')
+          .upsert(mapStudentProfileToLegacyRow(user, profile), { onConflict: 'id' })
+          .select('*')
+          .single();
 
   if (error) {
-      throw error;
+    throw error;
   }
+
+  const mappedProfile = mapProfileRowToStudentProfile(data as Partial<EnhancedProfileRow>, user);
 
   return {
     user,
-    profile: mapProfileRowToStudentProfile(data as ProfileRow, user),
-    defaultProfile: buildDefaultStudentProfileForUserContext(
-      user,
-      mapProfileRowToStudentProfile(data as ProfileRow, user),
-    ),
+    profile: mappedProfile,
+    defaultProfile: buildDefaultStudentProfileForUserContext(user, mappedProfile),
     supportsOnboardingSchema,
+    supportsEnhancedOnboardingSchema,
   };
 }
