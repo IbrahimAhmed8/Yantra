@@ -501,6 +501,7 @@ function DashboardNav() {
                 <a
                   key={link.label}
                   href={link.href}
+                  data-no-route-loader="true"
                   className="font-mono text-[11px] uppercase tracking-[0.24em] text-white/50 transition-colors hover:text-white hoverable"
                 >
                   {link.label}
@@ -564,6 +565,7 @@ function DashboardNav() {
               <motion.a
                 key={link.label}
                 href={link.href}
+                data-no-route-loader="true"
                 className="font-display text-5xl font-medium tracking-tight text-white hoverable"
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -657,6 +659,7 @@ function HeroSection({
 
           <a
             href="#rooms"
+            data-no-route-loader="true"
             className="rounded-full border border-white/14 bg-white/[0.04] px-8 py-4 text-center font-mono text-[11px] uppercase tracking-[0.24em] text-white transition-colors hover:bg-white/[0.08] hoverable"
           >
             {resolvedView.hero.secondaryCtaLabel}
@@ -802,12 +805,14 @@ function OverviewSection({ view }: { view: DashboardViewModel }) {
               <div className="flex flex-wrap gap-3">
                 <a
                   href="#rooms"
+                  data-no-route-loader="true"
                   className="rounded-full bg-white px-6 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-black transition-colors hover:bg-white/92 hoverable"
                 >
                   {view.overview.primaryCtaLabel}
                 </a>
                 <a
                   href="#skills"
+                  data-no-route-loader="true"
                   className="rounded-full border border-white/10 bg-white/[0.05] px-6 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white transition-colors hover:bg-white/[0.08] hoverable"
                 >
                   {view.overview.secondaryCtaLabel}
@@ -1028,6 +1033,7 @@ function SkillsSection() {
       action={
         <a
           href="#rooms"
+          data-no-route-loader="true"
           className="font-mono text-[11px] uppercase tracking-[0.24em] text-white/54 transition-colors hover:text-white hoverable"
         >
           View full practice flow

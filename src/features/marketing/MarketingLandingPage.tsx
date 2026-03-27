@@ -80,6 +80,7 @@ function Nav() {
               <a
                 key={link.label}
                 href={link.href}
+                data-no-route-loader="true"
                 className="hoverable text-xs font-bold uppercase tracking-widest text-muted transition-colors hover:text-white"
               >
                 {link.label}
@@ -129,6 +130,7 @@ function Nav() {
               <motion.a
                 key={link.label}
                 href={link.href}
+                data-no-route-loader="true"
                 className="hoverable font-heading text-6xl uppercase tracking-widest"
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -508,7 +510,7 @@ function Footer() {
           YANTRA<span className="text-white/50">.</span>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-6 font-mono text-xs uppercase tracking-widest text-muted">
-          <a href="#about" className="hoverable transition-colors hover:text-white">
+          <a href="#about" data-no-route-loader="true" className="hoverable transition-colors hover:text-white">
             Platform
           </a>
           <button

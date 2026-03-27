@@ -28,6 +28,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY="YOUR_SUPABASE_ANON_KEY"
 - `GEMINI_API_KEY` is required by `POST /api/chat`.
 - `GOOGLE_API_KEY` is also accepted by the chat route as a fallback, but `GEMINI_API_KEY` is the documented default.
 - `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are required for login, signup, protected routes, and profile persistence.
+- Google sign-in does not need extra app env vars here, but the Google provider must be enabled in Supabase Auth.
+- Google sign-in uses the Google provider configured inside Supabase Auth. No extra app env var is required in this repo for Google OAuth.
 
 ## Required Supabase Step
 
@@ -89,11 +91,12 @@ npm run build
 1. Start the app with `npm run dev`.
 2. Open `/signup` and create an account.
 3. If email confirmation is enabled, follow the email link back to `/auth/confirm`.
-4. Open `/dashboard` and confirm the route is accessible after sign-in.
-5. Open `/dashboard/student-profile`, edit the record, and save it.
-6. Reload the page to confirm the profile data persisted.
-7. Open the chat widget and send a prompt.
-8. Submit the landing-page access form and confirm the success state appears.
+4. Enable the Google provider in Supabase Auth and test Google sign-in from `/login` or `/signup`.
+5. Open `/dashboard` and confirm the route is accessible after sign-in.
+6. Open `/dashboard/student-profile`, edit the record, and save it.
+7. Reload the page to confirm the profile data persisted.
+8. Open the chat widget and send a prompt.
+9. Submit the landing-page access form and confirm the success state appears.
 
 ## Deployment
 
@@ -124,13 +127,31 @@ Configure these in Supabase Auth settings:
   - production: your deployed domain
 - Redirect URLs:
   - `http://localhost:3000/auth/confirm`
+  - `http://localhost:3000/auth/reset-password`
   - `https://YOUR-PRODUCTION-DOMAIN/auth/confirm`
+  - `https://YOUR-PRODUCTION-DOMAIN/auth/reset-password`
+
+## Google OAuth Provider Setup
+
+Configure these in Supabase Auth -> Providers -> Google:
+
+- enable the Google provider
+- paste your Google OAuth client ID
+- paste your Google OAuth client secret
+
+In Google Cloud:
+
+- create a Web application OAuth client
+- add the Supabase Google callback URL shown inside the Supabase Google provider screen as an authorized redirect URI
+
+Yantra routes the Google sign-in back through `/auth/confirm`, which exchanges the Supabase OAuth code for the session cookie and then redirects to `/dashboard`.
 
 ## Deployment Reality
 
 ### What depends on Supabase being configured
 
 - login/signup becoming usable
+- Google sign-in becoming usable
 - protected dashboard access
 - `/api/profile`
 - student-profile persistence

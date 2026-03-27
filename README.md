@@ -4,6 +4,7 @@ Yantra is a Next.js 16 prototype for an AI-native learning platform. The current
 
 - a public marketing site
 - Supabase-backed email/password authentication
+- Supabase-backed Google sign-in
 - protected dashboard routes
 - a persisted student profile
 - persisted access requests
@@ -47,6 +48,7 @@ The app is no longer just a static marketing-plus-dashboard shell. Authenticatio
 - profile persistence from `/dashboard/student-profile`
 - protected dashboard redirects for signed-out visitors
 - password reset email flow and reset page
+- Google OAuth sign-in through Supabase
 - reusable chat widget on the marketing site and dashboard
 - authenticated chat history restore across sessions
 - access-request form validation, persistence, and server handling
@@ -55,7 +57,6 @@ The app is no longer just a static marketing-plus-dashboard shell. Authenticatio
 
 - dashboard skills, progress cards, momentum charts, and room cards
 - curriculum and performance content inside the dashboard UI
-- Google sign-in
 - chat moderation, analytics, and tool use
 - practice-room execution engines and dynamic roadmap logic
 

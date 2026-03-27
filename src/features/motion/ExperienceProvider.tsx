@@ -2,10 +2,9 @@
 
 import Lenis from 'lenis';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { AnimatePresence, motion, useMotionValue, useSpring } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 import {
   createContext,
-  Suspense,
   useCallback,
   useContext,
   useEffect,
@@ -14,7 +13,6 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import PageTransitionBar from './PageTransitionBar';
 
 type ExperienceContextValue = {
   isOverlayActive: boolean;
@@ -131,135 +129,6 @@ function getInternalHrefFromClick(event: MouseEvent) {
   }
 
   return href;
-}
-
-function SharedCursor({ enabled }: { enabled: boolean }) {
-  const innerSize = 8;
-  const outerSize = 26;
-  const outerOffset = (outerSize - innerSize) / 2;
-  const interactiveSelector =
-    'a, button, input, textarea, select, label, summary, .hoverable, [role="button"]';
-  const cursorX = useMotionValue(-100);
-  const cursorY = useMotionValue(-100);
-  const innerOpacity = useMotionValue(0);
-  const outerOpacity = useMotionValue(0);
-  const innerScale = useMotionValue(0.7);
-  const outerScale = useMotionValue(1);
-  const innerOpacitySpring = useSpring(innerOpacity, { damping: 32, stiffness: 520, mass: 0.2 });
-  const outerOpacitySpring = useSpring(outerOpacity, { damping: 28, stiffness: 320, mass: 0.3 });
-  const innerScaleSpring = useSpring(innerScale, { damping: 30, stiffness: 460, mass: 0.28 });
-  const outerScaleSpring = useSpring(outerScale, { damping: 26, stiffness: 320, mass: 0.42 });
-
-  useEffect(() => {
-    const resetCursor = () => {
-      cursorX.set(-100);
-      cursorY.set(-100);
-      innerOpacity.set(0);
-      outerOpacity.set(0);
-      innerScale.set(0.7);
-      outerScale.set(1);
-    };
-
-    if (!enabled) {
-      resetCursor();
-      return;
-    }
-
-    let isVisible = false;
-    let isHovered = false;
-
-    const syncAppearance = () => {
-      innerOpacity.set(isVisible ? 1 : 0);
-      outerOpacity.set(isVisible ? (isHovered ? 0.24 : 0.12) : 0);
-      innerScale.set(isVisible ? (isHovered ? 1.15 : 1) : 0.7);
-      outerScale.set(isHovered ? 1.03 : 1);
-    };
-
-    const updatePosition = (event: PointerEvent) => {
-      if (event.pointerType && event.pointerType !== 'mouse') {
-        return;
-      }
-
-      cursorX.set(event.clientX - innerSize / 2);
-      cursorY.set(event.clientY - innerSize / 2);
-
-      const target = event.target;
-      const nextHovered = target instanceof Element ? Boolean(target.closest(interactiveSelector)) : false;
-
-      if (!isVisible || nextHovered !== isHovered) {
-        isVisible = true;
-        isHovered = nextHovered;
-        syncAppearance();
-      }
-    };
-
-    const hideCursor = () => {
-      if (!isVisible) {
-        return;
-      }
-
-      isVisible = false;
-      syncAppearance();
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        hideCursor();
-      }
-    };
-
-    const cursorBoundary = document.documentElement;
-
-    window.addEventListener('pointermove', updatePosition, { passive: true });
-    window.addEventListener('blur', hideCursor);
-    cursorBoundary.addEventListener('mouseleave', hideCursor);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      window.removeEventListener('pointermove', updatePosition);
-      window.removeEventListener('blur', hideCursor);
-      cursorBoundary.removeEventListener('mouseleave', hideCursor);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      resetCursor();
-    };
-  }, [cursorX, cursorY, enabled, innerOpacity, innerScale, interactiveSelector, outerOpacity, outerScale]);
-
-  if (!enabled) {
-    return null;
-  }
-
-  return (
-    <>
-      <motion.div
-        aria-hidden="true"
-        className="pointer-events-none fixed left-0 top-0 z-[120] hidden rounded-full bg-white/88 md:block"
-        style={{
-          x: cursorX,
-          y: cursorY,
-          width: innerSize,
-          height: innerSize,
-          opacity: innerOpacitySpring,
-          scale: innerScaleSpring,
-          willChange: 'transform, opacity',
-        }}
-      />
-      <motion.div
-        aria-hidden="true"
-        className="pointer-events-none fixed left-0 top-0 z-[119] hidden rounded-full border border-white/16 md:block"
-        style={{
-          x: cursorX,
-          y: cursorY,
-          translateX: -outerOffset,
-          translateY: -outerOffset,
-          width: outerSize,
-          height: outerSize,
-          opacity: outerOpacitySpring,
-          scale: outerScaleSpring,
-          willChange: 'transform, opacity',
-        }}
-      />
-    </>
-  );
 }
 
 function RouteTransitionOverlay() {
@@ -419,9 +288,7 @@ function RouteTransitionOverlay() {
 export function ExperienceProvider({ children }: { children: ReactNode }) {
   const lenisRef = useRef<Lenis | null>(null);
   const [reducedMotion, setReducedMotion] = useState(true);
-  const [cursorEnabled, setCursorEnabled] = useState(false);
   const [overlayStates, setOverlayStates] = useState<Record<string, boolean>>({});
-  const [pageTransitionKey, setPageTransitionKey] = useState(0);
 
   const isOverlayActive = Object.values(overlayStates).some(Boolean);
 
@@ -447,53 +314,33 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const startPageTransition = useCallback(() => {
-    setPageTransitionKey((current) => current + 1);
+    startRouteTransition();
   }, []);
 
   useEffect(() => {
     const reducedMotionMedia = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const hoverMedia = window.matchMedia('(hover: hover)');
-    const finePointerMedia = window.matchMedia('(pointer: fine)');
 
     const updatePreferences = () => {
-      const shouldReduceMotion = reducedMotionMedia.matches;
-      const supportsCursor = hoverMedia.matches && finePointerMedia.matches && window.innerWidth >= 768;
-
-      setReducedMotion(shouldReduceMotion);
-      setCursorEnabled(!shouldReduceMotion && supportsCursor);
+      setReducedMotion(reducedMotionMedia.matches);
     };
 
     updatePreferences();
     reducedMotionMedia.addEventListener('change', updatePreferences);
-    hoverMedia.addEventListener('change', updatePreferences);
-    finePointerMedia.addEventListener('change', updatePreferences);
-    window.addEventListener('resize', updatePreferences);
 
     return () => {
       reducedMotionMedia.removeEventListener('change', updatePreferences);
-      hoverMedia.removeEventListener('change', updatePreferences);
-      finePointerMedia.removeEventListener('change', updatePreferences);
-      window.removeEventListener('resize', updatePreferences);
     };
   }, []);
 
   useEffect(() => {
     const html = document.documentElement;
-    const body = document.body;
 
     html.dataset.yantraMotion = reducedMotion ? 'reduced' : 'smooth';
 
-    if (cursorEnabled) {
-      body.dataset.yantraCursor = 'custom';
-    } else {
-      delete body.dataset.yantraCursor;
-    }
-
     return () => {
       delete html.dataset.yantraMotion;
-      delete body.dataset.yantraCursor;
     };
-  }, [cursorEnabled, reducedMotion]);
+  }, [reducedMotion]);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -567,15 +414,7 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
   return (
     <ExperienceContext.Provider value={value}>
       {children}
-      <Suspense fallback={null}>
-        <PageTransitionBar
-          reducedMotion={reducedMotion}
-          startKey={pageTransitionKey}
-          onIntent={startPageTransition}
-        />
-        <RouteTransitionOverlay />
-      </Suspense>
-      <SharedCursor enabled={cursorEnabled} />
+      <RouteTransitionOverlay />
     </ExperienceContext.Provider>
   );
 }

@@ -3,6 +3,7 @@
 Yantra uses Supabase for:
 
 - email/password authentication
+- Google OAuth authentication
 - SSR session handling
 - protected dashboard access
 - persisted learner profiles in `public.profiles`
@@ -114,6 +115,7 @@ Inside Supabase Auth settings:
 ### `/login`
 
 - signs in with `signInWithPassword()`
+- starts Google OAuth through `signInWithOAuth({ provider: 'google' })`
 - redirects authenticated users to `/dashboard`
 - triggers `resetPasswordForEmail()` from the forgot-password action
 
@@ -128,6 +130,12 @@ Inside Supabase Auth settings:
 - requires a valid authenticated user
 - redirects to `/login` when no session exists
 - loads the current profile through `getAuthenticatedProfile()`
+
+### `/auth/confirm`
+
+- verifies email confirmation links from Supabase when `token_hash` and `type` are present
+- completes Google OAuth sign-in by exchanging the provider `code` for a session cookie
+- redirects to `/dashboard` by default after either flow succeeds
 
 ### `/dashboard/student-profile`
 
@@ -175,11 +183,11 @@ The row is sanitized before insert and update.
 10. Open `/dashboard/student-profile`, edit the record, and save it.
 11. Reload and confirm the updated profile persisted.
 12. Open `/login`, request a password reset, and verify the recovery page lets you set a new password.
-13. Open the chat as an authenticated learner, send a message, reload, and confirm the conversation resumes.
+13. Test Google sign-in from `/login` or `/signup` after the Google provider is enabled in Supabase.
+14. Open the chat as an authenticated learner, send a message, reload, and confirm the conversation resumes.
 
 ## Known Gaps
 
-- Google sign-in is not wired yet
 - dashboard metrics and most learning-state models are still demo content
 
 ## Onboarding Columns
@@ -200,3 +208,5 @@ Re-run `supabase/schema.sql` against an existing project to add these columns if
 4. Apply `supabase/schema.sql` to the production Supabase project.
 5. Update Supabase Site URL to the production domain.
 6. Add the production `/auth/confirm` and `/auth/reset-password` URLs to Redirect URLs.
+7. In Supabase Auth, enable the Google provider and add the Google OAuth client ID and secret.
+8. In Google Cloud, add your Supabase project callback URL from the Google provider setup screen as an authorized redirect URI.

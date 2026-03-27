@@ -274,9 +274,9 @@ function describeAuthStatus(status: AuthStatus): AuthStatusPresentation | null {
 
     if (normalized.includes('google sign-in')) {
       return {
-        eyebrow: 'Deferred Surface',
-        title: 'Google access is still offline',
-        body: 'Email and password auth is live now. Social login stays intentionally deferred in this pass.',
+        eyebrow: 'Google Handoff',
+        title: 'Google auth is routing through Supabase',
+        body: 'Continue in the Google account chooser, then Yantra will return you to your dashboard.',
         icon: Orbit,
         chromeClassName: 'border-white/10 bg-black/28',
         iconClassName: 'border-white/10 bg-white/[0.05] text-white/82',
@@ -527,11 +527,11 @@ export default function AuthExperience({
     }
   };
 
-  const handleGoogleContinue = async () => {
+  const handleGoogleSignIn = async () => {
     if (!supabaseConfigured) {
       setStatus({
         kind: 'error',
-        message: 'Supabase is not configured yet. Add your Supabase URL and anon key to activate Google sign-in.',
+        message: 'Supabase is not configured yet. Add your Supabase URL and anon key to activate auth.',
       });
       return;
     }
@@ -554,15 +554,10 @@ export default function AuthExperience({
       if (error) {
         throw error;
       }
-
-      setStatus({
-        kind: 'info',
-        message: 'Opening Google sign-in...',
-      });
     } catch (error) {
       setStatus({
         kind: 'error',
-        message: error instanceof Error ? error.message : 'Yantra could not start Google sign-in right now.',
+        message: error instanceof Error ? error.message : 'Yantra could not open Google sign-in right now.',
       });
       setIsGoogleSubmitting(false);
     }
@@ -847,13 +842,15 @@ export default function AuthExperience({
                 <button
                   type="button"
                   disabled={isSubmitting || isGoogleSubmitting || !supabaseConfigured}
-                  className="hoverable flex h-14 w-full items-center justify-center gap-3 rounded-[1.2rem] border border-white/12 bg-transparent font-mono text-[11px] uppercase tracking-[0.2em] text-white transition-colors hover:bg-white/[0.05] disabled:cursor-not-allowed disabled:border-white/8 disabled:text-white/40"
-                  onClick={handleGoogleContinue}
+                  className="hoverable flex h-14 w-full items-center justify-center gap-3 rounded-[1.2rem] border border-white/12 bg-transparent font-mono text-[11px] uppercase tracking-[0.2em] text-white transition-colors hover:bg-white/[0.05] disabled:cursor-not-allowed disabled:border-white/8 disabled:bg-white/[0.02] disabled:text-white/35"
+                  onClick={() => {
+                    void handleGoogleSignIn();
+                  }}
                 >
                   <GoogleIcon />
                   <span>
                     {isGoogleSubmitting
-                      ? 'Opening Google...'
+                      ? 'Connecting Google...'
                       : mode === 'login'
                         ? 'Authenticate with Google'
                         : 'Continue with Google'}

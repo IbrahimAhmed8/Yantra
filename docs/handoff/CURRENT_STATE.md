@@ -52,6 +52,7 @@ It is no longer accurate to describe the repo as only a static frontend shell.
 - Gemini chat requests using `gemini-2.5-flash`
 - access-request submission with request validation, persistence, and success/error states
 - password reset email flow and reset page
+- Google sign-in through Supabase OAuth
 - authenticated chat history restore across sessions
 
 ## What Is Real But Limited
@@ -74,7 +75,6 @@ Authenticated learners now resume a single rolling Yantra conversation from Supa
 
 ## Known Placeholder Areas
 
-- Google sign-in is a UI placeholder
 - dashboard skills, rooms, and progression are static
 - teacher, institution, analytics, and certification flows are not built
 
@@ -108,6 +108,5 @@ These are still useful inputs and should not be removed without approval.
 
 - replace dashboard hardcoded content with a typed data contract
 - add tests around profile APIs, auth redirects, and chat/access-request flows
-- decide whether Google sign-in should remain deferred or become a real OAuth path
 - add internal review tooling for access requests
 - evolve chat from a single rolling thread into richer learner memory and observability
