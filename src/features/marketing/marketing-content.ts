@@ -1,4 +1,15 @@
-import { BookOpen, Globe, Palette, type LucideIcon } from 'lucide-react';
+import {
+  BadgeCheck,
+  BookOpen,
+  BriefcaseBusiness,
+  Building2,
+  Globe,
+  GraduationCap,
+  Handshake,
+  Palette,
+  RefreshCcw,
+  type LucideIcon,
+} from 'lucide-react';
 
 export const marketingAccessDetails = {
   primary: 'AI-native learning operating system',
@@ -45,11 +56,61 @@ export const marketingAcademicCards: MarketingAcademicCard[] = [
   },
 ];
 
-export const marketingCampusHighlights = [
-  { title: 'Students', gradient: 'from-white/[0.16] via-white/[0.05] to-transparent', height: 'h-64' },
-  { title: 'Career Switchers', gradient: 'from-white/[0.14] via-white/[0.04] to-transparent', height: 'h-96' },
-  { title: 'Institutions', gradient: 'from-white/[0.12] via-white/[0.03] to-transparent', height: 'h-80' },
-  { title: 'Hiring Partners', gradient: 'from-white/[0.18] via-white/[0.05] to-transparent', height: 'h-96' },
-  { title: 'Certification Paths', gradient: 'from-white/[0.14] via-white/[0.04] to-transparent', height: 'h-72' },
-  { title: 'Job Matching', gradient: 'from-white/[0.1] via-white/[0.03] to-transparent', height: 'h-64' },
-] as const;
+export type MarketingAudienceCard = {
+  icon: LucideIcon;
+  tag: string;
+  title: string;
+  desc: string;
+  heightClassName: string;
+};
+
+export const marketingCampusHighlights: MarketingAudienceCard[][] = [
+  [
+    {
+      icon: GraduationCap,
+      tag: 'Audience 01',
+      title: 'Students',
+      desc: 'Skill diagnosis, focused roadmaps, and certifications that signal real growth to employers.',
+      heightClassName: 'xl:min-h-[20rem]',
+    },
+    {
+      icon: RefreshCcw,
+      tag: 'Audience 02',
+      title: 'Career Switchers',
+      desc: 'Identify gaps fast, build proof of new skills, and get matched to roles in your target field.',
+      heightClassName: 'xl:min-h-[18.5rem]',
+    },
+  ],
+  [
+    {
+      icon: Building2,
+      tag: 'Audience 03',
+      title: 'Institutions',
+      desc: 'Pilot Yantra as a learning OS. Get outcome data, skill reports, and placement signals at scale.',
+      heightClassName: 'xl:min-h-[23.5rem]',
+    },
+    {
+      icon: Handshake,
+      tag: 'Audience 04',
+      title: 'Hiring Partners',
+      desc: 'Access a pipeline of skill-diagnosed candidates matched to your open roles without resume noise.',
+      heightClassName: 'xl:min-h-[15rem]',
+    },
+  ],
+  [
+    {
+      icon: BadgeCheck,
+      tag: 'Audience 05',
+      title: 'Certification Paths',
+      desc: 'AI-guided paths ending in employer-recognized proof, not just course completions.',
+      heightClassName: 'xl:min-h-[15rem]',
+    },
+    {
+      icon: BriefcaseBusiness,
+      tag: 'Audience 06',
+      title: 'Job Matching',
+      desc: 'Your skill profile connects directly to relevant opportunities as you grow on the platform.',
+      heightClassName: 'xl:min-h-[23.5rem]',
+    },
+  ],
+];
