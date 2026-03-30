@@ -22,8 +22,9 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { motion, useInView } from 'motion/react';
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
-import { ChatProvider, useChatWidget } from '@/src/features/chat/ChatWidget';
+import { createContext, memo, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { ChatProvider, useChatWidgetActions } from '@/src/features/chat/ChatWidget';
+import { useScrollThreshold } from '@/src/features/motion/useScrollThreshold';
 import YantraMobileMenu from '@/src/features/navigation/YantraMobileMenu';
 import {
   type DashboardRoomTextureKey,
@@ -409,6 +410,14 @@ const roomTextureMap: Record<DashboardRoomTextureKey, string> = {
     'radial-gradient(circle at 30% 18%, rgba(255,255,255,0.08), transparent 26%), linear-gradient(150deg, rgba(9,9,9,0.96), rgba(20,20,20,0.84) 50%, rgba(11,11,13,0.98) 100%)',
 };
 
+function buildRoomHref(roomKey: string) {
+  if (roomKey === 'python-room') {
+    return '/dashboard/rooms/python';
+  }
+
+  return null;
+}
+
 function useDashboardData() {
   const context = useContext(DashboardDataContext);
 
@@ -467,15 +476,8 @@ function SectionShell({
 
 function DashboardNav() {
   const { profile } = useDashboardData();
-  const { openChat } = useChatWidget();
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 18);
-    handleScroll();
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const { openChat } = useChatWidgetActions();
+  const scrolled = useScrollThreshold(18);
 
   return (
     <>
@@ -568,7 +570,7 @@ function HeroSection({
   view: DashboardViewModel;
 }) {
   const { path } = useDashboardData();
-  const { openChat } = useChatWidget();
+  const { openChat } = useChatWidgetActions();
   const statRef = useRef<HTMLDivElement>(null);
   const statInView = useInView(statRef, { once: true, margin: '-60px' });
   const progress = profile.progress;
@@ -713,7 +715,7 @@ function HeroSection({
 }
 
 function OverviewSection({ view }: { view: DashboardViewModel }) {
-  const { openChat } = useChatWidget();
+  const { openChat } = useChatWidgetActions();
   const { path, curriculumNodes, weeklyActivity } = useDashboardData();
   const masteryCircumference = 2 * Math.PI * 58;
   const masteryOffset = masteryCircumference - (masteryCircumference * path.masteryProgress) / 100;
@@ -1003,7 +1005,7 @@ function SkillsSection() {
   );
 }
 
-function SkillCard({ skill, index }: { skill: StudentDashboardSkill; index: number }) {
+const SkillCard = memo(function SkillCard({ skill, index }: { skill: StudentDashboardSkill; index: number }) {
   const Icon = skill.locked ? Lock : skillIconMap[skill.iconKey];
 
   return (
@@ -1045,11 +1047,84 @@ function SkillCard({ skill, index }: { skill: StudentDashboardSkill; index: numb
       </div>
     </motion.div>
   );
-}
+});
+
+SkillCard.displayName = 'SkillCard';
+
+const RoomCard = memo(function RoomCard({ room, index }: { room: StudentDashboardRoom; index: number }) {
+  const { openChat } = useChatWidgetActions();
+  const roomHref = buildRoomHref(room.roomKey);
+
+  return (
+    <motion.article
+      className={`relative overflow-hidden rounded-[2rem] border border-white/8 p-8 backdrop-blur-[20px] ${
+        room.featured ? 'min-h-[25rem]' : 'min-h-[20rem]'
+      }`}
+      style={{ backgroundImage: roomTextureMap[room.textureKey] }}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.6, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),transparent_26%,rgba(0,0,0,0.34)_100%)]" />
+      <div
+        className="absolute inset-0 opacity-20"
+        style={{
+          backgroundImage:
+            'linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)',
+          backgroundSize: room.featured ? '44px 44px' : '52px 52px',
+          maskImage: 'radial-gradient(circle at center, black 28%, transparent 86%)',
+        }}
+      />
+
+      <div className="relative z-10 flex h-full flex-col justify-between">
+        <div>
+          <div className="inline-flex items-center rounded-full border border-white/12 bg-white/[0.06] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.24em] text-white/64">
+            {room.statusLabel}
+          </div>
+
+          <div className="mt-5 max-w-[24rem]">
+            <h3 className="font-display text-3xl font-medium leading-[0.96] text-white md:text-4xl">{room.title}</h3>
+            <p className="mt-4 text-sm font-light leading-relaxed text-white/56">{room.description}</p>
+          </div>
+        </div>
+
+        <div className="mt-10 flex items-center justify-between gap-4">
+          {roomHref ? (
+            <Link
+              href={roomHref}
+              className={`rounded-full px-6 py-3 text-sm uppercase tracking-[0.18em] transition-colors hoverable ${
+                room.featured ? 'bg-white text-black hover:bg-white/92' : 'border border-white/12 bg-white/[0.05] text-white hover:bg-white/[0.08]'
+              }`}
+            >
+              {room.ctaLabel}
+            </Link>
+          ) : (
+            <button
+              type="button"
+              className={`rounded-full px-6 py-3 text-sm uppercase tracking-[0.18em] transition-colors hoverable ${
+                room.featured ? 'bg-white text-black hover:bg-white/92' : 'border border-white/12 bg-white/[0.05] text-white hover:bg-white/[0.08]'
+              }`}
+              onClick={() => openChat({ message: room.prompt })}
+            >
+              {room.ctaLabel}
+            </button>
+          )}
+
+          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-white/40">
+            <span>AI-guided</span>
+            <ArrowRight size={14} />
+          </div>
+        </div>
+      </div>
+    </motion.article>
+  );
+});
+
+RoomCard.displayName = 'RoomCard';
 
 function RoomsSection() {
   const { rooms } = useDashboardData();
-  const { openChat } = useChatWidget();
 
   return (
     <SectionShell
@@ -1061,58 +1136,7 @@ function RoomsSection() {
     >
       <div className="grid gap-6 md:grid-cols-2">
         {rooms.map((room, index) => (
-          <motion.article
-            key={room.roomKey}
-            className={`relative overflow-hidden rounded-[2rem] border border-white/8 p-8 backdrop-blur-[20px] ${
-              room.featured ? 'min-h-[25rem]' : 'min-h-[20rem]'
-            }`}
-            style={{ backgroundImage: roomTextureMap[room.textureKey] }}
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-40px' }}
-            transition={{ duration: 0.6, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),transparent_26%,rgba(0,0,0,0.34)_100%)]" />
-            <div
-              className="absolute inset-0 opacity-20"
-              style={{
-                backgroundImage:
-                  'linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)',
-                backgroundSize: room.featured ? '44px 44px' : '52px 52px',
-                maskImage: 'radial-gradient(circle at center, black 28%, transparent 86%)',
-              }}
-            />
-
-            <div className="relative z-10 flex h-full flex-col justify-between">
-              <div>
-                <div className="inline-flex items-center rounded-full border border-white/12 bg-white/[0.06] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.24em] text-white/64">
-                  {room.statusLabel}
-                </div>
-
-                <div className="mt-5 max-w-[24rem]">
-                  <h3 className="font-display text-3xl font-medium leading-[0.96] text-white md:text-4xl">{room.title}</h3>
-                  <p className="mt-4 text-sm font-light leading-relaxed text-white/56">{room.description}</p>
-                </div>
-              </div>
-
-              <div className="mt-10 flex items-center justify-between gap-4">
-                <button
-                  type="button"
-                  className={`rounded-full px-6 py-3 text-sm uppercase tracking-[0.18em] transition-colors hoverable ${
-                    room.featured ? 'bg-white text-black hover:bg-white/92' : 'border border-white/12 bg-white/[0.05] text-white hover:bg-white/[0.08]'
-                  }`}
-                  onClick={() => openChat({ message: room.prompt })}
-                >
-                  {room.ctaLabel}
-                </button>
-
-                <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-white/40">
-                  <span>AI-guided</span>
-                  <ArrowRight size={14} />
-                </div>
-              </div>
-            </div>
-          </motion.article>
+          <RoomCard key={room.roomKey} room={room} index={index} />
         ))}
       </div>
     </SectionShell>
@@ -1120,7 +1144,7 @@ function RoomsSection() {
 }
 
 function YantraAiSection({ view }: { view: DashboardViewModel }) {
-  const { openChat } = useChatWidget();
+  const { openChat } = useChatWidgetActions();
   const [draft, setDraft] = useState('');
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {

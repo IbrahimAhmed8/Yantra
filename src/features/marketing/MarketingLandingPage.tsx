@@ -5,8 +5,9 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { motion, animate, useInView } from 'motion/react';
 import { ArrowRight, Menu, X } from 'lucide-react';
-import { ChatProvider, useChatWidget } from '@/src/features/chat/ChatWidget';
+import { ChatProvider, useChatWidgetActions } from '@/src/features/chat/ChatWidget';
 import { useOverlayLock } from '@/src/features/motion/ExperienceProvider';
+import { useScrollThreshold } from '@/src/features/motion/useScrollThreshold';
 import { yantraCtaPrompts } from '@/src/features/chat/yantra-chat';
 import {
   marketingAcademicCards,
@@ -66,17 +67,10 @@ function FluidBackground() {
 }
 
 function Nav() {
-  const [scrolled, setScrolled] = useState(false);
+  const scrolled = useScrollThreshold(50);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useOverlayLock('marketing-mobile-nav', mobileMenuOpen);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    handleScroll();
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   return (
     <>
@@ -494,7 +488,7 @@ function Gallery() {
 }
 
 function Contact() {
-  const { openChat } = useChatWidget();
+  const { openChat } = useChatWidgetActions();
 
   return (
     <section id="contact" className="relative mx-auto max-w-7xl border-t border-white/10 px-6 py-32 scroll-mt-28">
@@ -548,7 +542,7 @@ function Contact() {
 }
 
 function Footer() {
-  const { openChat } = useChatWidget();
+  const { openChat } = useChatWidgetActions();
 
   return (
     <footer className="relative mt-32 overflow-hidden border-t border-white/10 px-6 py-12">

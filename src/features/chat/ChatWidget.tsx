@@ -4,8 +4,10 @@ import { MessageSquare, SendHorizontal, Sparkles, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
@@ -34,6 +36,9 @@ type ChatWidgetContextValue = {
   closeChat: () => void;
 };
 
+type ChatWidgetStateContextValue = Pick<ChatWidgetContextValue, 'isOpen' | 'isSending'>;
+type ChatWidgetActionsContextValue = Pick<ChatWidgetContextValue, 'openChat' | 'closeChat'>;
+
 type ChatPanelProps = {
   isOpen: boolean;
   isSending: boolean;
@@ -49,7 +54,8 @@ type ChatPanelProps = {
   onSend: (message: string) => void;
 };
 
-const ChatWidgetContext = createContext<ChatWidgetContextValue | null>(null);
+const ChatWidgetStateContext = createContext<ChatWidgetStateContextValue | null>(null);
+const ChatWidgetActionsContext = createContext<ChatWidgetActionsContextValue | null>(null);
 
 function assistantMessage(content: string): YantraChatMessage {
   return { role: 'assistant', content };
@@ -342,12 +348,12 @@ export function ChatProvider({
     return () => window.removeEventListener('keydown', handleEscape);
   }, []);
 
-  const commitMessages = (nextMessages: YantraChatMessage[]) => {
+  const commitMessages = useCallback((nextMessages: YantraChatMessage[]) => {
     messagesRef.current = nextMessages;
     setMessages(nextMessages);
-  };
+  }, []);
 
-  const ensureHistoryLoaded = async () => {
+  const ensureHistoryLoaded = useCallback(async () => {
     if (historyStateRef.current === 'loaded' || historyStateRef.current === 'unavailable') {
       return messagesRef.current;
     }
@@ -392,108 +398,150 @@ export function ChatProvider({
     })();
 
     return historyPromiseRef.current;
-  };
+  }, [commitMessages]);
 
-  async function sendMessage(rawMessage: string) {
-    const content = rawMessage.trim();
+  const sendMessage = useCallback(
+    async (rawMessage: string) => {
+      const content = rawMessage.trim();
 
-    if (!content || isSendingRef.current) {
-      return;
-    }
-
-    const baseMessages = await ensureHistoryLoaded();
-    const nextMessages = normalizeYantraChatMessages(
-      [...baseMessages, { role: 'user', content }],
-      MAX_PERSISTED_CHAT_MESSAGES,
-    );
-
-    commitMessages(nextMessages);
-    setInput('');
-    setError(null);
-    setIsOpen(true);
-    isSendingRef.current = true;
-    setIsSending(true);
-
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        cache: 'no-store',
-        body: JSON.stringify({ messages: nextMessages }),
-      });
-
-      const data = (await response.json()) as { error?: string; reply?: string };
-
-      if (!response.ok || !data.reply) {
-        throw new Error(data.error || 'Yantra could not respond right now.');
+      if (!content || isSendingRef.current) {
+        return;
       }
 
-      const updatedMessages = normalizeYantraChatMessages(
-        [...nextMessages, assistantMessage(data.reply.trim())],
+      const baseMessages = await ensureHistoryLoaded();
+      const nextMessages = normalizeYantraChatMessages(
+        [...baseMessages, { role: 'user', content }],
         MAX_PERSISTED_CHAT_MESSAGES,
       );
-      commitMessages(updatedMessages);
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'Yantra is unavailable right now. Please try again shortly.';
-      setError(message);
-    } finally {
-      isSendingRef.current = false;
-      setIsSending(false);
-    }
-  }
 
-  const openChat = (options?: OpenChatOptions) => {
-    setIsOpen(true);
-    setError(null);
+      commitMessages(nextMessages);
+      setInput('');
+      setError(null);
+      setIsOpen(true);
+      isSendingRef.current = true;
+      setIsSending(true);
 
-    if (typeof options?.draft === 'string') {
-      setInput(options.draft);
-    }
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          cache: 'no-store',
+          body: JSON.stringify({ messages: nextMessages }),
+        });
 
-    if (options?.message) {
-      void sendMessage(options.message);
-    }
-  };
+        const data = (await response.json()) as { error?: string; reply?: string };
 
-  const closeChat = () => setIsOpen(false);
+        if (!response.ok || !data.reply) {
+          throw new Error(data.error || 'Yantra could not respond right now.');
+        }
 
-  const value = {
-    isOpen,
-    isSending,
-    openChat,
-    closeChat,
-  };
+        const updatedMessages = normalizeYantraChatMessages(
+          [...nextMessages, assistantMessage(data.reply.trim())],
+          MAX_PERSISTED_CHAT_MESSAGES,
+        );
+        commitMessages(updatedMessages);
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : 'Yantra is unavailable right now. Please try again shortly.';
+        setError(message);
+      } finally {
+        isSendingRef.current = false;
+        setIsSending(false);
+      }
+    },
+    [commitMessages, ensureHistoryLoaded],
+  );
+
+  const openChat = useCallback(
+    (options?: OpenChatOptions) => {
+      setIsOpen(true);
+      setError(null);
+
+      if (typeof options?.draft === 'string') {
+        setInput(options.draft);
+      }
+
+      if (options?.message) {
+        void sendMessage(options.message);
+      }
+    },
+    [sendMessage],
+  );
+
+  const closeChat = useCallback(() => {
+    setIsOpen(false);
+  }, []);
+
+  const stateValue = useMemo(
+    () => ({
+      isOpen,
+      isSending,
+    }),
+    [isOpen, isSending],
+  );
+  const actionsValue = useMemo(
+    () => ({
+      openChat,
+      closeChat,
+    }),
+    [closeChat, openChat],
+  );
 
   return (
-    <ChatWidgetContext.Provider value={value}>
-      {children}
-      <ChatPanel
-        isOpen={isOpen}
-        isSending={isSending}
-        showLauncher={showLauncher}
-        input={input}
-        error={error}
-        messages={messages}
-        inputRef={inputRef}
-        endRef={endRef}
-        onInputChange={setInput}
-        onOpen={() => setIsOpen(true)}
-        onClose={closeChat}
-        onSend={(message) => void sendMessage(message)}
-      />
-    </ChatWidgetContext.Provider>
+    <ChatWidgetActionsContext.Provider value={actionsValue}>
+      <ChatWidgetStateContext.Provider value={stateValue}>
+        {children}
+        <ChatPanel
+          isOpen={isOpen}
+          isSending={isSending}
+          showLauncher={showLauncher}
+          input={input}
+          error={error}
+          messages={messages}
+          inputRef={inputRef}
+          endRef={endRef}
+          onInputChange={setInput}
+          onOpen={() => setIsOpen(true)}
+          onClose={closeChat}
+          onSend={(message) => void sendMessage(message)}
+        />
+      </ChatWidgetStateContext.Provider>
+    </ChatWidgetActionsContext.Provider>
   );
 }
 
-export function useChatWidget() {
-  const context = useContext(ChatWidgetContext);
+export function useChatWidgetState() {
+  const context = useContext(ChatWidgetStateContext);
 
   if (!context) {
-    throw new Error('useChatWidget must be used inside ChatProvider.');
+    throw new Error('useChatWidgetState must be used inside ChatProvider.');
   }
 
   return context;
+}
+
+export function useChatWidgetActions() {
+  const context = useContext(ChatWidgetActionsContext);
+
+  if (!context) {
+    throw new Error('useChatWidgetActions must be used inside ChatProvider.');
+  }
+
+  return context;
+}
+
+export function useChatWidget() {
+  const state = useContext(ChatWidgetStateContext);
+  const actions = useContext(ChatWidgetActionsContext);
+
+  if (!state || !actions) {
+    throw new Error('useChatWidget must be used inside ChatProvider.');
+  }
+
+  return {
+    ...state,
+    ...actions,
+  };
 }

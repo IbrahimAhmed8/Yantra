@@ -11,6 +11,8 @@ type SmoothScrollControllerProps = {
 const smoothEase = (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t));
 const touchPointerQuery = '(pointer: coarse), (hover: none)';
 const anchorOffset = 112;
+const desktopLerp = 0.1;
+const touchLerp = 0.12;
 
 function createLenisOptions(isTouchLike: boolean): LenisOptions {
   const baseOptions: LenisOptions = {
@@ -19,10 +21,10 @@ function createLenisOptions(isTouchLike: boolean): LenisOptions {
     orientation: 'vertical',
     gestureOrientation: 'vertical',
     smoothWheel: true,
-    overscroll: true,
+    overscroll: false,
     anchors: {
       offset: anchorOffset,
-      duration: isTouchLike ? 0.7 : 0.85,
+      duration: isTouchLike ? 0.8 : 1,
       easing: smoothEase,
     },
     stopInertiaOnNavigate: true,
@@ -34,20 +36,20 @@ function createLenisOptions(isTouchLike: boolean): LenisOptions {
     return {
       ...baseOptions,
       syncTouch: true,
-      lerp: 0.16,
-      syncTouchLerp: 0.12,
-      touchInertiaExponent: 1.35,
-      wheelMultiplier: 1,
-      touchMultiplier: 1,
+      lerp: touchLerp,
+      syncTouchLerp: 0.09,
+      touchInertiaExponent: 1.5,
+      wheelMultiplier: 0.9,
+      touchMultiplier: 0.92,
     };
   }
 
   return {
     ...baseOptions,
     syncTouch: false,
-    lerp: 0.14,
-    wheelMultiplier: 0.95,
-    touchMultiplier: 1,
+    lerp: desktopLerp,
+    wheelMultiplier: 0.82,
+    touchMultiplier: 0.96,
   };
 }
 
