@@ -52,6 +52,8 @@ Use it to understand what is actually implemented now, what is seeded but limite
 
 - `reference/SOURCE_ASSETS.md`
   Non-runtime design and product inputs used to shape the current build.
+- `reference/build-plan/Yantra AI/YANTRA_AI_BASIC_SLICE_PLAN.md`
+  Step-by-step plan for the first local Python AI service slice.
 
 ## Fast Start For A New Builder
 
@@ -73,6 +75,7 @@ Yantra now has:
 - persisted starter dashboard data in dedicated dashboard tables
 - Gemini-backed Yantra chat with authenticated history restore
 - persisted public access requests
+- a local-only Python AI microservice scaffold under `ai/` for separate chat and RAG work
 
 Yantra still does not have:
 
@@ -82,6 +85,9 @@ Yantra still does not have:
 - an internal review UI for access requests
 - teacher, institution, certification, or hiring workflows
 - multi-thread or long-horizon learner memory beyond the current rolling chat history
+- website integration with the new Python AI microservice
+
+The local `ai/` service currently uses GitHub Copilot CLI for generation and local embeddings for retrieval. It should still be treated as a separate development surface, not a live product runtime.
 
 The docs in this folder should reflect that distinction clearly. Avoid describing seeded content, polished UI shells, or roadmap ideas as if they are already intelligent product systems.
 

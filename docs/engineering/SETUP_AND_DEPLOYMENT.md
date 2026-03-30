@@ -54,6 +54,35 @@ That script creates:
 npm run dev
 ```
 
+### Start the local AI microservice
+
+This is separate from the web app and is not wired into the website yet.
+
+```bash
+cd ai
+python -m venv .venv
+pip install -e .[dev]
+python scripts/reindex_knowledge.py
+uvicorn main:app --reload --port 8000
+```
+
+On Windows PowerShell, activate the virtual environment with `.venv\\Scripts\\Activate.ps1`.
+
+For Copilot-backed chat generation, make sure GitHub CLI is authenticated:
+
+```bash
+gh auth status
+```
+
+The service can reuse the `gh` login token automatically for Copilot CLI requests.
+
+If you want local terminal-only testing without the website and without FastAPI, run:
+
+```bash
+cd ai
+python terminal_chat.py
+```
+
 ### Validate TypeScript
 
 ```bash
@@ -97,6 +126,8 @@ npm run build
 - `PUT /api/profile`
 - `POST /api/access-requests`
 - `POST /api/docs-support`
+- `GET http://localhost:8000/health`
+- `POST http://localhost:8000/chat`
 
 ## Recommended Local Smoke Test
 

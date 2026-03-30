@@ -10,8 +10,10 @@ Yantra is a Next.js 16 prototype for an AI-native learning platform. The current
 - persisted access requests
 - authenticated chat history continuity
 - a Gemini-powered chat assistant
+- a separate local-only Python AI microservice scaffold under `ai/`
 
 The app is no longer just a static marketing-plus-dashboard shell. Authentication and profile persistence are live; most learning data, roadmap logic, and room functionality are still demo content.
+The new `ai/` service is intentionally not wired into the website yet. It now uses local embeddings for retrieval and GitHub Copilot CLI for local chat generation.
 
 ## Current Routes
 
@@ -65,6 +67,12 @@ The app is no longer just a static marketing-plus-dashboard shell. Authenticatio
 
 ```text
 Yantra/
+|-- ai/
+|   |-- knowledge/
+|   |-- tests/
+|   |-- yantra_ai/
+|   |-- main.py
+|   `-- pyproject.toml
 |-- app/
 |   |-- api/
 |   |-- auth/
@@ -117,6 +125,19 @@ Run the SQL in `supabase/schema.sql` against your Supabase project. That creates
 ```bash
 npm run dev
 ```
+
+### Local AI microservice
+
+The separate Python service can be started independently:
+
+```bash
+cd ai
+python -m venv .venv
+pip install -e .[dev]
+uvicorn main:app --reload --port 8000
+```
+
+On Windows PowerShell, activate the virtual environment with `.venv\\Scripts\\Activate.ps1`.
 
 ### Validate
 
