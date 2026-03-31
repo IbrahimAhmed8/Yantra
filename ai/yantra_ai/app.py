@@ -38,6 +38,10 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
+    @app.get("/")
+    def root() -> dict[str, str]:
+        return {"status": "ok", "service": "yantra-ai"}
+
     @app.get("/health")
     def health() -> dict[str, str]:
         return {"status": "ok"}

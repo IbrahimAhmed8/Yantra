@@ -129,11 +129,11 @@ function VoiceOrb({
   size?: 'large' | 'small';
 }) {
   const tone = toneForState(state);
-  const shellSize = size === 'large' ? 'h-36 w-36' : 'h-12 w-12';
-  const middleSize = size === 'large' ? 'inset-[16%]' : 'inset-[18%]';
-  const visualizerSize = size === 'large' ? 'h-16 w-16 gap-[3px]' : 'h-6 w-6 gap-[2px]';
+  const shellSize = size === 'large' ? 'h-28 w-28' : 'h-12 w-12';
+  const middleSize = size === 'large' ? 'inset-[18%]' : 'inset-[18%]';
+  const visualizerSize = size === 'large' ? 'h-12 w-12 gap-[3px]' : 'h-6 w-6 gap-[2px]';
   const barClass = size === 'large' ? 'w-[4px]' : 'w-[3px]';
-  const iconSize = size === 'large' ? 24 : 16;
+  const iconSize = size === 'large' ? 20 : 16;
 
   return (
     <div className={`relative flex items-center justify-center ${shellSize}`}>
@@ -294,7 +294,7 @@ function LiveAssistantPanel({
   const stateLabel = labelForState(state, String(connectionState));
   const shellClassName =
     mode === 'desktop'
-      ? 'sticky top-28 max-h-[calc(100svh-8.5rem)] self-start overflow-hidden rounded-[2rem] border border-cyan-300/14 bg-[linear-gradient(180deg,rgba(4,10,16,0.96),rgba(2,6,10,0.98))] shadow-[0_20px_64px_rgba(0,0,0,0.3)] backdrop-blur-[24px]'
+      ? 'sticky top-28 flex h-[calc(100svh-8.5rem)] max-h-[calc(100svh-8.5rem)] self-start overflow-hidden rounded-[2rem] border border-cyan-300/14 bg-[linear-gradient(180deg,rgba(4,10,16,0.96),rgba(2,6,10,0.98))] shadow-[0_20px_64px_rgba(0,0,0,0.3)] backdrop-blur-[24px]'
       : 'fixed inset-x-3 bottom-3 top-20 z-[72] flex overflow-hidden rounded-[2rem] border border-cyan-300/14 bg-[linear-gradient(180deg,rgba(4,10,16,0.96),rgba(2,6,10,0.98))] shadow-[0_28px_100px_rgba(0,0,0,0.55)] backdrop-blur-[24px]';
 
   return (
@@ -345,15 +345,22 @@ function LiveAssistantPanel({
           </div>
 
           <p className="mt-4 text-sm leading-relaxed text-white/58">{roomSummary}</p>
+
+          <div className="mt-4">
+            <StartAudio
+              label="Turn on audio"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[1.05rem] border border-cyan-300/18 bg-cyan-300/10 px-4 py-2.5 text-sm font-medium text-cyan-50 transition-colors hover:border-cyan-200/30 hover:bg-cyan-300/16"
+            />
+          </div>
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 pb-4 pt-4">
-            <div className="shrink-0 rounded-[1.75rem] border border-white/8 bg-[radial-gradient(circle_at_top,rgba(90,220,255,0.14),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.015))] px-4 py-5">
+            <div className="shrink-0 rounded-[1.75rem] border border-white/8 bg-[radial-gradient(circle_at_top,rgba(90,220,255,0.14),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.015))] px-4 py-4">
               <div className="flex flex-col items-center text-center">
                 <VoiceOrb state={state} audioTrack={audioTrack} />
-                <div className="mt-4 text-2xl font-semibold tracking-tight text-white">{agent?.name || 'Yantra'}</div>
-                <div className="mt-2 font-mono text-[11px] uppercase tracking-[0.22em] text-cyan-100/58">{stateLabel}</div>
+                <div className="mt-3 text-2xl font-semibold tracking-tight text-white">{agent?.name || 'Yantra'}</div>
+                <div className="mt-1.5 font-mono text-[11px] uppercase tracking-[0.22em] text-cyan-100/58">{stateLabel}</div>
               </div>
             </div>
 
@@ -437,11 +444,6 @@ function LiveAssistantPanel({
                 <span>End</span>
               </button>
             </div>
-
-            <StartAudio
-              label="Enable audio"
-              className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[1.05rem] border border-white/10 bg-white/[0.035] px-4 py-2.5 text-sm font-medium text-white/80 transition-colors hover:border-cyan-200/24 hover:bg-cyan-300/8"
-            />
           </div>
         </div>
       </div>

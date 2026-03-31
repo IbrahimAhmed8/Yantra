@@ -6,6 +6,7 @@
 - npm
 - a Supabase project
 - a Gemini API key
+- a deployed Yantra AI service URL for the main chat route
 
 ## Install
 
@@ -18,6 +19,8 @@ npm install
 Create `.env.local` and set:
 
 ```env
+YANTRA_AI_SERVICE_URL="https://YOUR-YANTRA-AI-SERVICE.onrender.com"
+YANTRA_AI_SERVICE_TIMEOUT_MS="65000"
 GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
 NEXT_PUBLIC_SUPABASE_URL="https://YOUR_PROJECT_REF.supabase.co"
 NEXT_PUBLIC_SUPABASE_ANON_KEY="YOUR_SUPABASE_ANON_KEY"
@@ -25,7 +28,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY="YOUR_SUPABASE_ANON_KEY"
 
 ### Notes
 
-- `GEMINI_API_KEY` is required by `POST /api/chat` and `POST /api/docs-support`.
+- `YANTRA_AI_SERVICE_URL` is the preferred backend for `POST /api/chat`.
+- `YANTRA_AI_SERVICE_TIMEOUT_MS` controls how long the Next route waits for the Python service. The default is `65000` to tolerate Render free cold starts.
+- `GEMINI_API_KEY` is still required by `POST /api/docs-support`, and `POST /api/chat` uses it as a fallback only when `YANTRA_AI_SERVICE_URL` is not set.
 - `GOOGLE_API_KEY` is also accepted by the Gemini routes as a fallback, but `GEMINI_API_KEY` is the documented default.
 - `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are required for auth, onboarding, protected routes, profile persistence, dashboard persistence, and chat-history persistence.
 - Google sign-in does not need extra app env vars here; it is configured inside Supabase Auth.
@@ -56,7 +61,7 @@ npm run dev
 
 ### Start the local AI microservice
 
-This is separate from the web app and is not wired into the website yet.
+This is separate from the web app. The web app can call it by setting `YANTRA_AI_SERVICE_URL`.
 
 ```bash
 cd ai
@@ -160,6 +165,8 @@ npm run build
 
 ### Required environment variables in Vercel
 
+- `YANTRA_AI_SERVICE_URL`
+- `YANTRA_AI_SERVICE_TIMEOUT_MS`
 - `GEMINI_API_KEY`
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
@@ -221,7 +228,7 @@ Yantra routes auth confirmations and Google sign-in back through `/auth/confirm`
 - the marketing page
 - the docs pages
 - the docs support route, as long as a Gemini key is present
-- the main chat route, as long as a Gemini key is present
+- the main chat route, as long as either `YANTRA_AI_SERVICE_URL` is set or a Gemini key is present
 
 Without Supabase env vars, auth pages stay visible but display configuration guidance, and protected dashboard routes redirect back to `/login`.
 
@@ -231,7 +238,7 @@ Without Supabase env vars, auth pages stay visible but display configuration gui
 
 Check:
 
-- `GEMINI_API_KEY` or `GOOGLE_API_KEY` is set
+- `YANTRA_AI_SERVICE_URL` is set, or `GEMINI_API_KEY` / `GOOGLE_API_KEY` is set
 - the deployment has restarted after env changes
 - the request body contains at least one valid user/assistant message
 

@@ -36,13 +36,15 @@ The auth pages and docs pages do not embed the Yantra chat widget.
 4. Authenticated users receive their latest rolling conversation when a history row exists.
 5. Logged-out users keep the in-memory welcome state only.
 6. Sending a message posts recent conversation to `POST /api/chat`.
-7. The route sanitizes the message list, trims model input to the last 12 messages, and calls Gemini with the shared Yantra system prompt.
-8. When Supabase is configured and a user session exists, the route upserts the updated rolling history into `public.chat_histories`.
+7. The route sanitizes the message list, trims model input to the last 12 messages, builds learner context from the authenticated profile when available, and proxies the request to the Python Yantra AI service when `YANTRA_AI_SERVICE_URL` is set.
+8. If the AI service URL is not configured, the route falls back to Gemini directly.
+9. When Supabase is configured and a user session exists, the route upserts the updated rolling history into `public.chat_histories`.
 
 ## Current Runtime Details
 
-- model: `gemini-2.5-flash`
-- API package: `@google/genai`
+- primary backend: Python Yantra AI microservice over HTTP
+- fallback model: `gemini-2.5-flash`
+- fallback API package: `@google/genai`
 - server runtime: Node.js
 - model input window: 12 sanitized messages
 - persisted history window: 40 sanitized messages
@@ -70,11 +72,15 @@ The auth pages and docs pages do not embed the Yantra chat widget.
 
 ## Environment Dependency
 
-Requires:
+Preferred:
+
+- `YANTRA_AI_SERVICE_URL`
+
+Optional fallback:
 
 - `GEMINI_API_KEY`
 
-The route also accepts `GOOGLE_API_KEY` as a fallback.
+The route also accepts `GOOGLE_API_KEY` as a fallback when the microservice URL is not configured.
 
 ## Important Separation
 
