@@ -2,9 +2,10 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { ArrowLeft, Bot, CirclePlay, Clock3, FileCode2, FlaskConical, Sparkles } from 'lucide-react';
+import { ArrowLeft, CirclePlay, Clock3, FileCode2, FlaskConical, Sparkles } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import YantraMobileMenu from '@/src/features/navigation/YantraMobileMenu';
+import RoomVoiceAssistant from '@/src/features/rooms/RoomVoiceAssistant';
 import { runPythonInBrowser, warmPyodideRuntime } from './pyodide-runtime';
 import { pythonRoomDayOneContent } from './python-room-content';
 
@@ -388,8 +389,8 @@ export default function PythonRoomShell() {
               </button>
             </div>
 
-            <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_18rem]">
-              <div className="rounded-[2rem] border border-white/8 bg-white/[0.03] p-5 shadow-[0_20px_64px_rgba(0,0,0,0.28)] backdrop-blur-[24px] sm:p-6">
+            <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_21rem] 2xl:grid-cols-[minmax(0,1fr)_22rem]">
+              <div className="min-w-0 rounded-[2rem] border border-white/8 bg-white/[0.03] p-5 shadow-[0_20px_64px_rgba(0,0,0,0.28)] backdrop-blur-[24px] sm:p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <div className="font-mono text-[10px] uppercase tracking-[0.26em] text-white/38">Output</div>
@@ -408,20 +409,11 @@ export default function PythonRoomShell() {
                 </div>
               </div>
 
-              <aside className="rounded-[2rem] border border-white/8 bg-white/[0.03] p-5 shadow-[0_20px_64px_rgba(0,0,0,0.28)] backdrop-blur-[24px] sm:p-6">
-                <div className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-white/82">
-                  <Bot size={18} />
-                </div>
-                <div className="mt-5 font-mono text-[10px] uppercase tracking-[0.26em] text-white/38">Future mentor dock</div>
-                <div className="mt-3 font-display text-[1.9rem] font-medium leading-[0.92] text-white">Yantra AI will live here.</div>
-                <p className="mt-4 text-sm leading-relaxed text-white/60">
-                  Desktop: this dock becomes the coaching lane beside your output. Mobile: it stacks below the output so the room never turns into a cramped 3-column layout.
-                </p>
-                <div className="mt-5 rounded-[1.35rem] border border-white/8 bg-black/26 p-4">
-                  <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/40">Day 4</div>
-                  <div className="mt-2 text-sm text-white/72">Explain errors, review logic, suggest next step.</div>
-                </div>
-              </aside>
+              <RoomVoiceAssistant
+                roomKey="python-room"
+                roomLabel="Python Room"
+                roomSummary="Ask for hints, explain your code, review errors, or let Yantra stay on the side while you keep running the room."
+              />
             </div>
 
             <details className="rounded-[1.75rem] border border-white/8 bg-white/[0.03] p-5 shadow-[0_18px_54px_rgba(0,0,0,0.26)] backdrop-blur-[24px] lg:hidden">
@@ -445,6 +437,7 @@ export default function PythonRoomShell() {
           </section>
         </div>
       </main>
+
     </div>
   );
 }

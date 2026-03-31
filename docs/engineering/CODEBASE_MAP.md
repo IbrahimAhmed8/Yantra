@@ -4,6 +4,14 @@
 
 ```text
 Yantra/
+|-- ai/
+|   |-- knowledge/
+|   |-- tests/
+|   |-- yantra_ai/
+|   |-- .env.example
+|   |-- main.py
+|   |-- pyproject.toml
+|   `-- README.md
 |-- app/
 |   |-- api/
 |   |   |-- access-requests/route.ts
@@ -89,6 +97,15 @@ Yantra/
 ### `app/`
 
 Route entrypoints, redirect logic, auth utility handlers, and API route handlers.
+
+### `ai/`
+
+Local-only Python FastAPI scaffold for the next Yantra AI build stage. It currently owns:
+
+- the standalone `/health` and `/chat` microservice endpoints
+- the local markdown knowledge base under `ai/knowledge/`
+- local embedding-based retrieval plus GitHub Copilot CLI generation
+- pytest coverage for local AI iteration without the website
 
 ### `src/features/access/`
 
@@ -189,6 +206,7 @@ Project SQL required for the current auth, profile, dashboard, access-request, a
 - `src/features/docs/docs-content.ts` is the content source of truth for the docs system and the Support Desk retrieval layer.
 - `src/lib/supabase/dashboard.ts` is the persistence boundary for starter dashboard data.
 - `proxy.ts` at the repo root is required for Supabase SSR cookie refresh and should be treated as active runtime code, not a leftover file.
+- `ai/` is intentionally not connected to the Next.js runtime yet; it is a separate local development surface.
 
 ## Reference And Non-Runtime Items
 

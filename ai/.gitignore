@@ -1,0 +1,7 @@
+.pytest_cache/
+.venv/
+data/*.json
+!data/knowledge_index.json
+__pycache__/
+*.pyc
+*.egg-info/
