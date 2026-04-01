@@ -28,7 +28,13 @@ type ChatReply = { reply?: string; error?: string };
 type TranscriptReply = { transcript?: string; languageCode?: string | null; error?: string };
 
 const MAX_RECORDING_MS = 20_000;
-const AUDIO_GAIN = 2.4;
+const SPEECH_LEVEL_THRESHOLD = 0.02;
+const SILENCE_AUTOSTOP_MS = 1400;
+const NO_SPEECH_TIMEOUT_MS = 7000;
+const MIN_SPEECH_MS = 450;
+const MIN_CAPTURED_LEVEL = 0.08;
+const HANDS_FREE_REARM_DELAY_MS = 900;
+const PLAYBACK_BOOST_GAIN = 2.4;
 
 function useDesktopSidebar() {
   const [isDesktop, setIsDesktop] = useState(false);
@@ -61,6 +67,23 @@ function labelForStatus(status: VoiceStatus) {
     default:
       return 'ready';
   }
+}
+
+function createVoiceReply(text: string) {
+  let cleaned = text
+    .replace(/^Learner,\s*here is the grounded answer\.?\s*/i, '')
+    .replace(/^Krish Verma,\s*here is the grounded answer\.?\s*/i, '')
+    .replace(/\bsources?>.*$/gis, '')
+    .replace(/\bCurrent grounding came from:.*$/gis, '')
+    .replace(/\bNext step:.*$/gis, '')
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/^\s*[-*]\s+/gm, '')
+    .replace(/^\s*\d+\.\s+/gm, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return cleaned || 'I am here. Ask me about your code, errors, or the next step in this room.';
 }
 
 function toneForStatus(status: VoiceStatus) {
@@ -147,6 +170,7 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
   const isDesktop = useDesktopSidebar();
   const [isLaunched, setIsLaunched] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [handsFreeEnabled, setHandsFreeEnabled] = useState(false);
   const [status, setStatus] = useState<VoiceStatus>('ready');
   const [error, setError] = useState<string | null>(null);
   const [backendReady, setBackendReady] = useState(false);
@@ -160,59 +184,89 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
   const recordedChunksRef = useRef<Blob[]>([]);
   const autoStopTimerRef = useRef<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const gainRef = useRef<GainNode | null>(null);
-  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
   const currentAudioUrlRef = useRef<string | null>(null);
   const requestNonceRef = useRef(0);
+  const outputAudioContextRef = useRef<AudioContext | null>(null);
+  const outputSourceRef = useRef<MediaElementAudioSourceNode | null>(null);
+  const outputGainRef = useRef<GainNode | null>(null);
+  const inputAudioContextRef = useRef<AudioContext | null>(null);
+  const inputSourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
+  const inputAnalyserRef = useRef<AnalyserNode | null>(null);
+  const inputMonitorFrameRef = useRef<number | null>(null);
+  const heardSpeechRef = useRef(false);
+  const heardSpeechMsRef = useRef(0);
+  const peakMicLevelRef = useRef(0);
+  const silentSinceRef = useRef<number | null>(null);
+  const noSpeechTimerRef = useRef<number | null>(null);
+  const [micLevel, setMicLevel] = useState(0);
+  const shouldResumeAfterSpeechRef = useRef(false);
+  const handsFreeEnabledRef = useRef(false);
+  const lastAnalyserTickRef = useRef<number | null>(null);
 
   useOverlayLock('room-voice-assistant', isOpen && !isDesktop);
 
   const stateLabel = useMemo(() => labelForStatus(status), [status]);
 
   useEffect(() => {
+    handsFreeEnabledRef.current = handsFreeEnabled;
+  }, [handsFreeEnabled]);
+
+  useEffect(() => {
     return () => {
       if (autoStopTimerRef.current !== null) {
         window.clearTimeout(autoStopTimerRef.current);
+      }
+      if (noSpeechTimerRef.current !== null) {
+        window.clearTimeout(noSpeechTimerRef.current);
       }
       mediaRecorderRef.current?.stop();
       mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
       if (currentAudioUrlRef.current) {
         URL.revokeObjectURL(currentAudioUrlRef.current);
       }
-      if (audioContextRef.current) {
-        void audioContextRef.current.close().catch(() => undefined);
+      if (inputMonitorFrameRef.current !== null) {
+        window.cancelAnimationFrame(inputMonitorFrameRef.current);
+      }
+      if (inputAudioContextRef.current) {
+        void inputAudioContextRef.current.close().catch(() => undefined);
+      }
+      if (outputAudioContextRef.current) {
+        void outputAudioContextRef.current.close().catch(() => undefined);
       }
     };
   }, []);
+
+  async function ensureOutputBoost() {
+    const element = audioRef.current;
+    if (!element || typeof window.AudioContext === 'undefined') {
+      return;
+    }
+
+    if (!outputAudioContextRef.current) {
+      const context = new window.AudioContext();
+      const source = context.createMediaElementSource(element);
+      const gainNode = context.createGain();
+      gainNode.gain.value = PLAYBACK_BOOST_GAIN;
+      source.connect(gainNode);
+      gainNode.connect(context.destination);
+      outputAudioContextRef.current = context;
+      outputSourceRef.current = source;
+      outputGainRef.current = gainNode;
+    }
+
+    if (outputAudioContextRef.current.state === 'suspended') {
+      await outputAudioContextRef.current.resume();
+    }
+  }
 
   async function primeAudio() {
     const element = audioRef.current;
     if (!element) {
       return;
     }
-
-    if (window.AudioContext && !audioContextRef.current) {
-      const context = new window.AudioContext();
-      const source = context.createMediaElementSource(element);
-      const gain = context.createGain();
-      gain.gain.value = AUDIO_GAIN;
-      source.connect(gain);
-      gain.connect(context.destination);
-      audioContextRef.current = context;
-      sourceRef.current = source;
-      gainRef.current = gain;
-      element.muted = true;
-    }
-
-    try {
-      if (audioContextRef.current && audioContextRef.current.state !== 'running') {
-        await audioContextRef.current.resume();
-      }
-    } catch {
-      element.muted = false;
-    }
-
+    await ensureOutputBoost();
+    element.muted = false;
+    element.volume = 1;
     setAudioPrimed(true);
   }
 
@@ -245,9 +299,108 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
       window.clearTimeout(autoStopTimerRef.current);
       autoStopTimerRef.current = null;
     }
+    if (noSpeechTimerRef.current !== null) {
+      window.clearTimeout(noSpeechTimerRef.current);
+      noSpeechTimerRef.current = null;
+    }
+    if (inputMonitorFrameRef.current !== null) {
+      window.cancelAnimationFrame(inputMonitorFrameRef.current);
+      inputMonitorFrameRef.current = null;
+    }
     mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
     mediaStreamRef.current = null;
     mediaRecorderRef.current = null;
+    heardSpeechRef.current = false;
+    heardSpeechMsRef.current = 0;
+    peakMicLevelRef.current = 0;
+    silentSinceRef.current = null;
+    lastAnalyserTickRef.current = null;
+    setMicLevel(0);
+    inputSourceRef.current?.disconnect();
+    inputAnalyserRef.current?.disconnect();
+    inputSourceRef.current = null;
+    inputAnalyserRef.current = null;
+    if (inputAudioContextRef.current) {
+      void inputAudioContextRef.current.close().catch(() => undefined);
+      inputAudioContextRef.current = null;
+    }
+  }
+
+  function beginHandsFreeLoop() {
+    setHandsFreeEnabled(true);
+    handsFreeEnabledRef.current = true;
+  }
+
+  function stopHandsFreeLoop() {
+    setHandsFreeEnabled(false);
+    handsFreeEnabledRef.current = false;
+    shouldResumeAfterSpeechRef.current = false;
+  }
+
+  function stopRecordingWithReason() {
+    if (mediaRecorderRef.current?.state === 'recording') {
+      mediaRecorderRef.current.stop();
+    }
+  }
+
+  function startInputMonitoring(stream: MediaStream) {
+    if (!window.AudioContext) {
+      return;
+    }
+
+    const context = new window.AudioContext();
+    const source = context.createMediaStreamSource(stream);
+    const analyser = context.createAnalyser();
+    analyser.fftSize = 2048;
+    analyser.smoothingTimeConstant = 0.86;
+    source.connect(analyser);
+
+    inputAudioContextRef.current = context;
+    inputSourceRef.current = source;
+    inputAnalyserRef.current = analyser;
+
+    const samples = new Float32Array(analyser.fftSize);
+
+    const tick = () => {
+      const activeAnalyser = inputAnalyserRef.current;
+      const activeRecorder = mediaRecorderRef.current;
+
+      if (!activeAnalyser || !activeRecorder || activeRecorder.state !== 'recording') {
+        setMicLevel(0);
+        return;
+      }
+
+      activeAnalyser.getFloatTimeDomainData(samples);
+      let sumSquares = 0;
+      for (const sample of samples) {
+        sumSquares += sample * sample;
+      }
+
+      const rms = Math.sqrt(sumSquares / samples.length);
+      const normalizedLevel = Math.min(1, rms * 10);
+      setMicLevel(normalizedLevel);
+      peakMicLevelRef.current = Math.max(peakMicLevelRef.current, normalizedLevel);
+
+      const now = performance.now();
+      const deltaMs = lastAnalyserTickRef.current === null ? 0 : now - lastAnalyserTickRef.current;
+      lastAnalyserTickRef.current = now;
+      if (rms >= SPEECH_LEVEL_THRESHOLD) {
+        heardSpeechRef.current = true;
+        heardSpeechMsRef.current += deltaMs;
+        silentSinceRef.current = null;
+      } else if (heardSpeechRef.current) {
+        if (silentSinceRef.current === null) {
+          silentSinceRef.current = now;
+        } else if (now - silentSinceRef.current >= SILENCE_AUTOSTOP_MS) {
+          stopRecordingWithReason();
+          return;
+        }
+      }
+
+      inputMonitorFrameRef.current = window.requestAnimationFrame(tick);
+    };
+
+    inputMonitorFrameRef.current = window.requestAnimationFrame(tick);
   }
 
   async function playReply(blob: Blob) {
@@ -265,14 +418,19 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
     const url = URL.createObjectURL(blob);
     currentAudioUrlRef.current = url;
     element.src = url;
+    element.load();
     element.currentTime = 0;
+    element.muted = false;
+    element.volume = 1;
 
     try {
       await element.play();
       setStatus('speaking');
+      shouldResumeAfterSpeechRef.current = handsFreeEnabledRef.current;
     } catch {
       setStatus('error');
       setError('Yantra has a reply ready, but the browser blocked playback. Click "Turn on audio" and try again.');
+      shouldResumeAfterSpeechRef.current = false;
     }
   }
 
@@ -297,7 +455,19 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
       const transcriptData = (await transcriptResponse.json()) as TranscriptReply;
 
       if (!transcriptResponse.ok || !transcriptData.transcript?.trim()) {
-        throw new Error(transcriptData.error || 'Sarvam could not understand that audio.');
+        if (handsFreeEnabledRef.current) {
+          setStatus('ready');
+          setError(null);
+          setUserTranscript('');
+          window.setTimeout(() => {
+            if (handsFreeEnabledRef.current && !mediaRecorderRef.current) {
+              void startRecording();
+            }
+          }, HANDS_FREE_REARM_DELAY_MS);
+          return;
+        }
+        const message = transcriptData.error || 'Sarvam could not transcribe the audio.';
+        throw new Error(message);
       }
 
       const transcript = transcriptData.transcript.trim();
@@ -316,7 +486,7 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
         throw new Error(chatData.error || 'Yantra could not answer right now.');
       }
 
-      const reply = chatData.reply.trim();
+      const reply = createVoiceReply(chatData.reply.trim());
       setMessages([...nextMessages, { role: 'assistant' as const, content: reply }].slice(-8));
       setAssistantReply(reply);
 
@@ -339,8 +509,21 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
         await playReply(audioBlob);
       }
     } catch (requestError) {
-      setStatus('error');
-      setError(requestError instanceof Error ? requestError.message : 'Voice request failed.');
+      if (handsFreeEnabledRef.current) {
+        setStatus('ready');
+        setError(null);
+        shouldResumeAfterSpeechRef.current = false;
+        setUserTranscript('');
+        window.setTimeout(() => {
+          if (handsFreeEnabledRef.current && !mediaRecorderRef.current) {
+            void startRecording();
+          }
+        }, HANDS_FREE_REARM_DELAY_MS);
+      } else {
+        setStatus('error');
+        setError(requestError instanceof Error ? requestError.message : 'Voice request failed.');
+        shouldResumeAfterSpeechRef.current = false;
+      }
     }
   }
 
@@ -364,6 +547,7 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
       const mimeType = preferredMimeType();
       const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
       mediaRecorderRef.current = recorder;
+      startInputMonitoring(stream);
 
       recorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -377,16 +561,37 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
       };
       recorder.onstop = () => {
         const blob = new Blob(recordedChunksRef.current, { type: mimeType || 'audio/webm' });
+        const capturedSpeech = heardSpeechRef.current;
+        const capturedSpeechMs = heardSpeechMsRef.current;
+        const capturedPeakLevel = peakMicLevelRef.current;
         clearRecordingState();
+        if (!capturedSpeech || capturedSpeechMs < MIN_SPEECH_MS || capturedPeakLevel < MIN_CAPTURED_LEVEL) {
+          if (handsFreeEnabledRef.current) {
+            setStatus('ready');
+            setError(null);
+            window.setTimeout(() => {
+              if (handsFreeEnabledRef.current && !mediaRecorderRef.current) {
+                void startRecording();
+              }
+            }, HANDS_FREE_REARM_DELAY_MS);
+            return;
+          }
+          setStatus('error');
+          setError('Yantra did not detect speech from the microphone. Check the selected mic, speak closer, or start hands-free again.');
+          return;
+        }
         void handleAudio(blob);
       };
 
       recorder.start();
       autoStopTimerRef.current = window.setTimeout(() => {
-        if (mediaRecorderRef.current?.state === 'recording') {
-          mediaRecorderRef.current.stop();
-        }
+        stopRecordingWithReason();
       }, MAX_RECORDING_MS);
+      noSpeechTimerRef.current = window.setTimeout(() => {
+        if (!heardSpeechRef.current) {
+          stopRecordingWithReason();
+        }
+      }, NO_SPEECH_TIMEOUT_MS);
     } catch (recordingError) {
       clearRecordingState();
       setStatus('error');
@@ -395,12 +600,26 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
   }
 
   function stopRecording() {
-    if (mediaRecorderRef.current?.state === 'recording') {
-      mediaRecorderRef.current.stop();
-    }
+    stopRecordingWithReason();
   }
 
   function toggleRecording() {
+    if (handsFreeEnabled) {
+      stopHandsFreeLoop();
+      if (status === 'recording') {
+        stopRecording();
+      }
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      if (status !== 'error') {
+        setStatus('ready');
+      }
+      return;
+    }
+
+    beginHandsFreeLoop();
+
     if (status === 'recording') {
       stopRecording();
       return;
@@ -421,6 +640,7 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
   }
 
   function endSession() {
+    stopHandsFreeLoop();
     stopRecording();
     clearRecordingState();
     if (audioRef.current) {
@@ -440,6 +660,24 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
     setUserTranscript('');
     setAssistantReply('');
     setMessages([]);
+  }
+
+  function handleAudioEnded() {
+    setStatus('ready');
+
+    if (!shouldResumeAfterSpeechRef.current) {
+      return;
+    }
+
+    shouldResumeAfterSpeechRef.current = false;
+
+    window.setTimeout(() => {
+      if (!handsFreeEnabledRef.current || mediaRecorderRef.current || status === 'error') {
+        return;
+      }
+
+      void startRecording();
+    }, HANDS_FREE_REARM_DELAY_MS);
   }
 
   const panel = (
@@ -481,6 +719,16 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
             <div className="rounded-[1.05rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/72">
               Backend: <span className={backendReady ? 'text-emerald-200' : 'text-amber-200'}>{backendReady ? 'awake' : 'warming up'}</span>
             </div>
+            {status === 'recording' ? (
+              <div className="rounded-[1.05rem] border border-cyan-300/14 bg-cyan-300/[0.06] px-4 py-3 text-sm text-cyan-50/86">
+                Hands-free is on. Speak now and Yantra will send automatically when you pause.
+              </div>
+            ) : null}
+            {handsFreeEnabled && status !== 'recording' && status !== 'transcribing' && status !== 'thinking' && status !== 'speaking' ? (
+              <div className="rounded-[1.05rem] border border-emerald-300/14 bg-emerald-300/[0.06] px-4 py-3 text-sm text-emerald-50/86">
+                Hands-free is armed. Yantra will start listening again after each spoken reply.
+              </div>
+            ) : null}
             {!audioPrimed ? (
               <ActionButton onClick={() => { void primeAudio(); }} tone="primary">
                 <Volume2 size={15} />
@@ -488,21 +736,30 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
               </ActionButton>
             ) : null}
             {error ? (
-              <ActionButton onClick={retryAssistant}>
-                <Sparkles size={15} />
-                <span>Try again</span>
-              </ActionButton>
+              <>
+                <div className="max-h-40 overflow-y-auto break-words rounded-[1.05rem] border border-rose-300/18 bg-rose-400/10 px-4 py-3 text-sm leading-relaxed text-rose-100">
+                  {error}
+                </div>
+                <ActionButton onClick={retryAssistant}>
+                  <Sparkles size={15} />
+                  <span>Try again</span>
+                </ActionButton>
+              </>
             ) : null}
           </div>
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 pb-4 pt-4">
-            <div className="shrink-0 rounded-[1.75rem] border border-white/8 bg-[radial-gradient(circle_at_top,rgba(90,220,255,0.14),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.015))] px-4 py-4">
+            <div className="shrink-0 rounded-[1.5rem] border border-white/8 bg-[radial-gradient(circle_at_top,rgba(90,220,255,0.14),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.015))] px-4 py-4">
               <div className="flex flex-col items-center text-center">
                 <VoiceOrb status={status} />
                 <div className="mt-3 text-2xl font-semibold tracking-tight text-white">Yantra</div>
                 <div className="mt-1.5 font-mono text-[11px] uppercase tracking-[0.22em] text-cyan-100/58">{stateLabel}</div>
+                <div className="mt-4 w-full rounded-full border border-white/8 bg-black/34 p-1">
+                  <div className="h-2 rounded-full bg-[linear-gradient(90deg,rgba(80,230,255,0.25),rgba(80,230,255,0.9))] transition-[width] duration-100" style={{ width: `${Math.max(4, micLevel * 100)}%` }} />
+                </div>
+                <div className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/36">Mic level</div>
               </div>
             </div>
 
@@ -513,11 +770,11 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
               </div>
               <div className="rounded-[1.2rem] border border-white/8 bg-white/[0.03] p-3">
                 <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/38">Heard you say</div>
-                <div className="mt-2 text-sm leading-relaxed text-white/74">{userTranscript || 'Press Mic, speak, then press Stop to send the audio to Yantra.'}</div>
+                <div className="mt-2 text-sm leading-relaxed text-white/74">{userTranscript || 'Press Mic once to arm hands-free mode, then speak naturally. Yantra will send after you pause.'}</div>
               </div>
               <div className="mt-3 rounded-[1.2rem] border border-white/8 bg-white/[0.03] p-3">
                 <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-white/38"><Volume2 size={13} />Yantra reply</div>
-                <div className="mt-2 max-h-32 overflow-y-auto text-sm leading-relaxed text-white/74">{assistantReply || 'Yantra’s next spoken answer will appear here.'}</div>
+                <div className="mt-2 max-h-40 overflow-y-auto text-sm leading-relaxed text-white/74">{assistantReply || 'Yantra’s next spoken answer will appear here.'}</div>
               </div>
             </div>
 
@@ -531,8 +788,8 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
           <div className="shrink-0 border-t border-white/8 bg-black/26 px-5 py-4">
             <div className="grid grid-cols-2 gap-3">
               <ActionButton onClick={toggleRecording}>
-                {status === 'recording' ? <Square size={16} /> : <Mic size={16} />}
-                <span>{status === 'recording' ? 'Stop' : 'Mic'}</span>
+                {handsFreeEnabled ? <Square size={16} /> : <Mic size={16} />}
+                <span>{handsFreeEnabled ? 'Pause Voice' : 'Start Hands-Free'}</span>
               </ActionButton>
               <ActionButton onClick={endSession} tone="danger">
                 <Power size={16} />
@@ -549,9 +806,10 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
     <>
       <audio
         ref={audioRef}
-        hidden
         preload="none"
-        onEnded={() => setStatus('ready')}
+        className="pointer-events-none absolute h-0 w-0 opacity-0"
+        playsInline
+        onEnded={handleAudioEnded}
       />
 
       {!isLaunched ? (

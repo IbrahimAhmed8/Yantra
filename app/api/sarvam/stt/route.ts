@@ -14,6 +14,24 @@ function requireSarvamKey() {
   return key;
 }
 
+function sanitizeAudioFile(file: File) {
+  const rawType = file.type?.trim().toLowerCase() || '';
+
+  if (rawType.startsWith('audio/webm')) {
+    return new File([file], file.name || 'yantra-room.webm', { type: 'audio/webm' });
+  }
+
+  if (rawType.startsWith('audio/ogg')) {
+    return new File([file], file.name || 'yantra-room.ogg', { type: 'audio/ogg' });
+  }
+
+  if (rawType.startsWith('audio/mp4')) {
+    return new File([file], file.name || 'yantra-room.mp4', { type: 'audio/mp4' });
+  }
+
+  return file;
+}
+
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
@@ -23,8 +41,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Audio file is required.' }, { status: 400 });
     }
 
+    const normalizedFile = sanitizeAudioFile(file);
     const payload = new FormData();
-    payload.append('file', file, file.name || 'yantra-room.webm');
+    payload.append('file', normalizedFile, normalizedFile.name || 'yantra-room.webm');
     payload.append('model', process.env.YANTRA_SARVAM_STT_MODEL?.trim() || 'saaras:v3');
     payload.append('language_code', process.env.YANTRA_SARVAM_STT_LANGUAGE?.trim() || 'unknown');
     payload.append('with_timestamps', 'false');
