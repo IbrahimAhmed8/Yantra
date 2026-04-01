@@ -169,6 +169,8 @@ The priority is depth over breadth.
 - The dashboard still contains mock room UI cards.
 - Day 1 shell is implemented at `/dashboard/rooms/python`.
 - Day 2 browser execution is implemented with Pyodide inside the same room.
+- The room now performs error-only verification on `Run Python`: runtime errors are highlighted in the editor and routed to Yantra for one short hint-oriented reply.
+- Successful runs stay silent from the AI layer to avoid unnecessary model spend.
 - Dashboard integration is still deferred until Day 6.
 
 When room work continues, begin with Day 3 from this file.

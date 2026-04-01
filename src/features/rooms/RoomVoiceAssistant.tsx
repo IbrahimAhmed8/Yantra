@@ -13,13 +13,25 @@ import {
   Waves,
   X,
 } from 'lucide-react';
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { forwardRef, type ReactNode, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useOverlayLock } from '@/src/features/motion/ExperienceProvider';
 
 type RoomVoiceAssistantProps = {
   roomKey: string;
   roomLabel: string;
   roomSummary: string;
+};
+
+export type RoomVoiceAssistantAnnouncement = {
+  transcriptLabel: string;
+  reply: string;
+  autoOpen?: boolean;
+  autoSpeak?: boolean;
+};
+
+export type RoomVoiceAssistantHandle = {
+  announceSystemReply: (announcement: RoomVoiceAssistantAnnouncement) => Promise<void>;
+  clearSystemReply: () => void;
 };
 
 type VoiceStatus = 'ready' | 'warming' | 'recording' | 'transcribing' | 'thinking' | 'speaking' | 'error';
@@ -35,6 +47,11 @@ const MIN_SPEECH_MS = 450;
 const MIN_CAPTURED_LEVEL = 0.08;
 const HANDS_FREE_REARM_DELAY_MS = 900;
 const PLAYBACK_BOOST_GAIN = 2.4;
+
+type PlaybackOptions = {
+  blockedMessage: string;
+  failHard?: boolean;
+};
 
 function useDesktopSidebar() {
   const [isDesktop, setIsDesktop] = useState(false);
@@ -166,13 +183,17 @@ function ActionButton({
   );
 }
 
-export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoiceAssistantProps) {
+const RoomVoiceAssistant = forwardRef<RoomVoiceAssistantHandle, RoomVoiceAssistantProps>(function RoomVoiceAssistant(
+  { roomLabel, roomSummary }: RoomVoiceAssistantProps,
+  ref,
+) {
   const isDesktop = useDesktopSidebar();
   const [isLaunched, setIsLaunched] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [handsFreeEnabled, setHandsFreeEnabled] = useState(false);
   const [status, setStatus] = useState<VoiceStatus>('ready');
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [backendReady, setBackendReady] = useState(false);
   const [audioPrimed, setAudioPrimed] = useState(false);
   const [userTranscript, setUserTranscript] = useState('');
@@ -268,6 +289,7 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
     element.muted = false;
     element.volume = 1;
     setAudioPrimed(true);
+    setNotice(null);
   }
 
   async function checkBackendHealth() {
@@ -280,6 +302,7 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
       setBackendReady(true);
       setStatus('ready');
       setError(null);
+      setNotice(null);
     } catch (healthError) {
       setBackendReady(false);
       setStatus('error');
@@ -291,7 +314,14 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
     setIsLaunched(true);
     setIsOpen(true);
     setError(null);
+    setNotice(null);
     await checkBackendHealth();
+  }
+
+  function clearDisplayedReply() {
+    setUserTranscript('');
+    setAssistantReply('');
+    setNotice(null);
   }
 
   function clearRecordingState() {
@@ -403,13 +433,13 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
     inputMonitorFrameRef.current = window.requestAnimationFrame(tick);
   }
 
-  async function playReply(blob: Blob) {
+  async function playReply(blob: Blob, options: PlaybackOptions) {
     const element = audioRef.current;
     if (!element) {
       return;
     }
 
-    await primeAudio();
+    await ensureOutputBoost();
 
     if (currentAudioUrlRef.current) {
       URL.revokeObjectURL(currentAudioUrlRef.current);
@@ -422,17 +452,92 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
     element.currentTime = 0;
     element.muted = false;
     element.volume = 1;
+    setNotice(null);
 
     try {
       await element.play();
+      setAudioPrimed(true);
       setStatus('speaking');
       shouldResumeAfterSpeechRef.current = handsFreeEnabledRef.current;
     } catch {
-      setStatus('error');
-      setError('Yantra has a reply ready, but the browser blocked playback. Click "Turn on audio" and try again.');
+      if (options.failHard ?? true) {
+        setStatus('error');
+        setError(options.blockedMessage);
+      } else {
+        setStatus('ready');
+        setNotice(options.blockedMessage);
+      }
       shouldResumeAfterSpeechRef.current = false;
     }
   }
+
+  async function speakAssistantReply(reply: string) {
+    try {
+      const ttsResponse = await fetch('/api/sarvam/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: reply }),
+      });
+
+      if (!ttsResponse.ok) {
+        const ttsError = (await ttsResponse.json().catch(() => ({}))) as { error?: string };
+        setStatus('ready');
+        setNotice(ttsError.error || 'Yantra wrote the reply, but audio playback is unavailable right now.');
+        return;
+      }
+
+      const audioBlob = await ttsResponse.blob();
+      await playReply(audioBlob, {
+        blockedMessage: 'Yantra wrote the reply, but the browser blocked audio playback. Use "Turn on audio" if you want spoken feedback.',
+        failHard: false,
+      });
+    } catch (speechError) {
+      setStatus('ready');
+      setNotice(speechError instanceof Error ? speechError.message : 'Yantra wrote the reply, but audio playback is unavailable right now.');
+    }
+  }
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      async announceSystemReply({ transcriptLabel, reply, autoOpen = true, autoSpeak = true }) {
+        const sanitizedReply = createVoiceReply(reply);
+        const busyCapturing = status === 'recording' || status === 'transcribing' || status === 'thinking';
+
+        requestNonceRef.current += 1;
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+        }
+
+        setBackendReady(true);
+        setError(null);
+        setNotice(null);
+        setIsLaunched(true);
+        setUserTranscript(transcriptLabel.trim());
+        setAssistantReply(sanitizedReply);
+        setMessages((current) => [...current.slice(-7), { role: 'assistant', content: sanitizedReply }]);
+
+        if (!busyCapturing && autoOpen) {
+          setIsOpen(true);
+        }
+
+        if (busyCapturing) {
+          return;
+        }
+
+        setStatus('ready');
+
+        if (autoSpeak) {
+          await speakAssistantReply(sanitizedReply);
+        }
+      },
+      clearSystemReply() {
+        clearDisplayedReply();
+      },
+    }),
+    [status],
+  );
 
   async function handleAudio(blob: Blob) {
     if (blob.size === 0) {
@@ -447,6 +552,7 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
     try {
       setStatus('transcribing');
       setError(null);
+      setNotice(null);
 
       const formData = new FormData();
       formData.append('file', new File([blob], 'yantra-room.webm', { type: blob.type || 'audio/webm' }));
@@ -506,7 +612,9 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
 
       const audioBlob = await ttsResponse.blob();
       if (requestNonce === requestNonceRef.current) {
-        await playReply(audioBlob);
+        await playReply(audioBlob, {
+          blockedMessage: 'Yantra has a reply ready, but the browser blocked playback. Click "Turn on audio" and try again.',
+        });
       }
     } catch (requestError) {
       if (handsFreeEnabledRef.current) {
@@ -531,6 +639,7 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
     try {
       await primeAudio();
       setError(null);
+      setNotice(null);
       setStatus('recording');
 
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -660,6 +769,7 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
     setUserTranscript('');
     setAssistantReply('');
     setMessages([]);
+    setNotice(null);
   }
 
   function handleAudioEnded() {
@@ -745,6 +855,11 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
                   <span>Try again</span>
                 </ActionButton>
               </>
+            ) : null}
+            {notice ? (
+              <div className="max-h-40 overflow-y-auto break-words rounded-[1.05rem] border border-amber-300/16 bg-amber-300/[0.08] px-4 py-3 text-sm leading-relaxed text-amber-50/88">
+                {notice}
+              </div>
             ) : null}
           </div>
         </div>
@@ -932,4 +1047,6 @@ export default function RoomVoiceAssistant({ roomLabel, roomSummary }: RoomVoice
       )}
     </>
   );
-}
+});
+
+export default RoomVoiceAssistant;

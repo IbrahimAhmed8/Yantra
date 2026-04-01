@@ -1,16 +1,47 @@
 # Yantra AI Microservice
 
-This is the first local-only Yantra AI slice. It is intentionally narrow:
+This service is the current Python backend for Yantra's AI-assisted routes.
 
-- separate Python service under `ai/`
-- no website integration
-- no Supabase, pgvector, memory, or orchestration yet
-- local markdown knowledge base
-- local semantic embeddings plus local vector RAG
-- Copilot CLI backed chat generation
-- `/chat` endpoint with grounded responses
+Today it provides:
 
-## Run locally
+- the FastAPI service under `ai/`
+- `GET /health`
+- `POST /chat`
+- `POST /rooms/python/feedback`
+- local knowledge retrieval from `ai/knowledge/`
+- provider-backed grounded replies
+- pytest coverage for chat, retrieval, providers, terminal chat, and Python Room feedback
+
+This service is not a disconnected experiment anymore. When the Next.js app targets it through `src/lib/yantra-ai-service.ts`, it is the first backend used by:
+
+- `POST /api/chat`
+- `GET /api/chat/health`
+- `POST /api/rooms/python/feedback`
+
+Docs support is separate and remains Gemini-only through `POST /api/docs-support`.
+
+Room voice is also separate. The website handles room speech through Next.js server routes plus Sarvam STT/TTS, then uses the existing web chat and room-feedback paths. There is no separate Python voice worker in this repo.
+
+## Runtime Targeting
+
+The root web app decides where to send AI requests with:
+
+```env
+YANTRA_AI_TARGET="local"
+YANTRA_AI_LOCAL_URL="http://127.0.0.1:8000"
+YANTRA_AI_RENDER_URL="https://YOUR-YANTRA-AI-SERVICE.onrender.com"
+YANTRA_AI_SERVICE_URL="https://YOUR-YANTRA-AI-SERVICE.onrender.com"
+```
+
+Notes:
+
+- `YANTRA_AI_TARGET` defaults to `local`
+- local mode defaults the web app to `http://127.0.0.1:8000`
+- `YANTRA_AI_RENDER_URL` is used when `YANTRA_AI_TARGET="render"`
+- `YANTRA_AI_SERVICE_URL` still works as a legacy render alias
+- Gemini is not the default local-path behavior for the main chat route; if the app stays on the local target and this service is down, `/api/chat` fails until you start the service or change the target
+
+## Run Locally
 
 ```powershell
 cd ai
@@ -22,11 +53,11 @@ python scripts/reindex_knowledge.py
 uvicorn main:app --reload --port 8000
 ```
 
-Open `http://localhost:8000/docs` for the FastAPI UI.
+Open [http://localhost:8000/docs](http://localhost:8000/docs) for the FastAPI UI.
 
-## Terminal chat only
+## Terminal Chat
 
-If you want to test Yantra without the website and without starting FastAPI, run:
+If you want to test the Python service without the website and without starting FastAPI, run:
 
 ```powershell
 cd ai
@@ -56,76 +87,15 @@ You can also do a one-shot test:
 python terminal_chat.py --once "How should we start building Yantra AI?"
 ```
 
-The default local embedding model is now `sentence-transformers/all-MiniLM-L6-v2`. It maps text to a 384-dimensional vector space and is a safer default for lightweight local or low-memory deployment targets. If you want to switch back to a larger retrieval-focused model later, override `YANTRA_LOCAL_EMBEDDING_MODEL` in `.env`.
+## Provider Notes
 
-For chat generation, the service uses the official GitHub Copilot CLI and defaults to `gpt-5-mini`. The current installed Copilot CLI does not expose a `gpt-4.5 mini` option. It does expose `gpt-5-mini` and `gpt-4.1`.
+The current service supports local and upstream-backed reply generation, including the provider ring documented in `.env.example`.
 
-## Room voice
+If the ring is enabled without valid upstream keys, the service returns a bounded unavailable message instead of pretending the route succeeded.
 
-Room voice is no longer hosted in the Python service. The website now handles room voice directly through Next.js server routes using Sarvam STT/TTS plus the existing `/api/chat` path.
+The default local embedding model is `sentence-transformers/all-MiniLM-L6-v2`.
 
-That means:
-
-- no separate voice worker process
-- no second Render service for room voice
-- no extra Python voice dependencies
-- the Python service stays focused on grounded chat and retrieval
-
-The default chat mode is now the bounded provider ring:
-
-- `groq_primary`
-- `gemini_primary`
-- `groq_secondary`
-- `gemini_secondary`
-- `github_models`
-- then wrap back to `groq_primary` until the retry budget is exhausted
-
-The `.env.example` already points at this mode. Fill the keys and keep:
-
-```env
-YANTRA_CHAT_PROVIDER=ring
-YANTRA_PROVIDER_CHAIN=groq_primary,gemini_primary,groq_secondary,gemini_secondary,github_models
-YANTRA_PROVIDER_MAX_ATTEMPTS=7
-YANTRA_PROVIDER_MAX_REQUEST_TIME_MS=12000
-YANTRA_PROVIDER_LANE_COOLDOWN_S=30
-YANTRA_GROQ_PRIMARY_API_KEY=...
-YANTRA_GEMINI_PRIMARY_API_KEY=...
-YANTRA_GROQ_SECONDARY_API_KEY=...
-YANTRA_GEMINI_SECONDARY_API_KEY=...
-YANTRA_GITHUB_MODELS_TOKEN=...
-```
-
-If the ring is enabled without valid upstream keys, the service returns: `Yantra upstream providers are temporarily unavailable.`
-
-To reduce repeated latency, the service now has in-memory caches for:
-
-- retrieval results
-- full chat responses for identical requests
-
-Default cache knobs:
-
-```env
-YANTRA_RETRIEVAL_CACHE_TTL_S=180
-YANTRA_RETRIEVAL_CACHE_MAX_ENTRIES=256
-YANTRA_RESPONSE_CACHE_TTL_S=120
-YANTRA_RESPONSE_CACHE_MAX_ENTRIES=256
-```
-
-The default behavior is now hybrid for speed:
-
-- greetings and trivial prompts return from a local fast path
-- short grounded teaching and guidance questions prefer local fast replies
-- deeper prompts can still fall through to the selected provider mode
-
-If you want maximum speed and do not care about Copilot-backed phrasing, set `YANTRA_CHAT_PROVIDER=local` in `.env`.
-
-If `gh auth status` already shows you as logged in, the service can reuse that token automatically. Otherwise run:
-
-```powershell
-gh auth login
-```
-
-## Test locally
+## Test Locally
 
 ```powershell
 cd ai
@@ -133,9 +103,17 @@ cd ai
 pytest
 ```
 
+Current Python coverage includes:
+
+- `ai/tests/test_chat.py`
+- `ai/tests/test_providers.py`
+- `ai/tests/test_rag.py`
+- `ai/tests/test_room_feedback.py`
+- `ai/tests/test_terminal_chat.py`
+
 The test suite forces lexical retrieval so tests stay fast and do not download the embedding model.
 
-## Example request
+## Example Request
 
 ```bash
 curl -X POST http://localhost:8000/chat \
@@ -152,13 +130,11 @@ curl -X POST http://localhost:8000/chat \
   }'
 ```
 
-## Current boundary
+## Current Boundary
 
-The service is designed so later slices can swap in:
+This service currently focuses on grounded chat and Python Room feedback. Later slices can still add:
 
-- another hosted provider instead of Copilot CLI if we change direction later
-- pgvector or Supabase for retrieval persistence
-- session memory and skill tracking
-- extra routes for quiz, void feedback, and roadmap logic
-
-This slice proves the local service shape, local vector retrieval, and test harness.
+- different hosted providers
+- pgvector or Supabase-backed retrieval persistence
+- deeper learner memory and skill tracking
+- additional room or evaluation routes

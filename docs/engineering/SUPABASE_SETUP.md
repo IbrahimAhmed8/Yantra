@@ -5,11 +5,17 @@ Yantra uses Supabase for:
 - email/password authentication
 - Google OAuth authentication
 - SSR session handling
-- protected dashboard access
+- protected learner access for `/dashboard`, `/dashboard/student-profile`, and `/dashboard/rooms/python`
 - persisted learner profiles in `public.profiles`
 - persisted public access requests in `public.access_requests`
 - authenticated Yantra chat continuity in `public.chat_histories`
 - seeded persisted dashboard starter data in dedicated dashboard tables
+
+Supabase is not the whole runtime story. Full local testing also usually needs:
+
+- a Python AI target for `/api/chat`, `/api/chat/health`, and `/api/rooms/python/feedback`
+- a Gemini key for `/api/docs-support` and fallback paths
+- a Sarvam key for room voice routes
 
 ## Required Environment Variables
 
@@ -19,9 +25,12 @@ Add these to `.env.local`:
 NEXT_PUBLIC_SUPABASE_URL="https://YOUR_PROJECT_REF.supabase.co"
 NEXT_PUBLIC_SUPABASE_ANON_KEY="YOUR_SUPABASE_ANON_KEY"
 GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
+YANTRA_AI_TARGET="local"
+YANTRA_AI_LOCAL_URL="http://127.0.0.1:8000"
+SARVAM_API_KEY="YOUR_SARVAM_API_KEY"
 ```
 
-`GEMINI_API_KEY` is not part of Supabase itself, but most local testing will need it because both Yantra chat and docs support use Gemini.
+The Supabase vars are the strict requirement for auth and persistence. The AI and Sarvam vars are needed for realistic end-to-end local testing.
 
 ## SQL Setup
 
@@ -44,6 +53,12 @@ That script creates or updates:
 - row-level security policies so authenticated users can only read and update their own chat history
 - row-level security policies so authenticated users can only read and update their own seeded dashboard rows
 - row-level security policies so anonymous visitors can submit access requests
+
+Important current mismatch:
+
+- `src/lib/supabase/dashboard.ts` reads and seeds `student_practice_rooms`
+- `supabase/schema.sql` does not currently create `student_practice_rooms`
+- the dashboard therefore falls back to starter room data until that table exists
 
 ## Current Profile Schema
 
@@ -69,21 +84,25 @@ The app maps that table to the `StudentProfile` type in `src/features/dashboard/
 
 ## Dashboard Tables
 
-`supabase/schema.sql` also defines the starter dashboard persistence layer:
+`supabase/schema.sql` defines the starter dashboard persistence layer:
 
 - `public.student_dashboard_paths`
 - `public.student_skill_progress`
 - `public.student_curriculum_nodes`
 - `public.student_weekly_activity`
 
-The app loads those tables through `src/lib/supabase/dashboard.ts` and seeds starter content when rows are missing.
+The app also expects:
+
+- `public.student_practice_rooms`
+
+That table is not in the current schema file, so room persistence is the known gap.
 
 ## App Integration Points
 
 ### Browser auth
 
 - `src/lib/supabase/client.ts`
-- used by `src/features/auth/AuthExperience.tsx` and reset/onboarding flows
+- used by `src/features/auth/AuthExperience.tsx` and reset and onboarding flows
 
 ### Server auth and persistence access
 
@@ -167,6 +186,12 @@ Keep both local and production redirects:
 - loads the same authenticated profile
 - allows updates through `PUT /api/profile`
 
+### `/dashboard/rooms/python`
+
+- requires a valid authenticated user
+- does not currently enforce onboarding completion
+- opens the live Python Room shell
+
 ### `/api/profile`
 
 - `GET` returns the authenticated learner profile plus a default profile shape
@@ -194,6 +219,8 @@ The seeded values come from:
 
 `/dashboard` then loads the dashboard starter-data tables. If rows are missing, the app inserts starter content and reloads it.
 
+If `student_practice_rooms` is missing, the dashboard still renders by falling back to starter room data.
+
 ## First Live Test Flow
 
 1. Create a Supabase project.
@@ -206,27 +233,29 @@ The seeded values come from:
 8. Confirm you land on `/onboarding` for the new account.
 9. Complete the `/onboarding` flow.
 10. Open `/dashboard`.
-11. Reload `/dashboard` and confirm the seeded starter dashboard still renders.
+11. Reload `/dashboard` and confirm the starter dashboard still renders.
 12. Open `/dashboard/student-profile`, edit the record, and save it.
 13. Reload and confirm the updated profile persisted.
-14. Open `/login`, request a password reset, and verify the recovery page lets you set a new password.
-15. Enable the Google provider in Supabase and test Google sign-in from `/login` or `/signup`.
-16. Open the chat as an authenticated learner, send a message, reload, and confirm the conversation resumes.
-17. Submit the landing-page access form and confirm the record lands in `public.access_requests`.
+14. Open `/dashboard/rooms/python` and confirm the protected room opens after auth.
+15. Open `/login`, request a password reset, and verify the recovery page lets you set a new password.
+16. Enable the Google provider in Supabase and test Google sign-in from `/login` or `/signup`.
+17. Open the chat as an authenticated learner, send a message, reload, and confirm the conversation resumes.
+18. Submit the landing-page access form and confirm the record lands in `public.access_requests`.
 
 ## Known Gaps
 
-- the dashboard tables currently hold seeded starter data, not a true adaptive engine
+- the dashboard tables currently hold starter data, not a true adaptive engine
 - access requests persist but have no internal review UI
 - Support Desk uses local docs content and Gemini, not Supabase
+- the current schema file still omits `student_practice_rooms`
 
 ## Production Checklist
 
 1. Add `NEXT_PUBLIC_SUPABASE_URL` in Vercel.
 2. Add `NEXT_PUBLIC_SUPABASE_ANON_KEY` in Vercel.
-3. Add `GEMINI_API_KEY` in Vercel.
-4. Apply `supabase/schema.sql` to the production Supabase project.
-5. Update Supabase Site URL to the production domain.
-6. Add the production `/auth/confirm` and `/auth/reset-password` URLs to Redirect URLs.
-7. In Supabase Auth, enable the Google provider and add the Google OAuth client ID and secret.
-8. In Google Cloud, add the exact Supabase Google callback URL from the provider setup screen as an authorized redirect URI.
+3. Apply `supabase/schema.sql` to the production Supabase project.
+4. Update Supabase Site URL to the production domain.
+5. Add the production `/auth/confirm` and `/auth/reset-password` URLs to Redirect URLs.
+6. In Supabase Auth, enable the Google provider and add the Google OAuth client ID and secret.
+7. In Google Cloud, add the exact Supabase Google callback URL from the provider setup screen as an authorized redirect URI.
+8. Separately configure the web app AI and Sarvam env vars so protected chat and room features work after deploy.

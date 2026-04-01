@@ -5,6 +5,23 @@ const PYODIDE_INDEX_URL = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/
 const PYODIDE_SCRIPT_URL = `${PYODIDE_INDEX_URL}pyodide.js`;
 
 const noop = () => {};
+const MAIN_FILE_TRACEBACK_RE = /File "(?:.*[\\/])?main\.py", line (\d+)/g;
+const PYTHON_ERROR_LINE_RE = /^([A-Za-z_][\w.]*)\s*:\s*(.+)$/;
+
+export type PythonRunError = {
+  type: string;
+  message: string;
+  traceback: string;
+  line: number | null;
+};
+
+export type PythonRunResult = {
+  status: 'success' | 'error';
+  output: string;
+  stdout: string;
+  stderr: string;
+  error: PythonRunError | null;
+};
 
 type PyodideLoaderOptions = {
   indexURL: string;
@@ -66,6 +83,35 @@ function getResultPreview(result: unknown) {
   }
 
   return rendered;
+}
+
+export function extractPythonErrorLine(traceback: string) {
+  const matches = [...traceback.matchAll(MAIN_FILE_TRACEBACK_RE)];
+  const lastMatch = matches.at(-1);
+
+  if (!lastMatch) {
+    return null;
+  }
+
+  const parsed = Number.parseInt(lastMatch[1], 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+export function extractPythonRunError(traceback: string, fallbackMessage = ''): PythonRunError {
+  const normalizedTraceback = traceback.trim();
+  const lines = normalizedTraceback
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const summaryLine = lines.at(-1) || fallbackMessage.trim() || 'Python execution failed.';
+  const parsedSummary = summaryLine.match(PYTHON_ERROR_LINE_RE);
+
+  return {
+    type: parsedSummary?.[1] || 'PythonError',
+    message: parsedSummary?.[2] || summaryLine,
+    traceback: normalizedTraceback || fallbackMessage.trim() || 'Python execution failed.',
+    line: extractPythonErrorLine(normalizedTraceback),
+  };
 }
 
 function getRuntimeScriptNode() {
@@ -216,15 +262,22 @@ export async function runPythonInBrowser(code: string) {
     return {
       status: 'success' as const,
       output: output || 'Program completed with no output.',
+      stdout,
+      stderr,
+      error: null,
     };
   } catch (error) {
     const stdout = normalizeLines(stdoutBuffer);
     const stderr = normalizeLines(stderrBuffer);
     const message = error instanceof Error ? error.message.trim() : String(error).trim();
+    const traceback = [stderr, message].filter(Boolean).join('\n\n').trim();
 
     return {
       status: 'error' as const,
       output: [stdout, stderr, message].filter(Boolean).join('\n\n').trim() || 'Python execution failed.',
+      stdout,
+      stderr,
+      error: extractPythonRunError(traceback, message),
     };
   } finally {
     if (pyodide) {

@@ -2,26 +2,30 @@
 
 ## Current Phase
 
-Yantra has moved beyond the initial shell stage and is now in the transition from foundation to product depth.
+Yantra has moved out of the "shell only" stage. The repo now sits between foundation hardening and deeper product execution.
 
 What already exists:
 
 - branded public landing page
-- login, signup, onboarding, and password reset flows
-- Google sign-in through Supabase
+- login, signup, onboarding, password reset, and Google sign-in flows
 - public docs/help center with article pages
 - a separate Support Desk assistant for docs and troubleshooting
-- Supabase-backed protected routes
+- Supabase-backed protected learner routes
 - persisted learner profiles
 - persisted public access requests
 - persisted starter dashboard data
-- Gemini-backed Yantra chat with authenticated history restore
+- main Yantra chat routed to the Python AI service first, with authenticated history restore
+- docs support that remains Gemini-only through `/api/docs-support`
+- a live Python Room at `/dashboard/rooms/python`
+- Python Room runtime-error feedback that targets the Python AI service first and can fall back to Gemini
+- Sarvam-backed room voice handled through Next.js server routes
 
 What is still incomplete:
 
 - real adaptive learning state
-- dynamic roadmap engine
-- real practice-room tooling
+- a dynamic roadmap engine
+- broader practice-room coverage beyond the Python Room
+- richer evaluation logic for successful room submissions
 - analytics and observability
 - internal support and access-request operations
 - teacher and institution workflows
@@ -41,7 +45,9 @@ What this phase delivered:
 - access-request persistence
 - main Yantra chat
 - docs/help center and Support Desk
-- deployment-ready Vercel + Supabase setup
+- deployment-ready Next.js + Supabase setup
+- initial Python AI service integration
+- initial Python Room with voice assistance
 
 ### Phase 2: Make The Learner Surface Truly Data-Driven
 
@@ -54,6 +60,7 @@ Priority items:
 - recommendation logic tied to learner activity
 - curriculum state tied to profile and onboarding context
 - room unlock logic
+- schema alignment for persisted room rows
 
 ### Phase 3: Deepen AI Continuity And Support
 
@@ -66,18 +73,19 @@ Priority items:
 - decide on streaming
 - decide whether Support Desk needs persistence, escalation, or handoff
 - improve docs retrieval once the knowledge base grows
+- harden Python-service-first chat and room-feedback operations
 
-### Phase 4: Build Real Practice Rooms
+### Phase 4: Expand Practice Rooms
 
 Goal: make Yantra hands-on instead of mostly explanatory.
 
 Priority items:
 
-- Python practice room
+- deepen the live Python Room
 - neural-network builder
 - dataset explorer
 - prompt lab
-- evaluation and feedback loops
+- shared evaluation and feedback loops
 
 ### Phase 5: Expand Into Institutional And Outcome Layers
 
@@ -98,6 +106,7 @@ Before starting a feature, be explicit about whether it:
 - hardens the current foundation
 - makes existing learner surfaces truly data-driven
 - deepens support and AI continuity
+- expands the live room system
 - adds new product surface area
 
-That distinction matters because the repo already has a real auth/profile/docs base. Work that ignores it will usually create churn.
+That distinction matters because the repo already has a real auth/profile/docs/chat base and one real room surface. Work that ignores those shipped layers will usually create churn.

@@ -4,15 +4,18 @@
 
 - `/dashboard`
 - `/dashboard/student-profile`
+- `/dashboard/rooms/python`
 - dashboard entry: `app/dashboard/page.tsx`
 - dashboard implementation: `src/features/dashboard/StudentDashboard.tsx`
 - dashboard data loader: `src/lib/supabase/dashboard.ts`
 - student profile entry: `app/dashboard/student-profile/page.tsx`
 - student profile implementation: `src/features/dashboard/StudentProfilePage.tsx`
+- Python Room entry: `app/dashboard/rooms/python/page.tsx`
+- Python Room implementation: `src/features/rooms/PythonRoomShell.tsx`
 
 ## Route Protection
 
-All dashboard routes are protected server-side.
+All three routes are protected server-side.
 
 Each route:
 
@@ -20,7 +23,11 @@ Each route:
 - reads the authenticated learner through `requireAuthenticatedProfile()`
 - redirects unauthenticated requests to `/login`
 
-The route-guard helper supports onboarding enforcement, but the current dashboard routes do not require onboarding completion before render. New accounts still reach onboarding first through the signup flow.
+Important nuance:
+
+- the route-guard helper supports onboarding enforcement
+- the current dashboard, profile, and Python Room routes do not require onboarding completion before render
+- new accounts still reach onboarding first through the signup flow, but auth is the actual route gate today
 
 ## `/dashboard`
 
@@ -46,26 +53,41 @@ The main dashboard is the protected learner home surface. It mixes real identity
 It:
 
 1. loads the authenticated learner
-2. queries the four dashboard tables
+2. queries the dashboard tables
 3. seeds starter rows when data is missing
 4. falls back to a local starter dashboard shape when the dashboard schema or RLS is missing
 
-That means the dashboard state is persisted, but it is still seeded starter content rather than a real adaptive learner engine.
+That means the dashboard state is persisted, but it is still starter content rather than a real adaptive learner engine.
+
+### Room-table mismatch
+
+The loader expects:
+
+- `student_dashboard_paths`
+- `student_skill_progress`
+- `student_curriculum_nodes`
+- `student_practice_rooms`
+- `student_weekly_activity`
+
+Current mismatch:
+
+- `supabase/schema.sql` does not create `student_practice_rooms`
+- room cards therefore fall back to starter data on a fresh schema
 
 ### What is still static or seeded today
 
-- rooms remain mock preview surfaces
 - AI quick prompts are product copy, not dynamic recommendations
 - unlock logic is still starter logic
 - next-action intelligence is still seeded
 - there is no analytics or event pipeline
+- most room cards outside Python remain preview surfaces
 
 ### Embedded behavior
 
-- room cards stay as mock UI and open shared Yantra chat prompts
 - the main AI panel opens the shared Yantra chat modal
 - the header includes a docs entry point
 - same-page section links intentionally bypass the global route-transition loader
+- the Python Room card can route into the live room surface
 
 ## `/dashboard/student-profile`
 
@@ -105,25 +127,59 @@ The page also includes:
 
 Only the profile record is genuinely user-edited today. The surrounding roster, curriculum, notifications, and performance content remains demo or seeded product copy.
 
+## `/dashboard/rooms/python`
+
+### Purpose
+
+This is the first real dedicated room route in the product.
+
+### Live behavior today
+
+- protected route behind auth
+- in-browser Python execution through Pyodide
+- runtime-error line highlighting
+- runtime-error-only feedback through `POST /api/rooms/python/feedback`
+- Python-service-first room feedback with Gemini fallback
+- room-only push-to-talk voice assistant using `/api/sarvam/stt`, `/api/chat`, and `/api/sarvam/tts`
+
+### Current limits
+
+- only runtime errors trigger AI feedback
+- successful-but-wrong output is not evaluated yet
+- the first runtime warmup can take a few seconds
+
 ## Current Strengths
 
 - protected routes are real
 - learner identity and profile are backed by Supabase
 - the dashboard has a persisted starter-data layer instead of only local arrays
 - the profile screen exposes a genuine save path
-- dashboard and profile surfaces share a consistent visual system
+- the Python Room is a real dedicated room route
+- dashboard, profile, and room surfaces share a consistent visual system
 
 ## Current Limitations
 
-- room cards are still mock UI, not dedicated room routes
+- only the Python Room is a real dedicated room route today
+- most other room cards are still preview or prompt-launch surfaces
 - dashboard persistence is starter-state persistence, not adaptive personalization
 - no real curriculum or recommendation engine
 - no analytics or event tracking
 - no tests around protected-route, dashboard-seed, or profile-save behavior
 
+## Existing Automated Coverage
+
+Current relevant tests include:
+
+- `app/api/rooms/python/feedback/route.test.ts`
+- `src/features/rooms/__tests__/pyodide-runtime.test.ts`
+- the Python service suite in `ai/tests/`
+
+There is still no broad dashboard-route or profile-save test coverage.
+
 ## Recommended Next Work
 
 - replace seeded dashboard copy with real learner-adaptive state
 - add tests for `/api/profile`, dashboard seeding, and route protection
-- decide the redesigned room system before reintroducing dedicated room routes
-- replace static or starter curriculum/performance sections with real models
+- align Supabase schema with `student_practice_rooms`
+- deepen Python Room evaluation beyond runtime errors
+- design additional real room routes before treating the wider room grid as shipped

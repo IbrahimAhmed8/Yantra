@@ -217,3 +217,12 @@ html[data-yantra-motion='reduced'] {
 .yantra-markdown pre {
   margin: 0;
 }
+
+.yantra-runtime-error-line {
+  background: linear-gradient(90deg, rgba(251, 113, 133, 0.12), rgba(251, 113, 133, 0.03));
+}
+
+.yantra-runtime-error-decoration {
+  border-left: 3px solid rgba(251, 113, 133, 0.95);
+  margin-left: 4px;
+}

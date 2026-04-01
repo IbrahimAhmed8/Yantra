@@ -8,9 +8,9 @@ import {
   type YantraChatMessage,
 } from '@/src/features/chat/yantra-chat';
 import { getYantraAiServiceTimeoutMs, getYantraAiServiceUrl } from '@/src/lib/yantra-ai-service';
+import { buildYantraStudentContext } from '@/src/lib/yantra-student-context';
 import { upsertAuthenticatedChatHistory } from '@/src/lib/supabase/chat-history';
 import { hasSupabaseEnv } from '@/src/lib/supabase/env';
-import { getAuthenticatedProfile } from '@/src/lib/supabase/profiles';
 
 export const runtime = 'nodejs';
 
@@ -38,80 +38,6 @@ function toGeminiContent(message: YantraChatMessage): Content {
   };
 }
 
-function inferCurrentPath(request: Request) {
-  const referer = request.headers.get('referer');
-
-  if (!referer) {
-    return 'Yantra Dashboard';
-  }
-
-  try {
-    const { pathname } = new URL(referer);
-
-    if (pathname.startsWith('/dashboard/rooms/python')) {
-      return 'Python Room';
-    }
-
-    if (pathname.startsWith('/dashboard/student-profile')) {
-      return 'Student Profile';
-    }
-
-    if (pathname.startsWith('/dashboard')) {
-      return 'Yantra Dashboard';
-    }
-
-    if (pathname.startsWith('/docs')) {
-      return 'Docs';
-    }
-
-    if (pathname.startsWith('/onboarding')) {
-      return 'Onboarding';
-    }
-
-    if (pathname.startsWith('/login') || pathname.startsWith('/signup')) {
-      return 'Account Access';
-    }
-  } catch {
-    return 'Yantra Dashboard';
-  }
-
-  return 'Yantra';
-}
-
-async function buildStudentContext(request: Request) {
-  const defaultContext = {
-    name: 'Learner',
-    skill_level: 'Beginner' as const,
-    current_path: inferCurrentPath(request),
-    progress: 0,
-    learning_goals: [] as string[],
-  };
-
-  if (!hasSupabaseEnv()) {
-    return defaultContext;
-  }
-
-  try {
-    const result = await getAuthenticatedProfile();
-    const profile = result?.profile;
-
-    if (!profile) {
-      return defaultContext;
-    }
-
-    return {
-      name: profile.name || defaultContext.name,
-      skill_level: profile.skillLevel || defaultContext.skill_level,
-      current_path: defaultContext.current_path,
-      progress: typeof profile.progress === 'number' ? profile.progress : defaultContext.progress,
-      learning_goals: [...profile.primaryLearningGoals],
-    };
-  } catch (error) {
-    console.error('Yantra student-context lookup error:', error);
-    return defaultContext;
-  }
-}
-
 async function proxyToYantraAiService(request: Request, messages: YantraChatMessage[]) {
   const serviceUrl = getYantraAiServiceUrl();
 
@@ -128,7 +54,7 @@ async function proxyToYantraAiService(request: Request, messages: YantraChatMess
     signal: AbortSignal.timeout(getYantraAiServiceTimeoutMs()),
     body: JSON.stringify({
       messages,
-      student: await buildStudentContext(request),
+      student: await buildYantraStudentContext(request),
       top_k: DEFAULT_TOP_K,
     }),
   });

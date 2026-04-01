@@ -8,7 +8,9 @@
 - Motion and scroll behavior: `motion` and `lenis`
 - Icons: `lucide-react`
 - Auth and persistence: Supabase SSR + `@supabase/supabase-js`
-- AI provider: Google Gemini through `@google/genai`
+- Main AI path: Python Yantra AI microservice selected through `src/lib/yantra-ai-service.ts`
+- Docs support AI path: Google Gemini through `@google/genai`
+- Room voice: Sarvam STT/TTS through Next.js server routes
 - Deployment target: Vercel
 
 ## Runtime Surfaces
@@ -21,7 +23,7 @@
 - responsibilities:
   - public product narrative
   - access-request CTA surface
-  - signup/login/docs entry points
+  - signup, login, and docs entry points
   - Yantra chat entry points
 
 ### Authentication And Onboarding
@@ -60,7 +62,7 @@
   - protected learner dashboard shell
   - display of learner identity from authenticated profile data
   - loading seeded persisted starter dashboard data
-  - Yantra chat entry points
+  - linking into Yantra chat and room entry points
 
 ### Student Profile
 
@@ -73,12 +75,32 @@
   - persisting edits through `/api/profile`
   - linking into the docs/help system
 
+### Python Room
+
+- route: `/dashboard/rooms/python`
+- entry: `app/dashboard/rooms/python/page.tsx`
+- main implementation: `src/features/rooms/PythonRoomShell.tsx`
+- responsibilities:
+  - protected in-browser Python execution through Pyodide
+  - runtime-error line highlighting
+  - room-only voice interaction through Sarvam STT/TTS
+  - room feedback through `/api/rooms/python/feedback`
+
 ### APIs
 
 - `POST /api/chat`
   - validates and sanitizes recent Yantra chat messages
-  - calls Gemini with the Yantra system prompt
+  - builds learner context from the authenticated profile when available
+  - targets the Python AI service first
+  - falls back to Gemini only when no service URL resolves
   - persists rolling chat history for authenticated users
+- `GET /api/chat/health`
+  - checks the currently targeted Python AI service health
+- `POST /api/rooms/python/feedback`
+  - validates Python Room runtime-error payloads
+  - targets the Python AI service first
+  - can fall back to Gemini for a short hint-oriented reply
+  - does not persist chat history
 - `GET /api/chat/history`
   - returns the authenticated learner's latest persisted Yantra conversation
 - `GET /api/profile`
@@ -86,11 +108,33 @@
 - `PUT /api/profile`
   - validates profile input and upserts the authenticated learner profile
 - `POST /api/access-requests`
-  - validates name/email/message and persists the request
+  - validates name, email, and message and persists the request
 - `POST /api/docs-support`
   - validates Support Desk messages
   - builds docs-grounded context
   - calls Gemini with the separate Support Desk prompt
+- `POST /api/sarvam/stt`
+  - proxies room audio to Sarvam speech-to-text
+- `POST /api/sarvam/tts`
+  - proxies room text to Sarvam text-to-speech
+
+## AI Routing Boundary
+
+`src/lib/yantra-ai-service.ts` is the main AI target selector.
+
+Current behavior:
+
+- `YANTRA_AI_TARGET` chooses `local` or `render`
+- the default target is `local`
+- local mode uses `YANTRA_AI_LOCAL_URL` or `http://127.0.0.1:8000`
+- render mode uses `YANTRA_AI_RENDER_URL` or legacy `YANTRA_AI_SERVICE_URL`
+- `YANTRA_AI_SERVICE_TIMEOUT_MS` controls request timeout
+
+This means:
+
+- the main Yantra assistant is not Gemini-first anymore
+- the Python Room feedback route is also Python-service-first
+- Support Desk remains Gemini-only
 
 ## Auth And Session Boundary
 
@@ -103,7 +147,21 @@ Supabase SSR is wired through three layers:
 3. `proxy.ts` plus `src/lib/supabase/proxy.ts`
    Request-level cookie refresh for Supabase sessions.
 
-Protected routes do not rely on client-only checks. `app/dashboard/page.tsx` and `app/dashboard/student-profile/page.tsx` read the authenticated user server-side and redirect unauthenticated requests to `/login`.
+Protected routes do not rely on client-only checks.
+
+Current route behavior:
+
+- `/dashboard`
+- `/dashboard/student-profile`
+- `/dashboard/rooms/python`
+
+all call `requireAuthenticatedProfile()` server-side and redirect unauthenticated requests to `/login`.
+
+Important nuance:
+
+- the guard helper supports onboarding enforcement
+- the current dashboard, profile, and Python Room routes do not pass `requireOnboarding: true`
+- onboarding is part of the new-account flow, but it is not currently enforced as a hard gate on those routes once auth is satisfied
 
 ## Persistence Model
 
@@ -140,14 +198,19 @@ The profile model is defined in the app as `StudentProfile` in `src/features/das
 
 ### Dashboard starter-data tables
 
-The dashboard loader persists starter product data across:
+The dashboard loader reads starter product data from:
 
 - `public.student_dashboard_paths`
 - `public.student_skill_progress`
 - `public.student_curriculum_nodes`
+- `public.student_practice_rooms`
 - `public.student_weekly_activity`
 
-These tables make the dashboard load from Supabase instead of only local arrays, but the underlying product logic is still starter data rather than true adaptive learning state.
+Important mismatch:
+
+- `src/lib/supabase/dashboard.ts` expects `student_practice_rooms`
+- `supabase/schema.sql` does not currently create that table
+- on a fresh schema, dashboard room data falls back to starter content instead of persisted room rows
 
 ## Request Flows
 
@@ -183,37 +246,24 @@ These tables make the dashboard load from Supabase instead of only local arrays,
 4. `RoleOnboardingExperience` collects role, age range, learning goals, and pace.
 5. The resulting state is stored in `public.profiles`.
 
-### Password reset flow
-
-1. User opens `/login` and enters an email address.
-2. `AuthExperience` calls `resetPasswordForEmail()` with `redirectTo=/auth/reset-password`.
-3. Supabase redirects the recovery link into `/auth/reset-password`.
-4. `ResetPasswordExperience` updates the password through `updateUser({ password })`.
-5. The temporary recovery session is signed out and the learner is redirected to `/login`.
-
-### Dashboard/profile load flow
+### Dashboard and profile load flow
 
 1. A protected route checks `hasSupabaseEnv()`.
 2. The route calls `requireAuthenticatedProfile()`.
 3. If no session exists, the route redirects to `/login`.
 4. If the learner has no `profiles` row yet, the server inserts a seeded default row.
 5. `/dashboard` then calls `getAuthenticatedDashboardData()`.
-6. The dashboard loader queries the dashboard tables, seeds them if needed, and falls back gracefully when the schema is missing.
-
-### Profile save flow
-
-1. `StudentProfilePage` sends `PUT /api/profile`.
-2. `normalizeStudentProfileInput()` validates the incoming payload.
-3. `updateAuthenticatedProfile()` upserts the row keyed by the authenticated user id.
-4. The updated profile is returned to the client.
+6. The dashboard loader queries the dashboard tables, seeds them if needed, and falls back gracefully when the schema or RLS is missing.
 
 ### Yantra chat flow
 
 1. Marketing and dashboard pages wrap their UI in `ChatProvider`.
 2. On first open, the provider tries to load `/api/chat/history`.
-3. Authenticated learners receive their last persisted conversation; public users keep the in-memory welcome state.
+3. Authenticated learners receive their last persisted conversation. Public users keep the in-memory welcome state.
 4. The provider sends the most recent sanitized conversation to `/api/chat`.
-5. The route truncates model input to the last 12 messages, calls Gemini, and persists the updated rolling history for authenticated learners.
+5. The route targets the configured Python AI service URL first.
+6. If no service URL resolves, the route falls back to Gemini.
+7. When Supabase is configured and a user session exists, the route upserts rolling history into `public.chat_histories`.
 
 ### Docs Support Desk flow
 
@@ -222,6 +272,15 @@ These tables make the dashboard load from Supabase instead of only local arrays,
 3. `docs-support.ts` ranks relevant docs sections from the local docs content source.
 4. The route sends the selected excerpts to Gemini with the separate Support Desk system prompt.
 5. The client renders the answer plus article source links.
+
+### Python Room feedback and voice flow
+
+1. The learner opens `/dashboard/rooms/python`.
+2. Code runs locally through Pyodide in the browser.
+3. Runtime errors can trigger `POST /api/rooms/python/feedback`.
+4. That route targets the Python AI service first and can fall back to Gemini.
+5. Voice input goes through `POST /api/sarvam/stt`.
+6. The room then uses the existing web routes for text reply generation and `POST /api/sarvam/tts` for audio playback.
 
 ## State Boundaries
 
@@ -239,12 +298,13 @@ These tables make the dashboard load from Supabase instead of only local arrays,
 - mobile nav and panel open states
 - access-request form status
 - docs search query
-- docs support open/expand state
+- docs support open and expand state
 - docs support conversation state
+- Python Room editor, run, and voice UI state
 
 ### Seeded or presentation-led
 
-- room cards
+- most room cards outside the Python Room
 - many dashboard recommendation phrases
 - marketing copy blocks
 - docs article content and support knowledge base
@@ -252,10 +312,13 @@ These tables make the dashboard load from Supabase instead of only local arrays,
 ## Current Constraints
 
 - dashboard logic is seeded and starter-oriented, not truly adaptive
-- room cards are still preview surfaces
+- only the Python Room is a real dedicated room route today
+- Python Room feedback is runtime-error-only for now
+- successful runs do not trigger AI analysis yet
 - Yantra chat continuity is limited to one rolling authenticated conversation
 - Support Desk is grounded to local docs content only
-- there is no test suite, analytics layer, or monitoring stack yet
+- automated coverage exists, but it is still limited to a few route/runtime areas
+- there is no analytics layer or monitoring stack yet
 
 ## Recommended Evolution
 
@@ -263,4 +326,5 @@ These tables make the dashboard load from Supabase instead of only local arrays,
 - keep surface-specific UI in `src/features/`
 - keep Supabase integration inside `src/lib/supabase/`
 - keep Yantra and Support Desk as separate assistants with separate prompts and jobs
-- add richer dashboard intelligence, chat/support observability, and access-request review tooling before expanding product surface area further
+- harden the Python-service-first AI path before adding more surfaces
+- add richer dashboard intelligence, chat and support observability, and access-request review tooling before expanding product surface area further

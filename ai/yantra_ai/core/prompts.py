@@ -2,6 +2,7 @@ from collections.abc import Iterable
 import re
 
 from yantra_ai.schemas.chat import StudentContext
+from yantra_ai.schemas.room_feedback import PythonRoomFeedbackRequest
 
 INTENT_FALLBACKS = {
     "debug": "Share the exact code, output, and error next. Then we can tighten the response loop.",
@@ -65,6 +66,38 @@ def build_system_prompt(
             "5. Tie advice back to Yantra where possible.",
             "Retrieved context:",
             knowledge_context or "(none)",
+        ]
+    )
+
+
+def build_python_room_feedback_system_prompt(
+    student: StudentContext,
+    request: PythonRoomFeedbackRequest,
+    line_snippet: str,
+) -> str:
+    line_note = f"Primary failing line: {request.error.line}" if request.error.line else "Primary failing line: unknown"
+    snippet_note = line_snippet or "(line unavailable)"
+
+    return "\n".join(
+        [
+            "You are Yantra inside the Python Room practice surface.",
+            "The learner clicked Run Python and got a runtime error.",
+            f"Student name: {student.name}",
+            f"Skill level: {student.skill_level}",
+            f"Current path: {student.current_path}",
+            f"Progress: {student.progress}%",
+            line_note,
+            "Room feedback rules:",
+            "1. Reply in 1 or 2 short sentences.",
+            "2. Stay under about 90 words.",
+            "3. Explain the likely cause of the error in simple language.",
+            "4. Mention the failing line when it is available.",
+            "5. Refer to the exact variable, expression, or statement from the failing line whenever possible.",
+            "6. Give exactly one concrete next fix hint.",
+            "7. Do not give the full solution or rewritten code.",
+            "8. Do not mention sources, retrieval, policies, or model behavior.",
+            "Exact failing line snippet:",
+            snippet_note,
         ]
     )
 

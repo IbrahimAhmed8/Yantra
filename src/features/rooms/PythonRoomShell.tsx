@@ -1,13 +1,25 @@
 'use client';
 
+import type { OnMount } from '@monaco-editor/react';
+import type { editor } from 'monaco-editor';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { ArrowLeft, CirclePlay, Clock3, FileCode2, FlaskConical, Sparkles } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import YantraMobileMenu from '@/src/features/navigation/YantraMobileMenu';
-import RoomVoiceAssistant from '@/src/features/rooms/RoomVoiceAssistant';
-import { runPythonInBrowser, warmPyodideRuntime } from './pyodide-runtime';
+import RoomVoiceAssistant, { type RoomVoiceAssistantHandle } from '@/src/features/rooms/RoomVoiceAssistant';
+import {
+  buildPythonRoomTranscriptLabel,
+  createPythonFeedbackCacheKey,
+  type PythonRoomFeedbackRequest,
+  type PythonRoomFeedbackResponse,
+} from './python-feedback';
+import { type PythonRunError, type PythonRunResult, runPythonInBrowser, warmPyodideRuntime } from './pyodide-runtime';
 import { pythonRoomDayOneContent } from './python-room-content';
+
+type MonacoNamespace = typeof import('monaco-editor');
+
+const RUNTIME_ERROR_MARKER_OWNER = 'yantra-python-runtime';
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react').then((module) => module.default), {
   ssr: false,
@@ -54,7 +66,13 @@ export default function PythonRoomShell() {
   const [useDesktopEditor, setUseDesktopEditor] = useState(false);
   const [runtimeState, setRuntimeState] = useState<'warming' | 'idle' | 'running' | 'success' | 'error'>('warming');
   const [output, setOutput] = useState('Python runtime is warming up in the background. Your first run may take a few seconds.');
+  const [runtimeErrorLine, setRuntimeErrorLine] = useState<number | null>(null);
   const mobileEditorRef = useRef<HTMLTextAreaElement | null>(null);
+  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+  const monacoRef = useRef<MonacoNamespace | null>(null);
+  const decorationIdsRef = useRef<string[]>([]);
+  const voiceAssistantRef = useRef<RoomVoiceAssistantHandle | null>(null);
+  const feedbackCacheRef = useRef<Map<string, PythonRoomFeedbackResponse>>(new Map());
 
   const outputLabel = useMemo(
     () =>
@@ -63,9 +81,9 @@ export default function PythonRoomShell() {
         idle: 'Output panel is ready for your first real run.',
         running: 'Executing Python in the browser now.',
         success: 'Real Python output from the current run.',
-        error: 'Python raised an error for this run.',
+        error: runtimeErrorLine ? `Python raised an error for this run. Start with line ${runtimeErrorLine}.` : 'Python raised an error for this run.',
       })[runtimeState],
-    [runtimeState],
+    [runtimeErrorLine, runtimeState],
   );
 
   const outputBadgeLabel = useMemo(
@@ -140,14 +158,164 @@ export default function PythonRoomShell() {
     textarea.style.height = `${Math.max(textarea.scrollHeight, 320)}px`;
   }, [code, useDesktopEditor]);
 
+  const clearRuntimeErrorMarkers = () => {
+    setRuntimeErrorLine(null);
+
+    if (!editorRef.current || !monacoRef.current) {
+      return;
+    }
+
+    const model = editorRef.current.getModel();
+    if (!model) {
+      return;
+    }
+
+    monacoRef.current.editor.setModelMarkers(model, RUNTIME_ERROR_MARKER_OWNER, []);
+    decorationIdsRef.current = editorRef.current.deltaDecorations(decorationIdsRef.current, []);
+  };
+
+  const applyRuntimeErrorMarkers = (error: PythonRunError) => {
+    if (!error.line) {
+      setRuntimeErrorLine(null);
+      return;
+    }
+
+    setRuntimeErrorLine(error.line);
+
+    if (!editorRef.current || !monacoRef.current) {
+      return;
+    }
+
+    const model = editorRef.current.getModel();
+    if (!model) {
+      return;
+    }
+
+    const lineNumber = Math.min(Math.max(error.line, 1), model.getLineCount());
+    const lastColumn = model.getLineMaxColumn(lineNumber);
+
+    monacoRef.current.editor.setModelMarkers(model, RUNTIME_ERROR_MARKER_OWNER, [
+      {
+        severity: monacoRef.current.MarkerSeverity.Error,
+        message: `${error.type}: ${error.message}`,
+        startLineNumber: lineNumber,
+        endLineNumber: lineNumber,
+        startColumn: 1,
+        endColumn: lastColumn,
+      },
+    ]);
+
+    decorationIdsRef.current = editorRef.current.deltaDecorations(decorationIdsRef.current, [
+      {
+        range: new monacoRef.current.Range(lineNumber, 1, lineNumber, 1),
+        options: {
+          isWholeLine: true,
+          className: 'yantra-runtime-error-line',
+          linesDecorationsClassName: 'yantra-runtime-error-decoration',
+          overviewRuler: {
+            color: '#fb7185',
+            position: monacoRef.current.editor.OverviewRulerLane.Full,
+          },
+        },
+      },
+    ]);
+
+    editorRef.current.revealLineInCenterIfOutsideViewport(lineNumber);
+  };
+
+  const handleEditorMount: OnMount = (editorInstance, monaco) => {
+    editorRef.current = editorInstance;
+    monacoRef.current = monaco;
+  };
+
+  const handleCodeChange = (nextCode: string) => {
+    setCode(nextCode);
+    clearRuntimeErrorMarkers();
+  };
+
+  const buildFallbackReply = (error: PythonRunError) => {
+    if (error.line) {
+      return `Yantra could not analyze this error right now. Start with line ${error.line}, check the traceback below, then run again.`;
+    }
+
+    return 'Yantra could not analyze this error right now. Start with the traceback below, fix the first failing statement, then run again.';
+  };
+
+  const requestPythonRoomFeedback = async (result: PythonRunResult, submittedCode: string) => {
+    if (result.status !== 'error' || !result.error) {
+      return;
+    }
+
+    const requestBody: PythonRoomFeedbackRequest = {
+      trigger: 'runtime_error',
+      task: pythonRoomDayOneContent.task,
+      code: submittedCode,
+      stdout: result.stdout,
+      stderr: result.stderr,
+      error: result.error,
+    };
+    const cacheKey = createPythonFeedbackCacheKey(requestBody);
+
+    try {
+      let feedback = feedbackCacheRef.current.get(cacheKey);
+
+      if (!feedback) {
+        const response = await fetch('/api/rooms/python/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody),
+        });
+        const data = (await response.json().catch(() => ({}))) as PythonRoomFeedbackResponse & { error?: string };
+
+        if (!response.ok || !data.reply?.trim()) {
+          throw new Error(data.error || 'Yantra could not analyze this Python error right now.');
+        }
+
+        feedback = {
+          reply: data.reply.trim(),
+          provider: data.provider,
+          modelUsed: data.modelUsed ?? null,
+        };
+        if (feedback.provider !== 'local-room-feedback' && feedback.provider !== 'ring-exhausted') {
+          feedbackCacheRef.current.set(cacheKey, feedback);
+        }
+      }
+
+      await voiceAssistantRef.current?.announceSystemReply({
+        transcriptLabel: buildPythonRoomTranscriptLabel(result.error),
+        reply: feedback.reply,
+        autoOpen: true,
+        autoSpeak: true,
+      });
+    } catch (feedbackError) {
+      console.error('Python room feedback request failed:', feedbackError);
+      await voiceAssistantRef.current?.announceSystemReply({
+        transcriptLabel: buildPythonRoomTranscriptLabel(result.error),
+        reply: buildFallbackReply(result.error),
+        autoOpen: true,
+        autoSpeak: false,
+      });
+    }
+  };
+
   const handleRun = async () => {
+    const submittedCode = code;
+    clearRuntimeErrorMarkers();
+    voiceAssistantRef.current?.clearSystemReply();
     setRuntimeState('running');
     setOutput('Executing your Python code in-browser...');
 
-    const result = await runPythonInBrowser(code);
+    const result = await runPythonInBrowser(submittedCode);
 
     setRuntimeState(result.status);
     setOutput(result.output);
+
+    if (result.status !== 'error' || !result.error) {
+      return;
+    }
+
+    applyRuntimeErrorMarkers(result.error);
+    await requestPythonRoomFeedback(result, submittedCode);
   };
 
   return (
@@ -333,7 +501,8 @@ export default function PythonRoomShell() {
                         language="python"
                         theme="vs-dark"
                         value={code}
-                        onChange={(value) => setCode(value ?? '')}
+                        onChange={(value) => handleCodeChange(value ?? '')}
+                        onMount={handleEditorMount}
                         options={{
                           automaticLayout: true,
                           minimap: { enabled: false },
@@ -344,6 +513,7 @@ export default function PythonRoomShell() {
                           scrollBeyondLastLine: false,
                           wordWrap: 'on',
                           lineNumbersMinChars: 3,
+                          glyphMargin: true,
                           overviewRulerBorder: false,
                           hideCursorInOverviewRuler: true,
                           scrollbar: {
@@ -359,7 +529,7 @@ export default function PythonRoomShell() {
                       <textarea
                         ref={mobileEditorRef}
                         value={code}
-                        onChange={(event) => setCode(event.target.value)}
+                        onChange={(event) => handleCodeChange(event.target.value)}
                         spellCheck={false}
                         className="w-full resize-none overflow-hidden rounded-[1.2rem] border border-white/8 bg-black/30 px-4 py-4 font-mono text-[13px] leading-6 text-white/84 outline-none"
                         style={{ touchAction: 'pan-y' }}
@@ -403,6 +573,11 @@ export default function PythonRoomShell() {
                 </div>
 
                 <div className="mt-5 overflow-hidden rounded-[1.5rem] border border-white/8 bg-[#0d0d0d]">
+                  {runtimeState === 'error' && runtimeErrorLine ? (
+                    <div className="border-b border-rose-300/14 bg-rose-400/[0.08] px-4 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-rose-100/86 sm:px-5">
+                      Primary error line: {runtimeErrorLine}
+                    </div>
+                  ) : null}
                   <pre className="overflow-x-auto px-4 py-5 font-mono text-[12px] leading-6 whitespace-pre-wrap text-white/78 sm:px-5 sm:text-[13px]">
                     {output}
                   </pre>
@@ -410,6 +585,7 @@ export default function PythonRoomShell() {
               </div>
 
               <RoomVoiceAssistant
+                ref={voiceAssistantRef}
                 roomKey="python-room"
                 roomLabel="Python Room"
                 roomSummary="Ask for hints, explain your code, review errors, or let Yantra stay on the side while you keep running the room."

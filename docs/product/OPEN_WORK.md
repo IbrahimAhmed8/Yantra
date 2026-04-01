@@ -4,9 +4,10 @@
 
 ### Foundation hardening
 
-- add tests for auth redirects, onboarding writes, profile reads/writes, dashboard seeding, and API routes
-- add monitoring and error reporting for auth, chat, and docs support
+- add broader tests for auth redirects, onboarding writes, profile reads and writes, dashboard seeding, chat routes, and docs-support routes
+- add monitoring and error reporting for auth, chat, room feedback, and docs support
 - harden deployment checks and post-deploy smoke validation
+- align `supabase/schema.sql` with the dashboard loader's `student_practice_rooms` expectation
 
 ### Dashboard intelligence
 
@@ -30,11 +31,10 @@
 
 ### Practice rooms
 
-- Python execution environment
-- neural-net builder
-- dataset explorer
-- prompt lab
-- shared evaluation and feedback framework
+- deepen the live Python Room beyond runtime-error-only feedback
+- add correctness checking for successful-but-wrong output
+- design and build additional room surfaces beyond Python
+- create a shared evaluation and feedback framework
 
 ### Institution and outcome layers
 
@@ -49,15 +49,27 @@
 - onboarding exists, but it is still a lean first-pass experience
 - the dashboard persists starter data, but it is not truly adaptive yet
 - the access pipeline persists requests, but no one can review them inside the product
-- docs support exists, but it is still a local docs-grounded support layer rather than a full customer-support system
+- docs support exists, but it is still a docs-grounded support layer rather than a full customer-support system
+- only the Python Room is a real dedicated room route today
 
 ## Current Engineering Gaps
 
-- no automated test suite
+- automated coverage exists, but it is still narrow
 - no analytics or observability layer
 - no internal access-request operations UI
 - no content-management workflow for docs or marketing content
 - no richer learner-memory or support-escalation system
+- `supabase/schema.sql` still does not create `student_practice_rooms`
+
+## Existing Automated Coverage
+
+The repo is not test-free anymore. Current coverage includes:
+
+- `app/api/rooms/python/feedback/route.test.ts`
+- `src/features/rooms/__tests__/pyodide-runtime.test.ts`
+- the Python service test suite under `ai/tests/`
+
+The gap is breadth, not total absence.
 
 ## Cleanup Work That Needs Approval
 

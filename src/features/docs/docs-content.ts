@@ -59,7 +59,7 @@ export const docsGroups: DocsGroup[] = [
     shortLabel: 'Product',
     description: 'Understand what Yantra AI is, how learning paths work, and how focused study surfaces help.',
     accent: '02',
-    featureSlugs: ['what-is-yantra-ai', 'how-yantra-helps-you', 'learning-paths-and-voids'],
+    featureSlugs: ['what-is-yantra-ai', 'how-yantra-helps-you', 'python-room', 'learning-paths-and-voids'],
   },
   {
     id: 'account-access',
@@ -111,7 +111,7 @@ export const docsArticles: DocsArticle[] = [
               },
               {
                 title: 'Protected learner space',
-                body: 'The dashboard and student profile open only after authentication and onboarding.',
+                body: 'The dashboard, student profile, and Python Room open after authentication. Onboarding is part of the new-account flow, but auth is the current route gate.',
               },
               {
                 title: 'Live AI assistant',
@@ -329,7 +329,7 @@ export const docsArticles: DocsArticle[] = [
     slug: 'complete-onboarding',
     title: 'Complete Onboarding',
     summary:
-      'Yantra uses onboarding to understand who you are learning as, so it can unlock the right protected surface and keep the experience relevant.',
+      'Yantra uses onboarding to shape your learner profile for a new account, keep your learner context relevant, and make the first dashboard session easier to read.',
     eyebrow: 'Quick Start',
     readTime: '3 min read',
     group: 'getting-started',
@@ -344,7 +344,7 @@ export const docsArticles: DocsArticle[] = [
           {
             type: 'paragraph',
             text:
-              'Role selection is not decorative. Yantra stores your selected role in the learner profile and uses it to decide whether onboarding is complete. Without that step, protected routes keep sending you back to finish setup.',
+              'Role selection is not decorative. Yantra stores your selected role, goals, and pace in the learner profile so the dashboard can start from a more useful baseline. New accounts are routed through onboarding first, even though the current protected dashboard and room routes are gated by authentication rather than a second onboarding check.',
           },
           {
             type: 'cards',
@@ -382,7 +382,7 @@ export const docsArticles: DocsArticle[] = [
               },
               {
                 title: 'Confirm the choice',
-                body: 'Yantra stores the role and marks onboarding as complete so protected routes can open.',
+                body: 'Yantra stores the role and marks onboarding as complete so the learner profile starts with the right context.',
               },
             ],
           },
@@ -390,9 +390,9 @@ export const docsArticles: DocsArticle[] = [
             type: 'callout',
             tone: 'tip',
             label: 'What Unlocks',
-            title: 'Onboarding is the gate into the protected app',
+            title: 'Onboarding is the new-account setup layer',
             body:
-              'Once the role is saved, the dashboard and student profile route open normally and the learner foundation feels stable across sessions.',
+              'Once the role is saved, the learner profile feels more complete across the dashboard, student profile, and Python Room. Returning sessions still rely on authentication as the main route gate.',
           },
         ],
       },
@@ -408,7 +408,7 @@ export const docsArticles: DocsArticle[] = [
     group: 'getting-started',
     heroLabel: 'Getting Started / Dashboard',
     tags: ['dashboard', 'first session', 'learner home', 'start dashboard'],
-    related: ['student-profile', 'chat-with-yantra', 'learning-paths-and-voids'],
+    related: ['student-profile', 'python-room', 'chat-with-yantra', 'learning-paths-and-voids'],
     sections: [
       {
         id: 'what-you-see-first',
@@ -425,6 +425,10 @@ export const docsArticles: DocsArticle[] = [
               { title: 'Identity', body: 'Your name and account-linked details are pulled from the real profile layer.' },
               { title: 'Current path', body: 'You see a framed learning direction, focus label, and next-action area.' },
               { title: 'Yantra chat', body: 'The assistant stays close so you can ask what to learn next without leaving the page.' },
+              {
+                title: 'Python Room',
+                body: 'The first real dedicated room route lets you run Python in the browser, inspect runtime errors, and ask for targeted help.',
+              },
             ],
           },
         ],
@@ -455,6 +459,10 @@ export const docsArticles: DocsArticle[] = [
               {
                 title: 'Open Yantra chat',
                 body: 'Ask what you should learn first, or ask the assistant to explain how to use the platform effectively.',
+              },
+              {
+                title: 'Try the Python Room',
+                body: 'If you want a hands-on first session, open the live Python Room and use it as your first focused practice surface.',
               },
             ],
           },
@@ -746,7 +754,7 @@ export const docsArticles: DocsArticle[] = [
     group: 'product',
     heroLabel: 'Product / Dashboard Areas',
     tags: ['skills', 'rooms', 'focus', 'dashboard areas', 'curriculum'],
-    related: ['first-dashboard-session', 'learning-paths-and-voids', 'chat-with-yantra'],
+    related: ['first-dashboard-session', 'python-room', 'learning-paths-and-voids', 'chat-with-yantra'],
     sections: [
       {
         id: 'how-to-read-these-surfaces',
@@ -783,9 +791,9 @@ export const docsArticles: DocsArticle[] = [
             type: 'callout',
             tone: 'warning',
             label: 'Early Product Warning',
-            title: 'Many of these areas are still powered by static presentation content',
+            title: 'The room grid is mixed: one live room, broader preview surfaces',
             body:
-              'The visual system is already strong, but not every room card or skill state is backed by a real learning engine yet. Treat them as structured guidance surfaces rather than finished adaptive logic.',
+              'The visual system is already strong, but not every room card or skill state is backed by a real learning engine yet. The Python Room is live today. Treat most other room cards as structured guidance surfaces rather than finished adaptive logic.',
           },
         ],
       },
@@ -805,7 +813,7 @@ export const docsArticles: DocsArticle[] = [
             type: 'cards',
             items: [
               { title: 'When a card feels too generic', body: 'Treat it as a directional prompt, then ask chat for the concrete action hidden behind it.' },
-              { title: 'When a room feels unfinished', body: 'That usually means the design language is ahead of the deeper adaptive logic, not that the page is broken.' },
+              { title: 'When a room feels unfinished', body: 'That usually means the design language is ahead of the deeper adaptive logic. The Python Room is the current live dedicated room route.' },
               { title: 'When there is too much on screen', body: 'Start with the path title, focus label, and one CTA. Ignore the rest until you have momentum.' },
             ],
           },
@@ -819,7 +827,7 @@ export const docsArticles: DocsArticle[] = [
             type: 'list',
             items: [
               'Do not treat every visual badge as a precise measurement of your true ability yet',
-              'Do not assume every room card is already connected to a deep live curriculum engine',
+              'Do not assume every room card is already connected to a deep live curriculum engine; today the Python Room is the clear live room surface',
               'Do not confuse structured presentation with fake value; even the early surfaces are there to reduce confusion',
             ],
           },
@@ -836,6 +844,76 @@ export const docsArticles: DocsArticle[] = [
     ],
   },
   {
+    slug: 'python-room',
+    title: 'Use the Python Room',
+    summary:
+      'The Python Room is Yantra’s first live dedicated room route. Here is what works today, how room feedback behaves, and what to expect from voice and in-browser execution.',
+    eyebrow: 'Product',
+    readTime: '4 min read',
+    group: 'product',
+    heroLabel: 'Product / Python Room',
+    tags: ['python room', 'python', 'practice room', 'pyodide', 'room feedback', 'voice assistant'],
+    related: ['first-dashboard-session', 'skills-rooms-and-focus', 'chat-with-yantra', 'common-issues'],
+    sections: [
+      {
+        id: 'what-the-room-is',
+        title: 'What The Python Room Is',
+        blocks: [
+          {
+            type: 'paragraph',
+            text:
+              'The Python Room is the first real room route in Yantra. It opens from `/dashboard/rooms/python` after you sign in and gives you a focused place to write Python, run it in the browser, and get targeted help when runtime errors happen.',
+          },
+          {
+            type: 'cards',
+            items: [
+              { title: 'Protected route', body: 'You must be signed in to open the room. It sits inside the learner app, not the public marketing surface.' },
+              { title: 'In-browser runtime', body: 'Python runs through Pyodide in the browser, so the first warmup can take a few seconds.' },
+              { title: 'Targeted help', body: 'When a runtime error happens, Yantra can explain the likely issue and suggest one next fix.' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'how-feedback-and-voice-work',
+        title: 'How Feedback And Voice Work',
+        blocks: [
+          {
+            type: 'steps',
+            items: [
+              { title: 'Run the code', body: 'Use the editor and run the current Python task directly in the room.' },
+              { title: 'Trigger room feedback on runtime errors', body: 'If the code throws, Yantra sends the runtime-error payload through the dedicated room feedback route for a short hint-oriented reply.' },
+              { title: 'Use voice if that fits your session', body: 'The room can transcribe speech with Sarvam, send the text through Yantra, and synthesize the reply back to audio.' },
+            ],
+          },
+          {
+            type: 'callout',
+            tone: 'note',
+            label: 'Current Backend Shape',
+            title: 'Python Room help is routed through the live backend stack',
+            body:
+              'Room feedback targets the Python AI service first and can fall back to Gemini. Voice is handled by Next.js server routes plus Sarvam, not by a separate Python voice worker.',
+          },
+        ],
+      },
+      {
+        id: 'current-limits',
+        title: 'Current Limits',
+        blocks: [
+          {
+            type: 'list',
+            items: [
+              'Only runtime errors trigger dedicated room feedback today',
+              'Successful-but-wrong output is not evaluated yet',
+              'The first Pyodide startup can feel slower than later runs',
+              'The broader room grid is still evolving; Python is the current fully live dedicated room route',
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
     slug: 'chat-with-yantra',
     title: 'Chat With Yantra',
     summary:
@@ -845,7 +923,7 @@ export const docsArticles: DocsArticle[] = [
     group: 'product',
     heroLabel: 'Product / AI Chat',
     tags: ['chat', 'yantra ai', 'assistant', 'teacher', 'ai help'],
-    related: ['what-is-yantra-ai', 'how-yantra-helps-you', 'common-issues'],
+    related: ['what-is-yantra-ai', 'python-room', 'how-yantra-helps-you', 'common-issues'],
     sections: [
       {
         id: 'what-chat-can-do',
@@ -875,6 +953,7 @@ export const docsArticles: DocsArticle[] = [
             items: [
               'On the public marketing site as a product explainer and guided entry point',
               'Inside the protected dashboard as a learner-contextual helper',
+              'Inside the Python Room voice flow after speech is transcribed into text',
               'As a shared widget that can open from guided prompts or the floating launcher',
             ],
           },
@@ -1184,6 +1263,7 @@ export const docsHomeQuickStartSlugs = ['create-account', 'complete-onboarding',
 export const docsHomeCommonTaskSlugs = [
   'what-is-yantra-ai',
   'first-dashboard-session',
+  'python-room',
   'chat-with-yantra',
   'common-issues',
 ];
