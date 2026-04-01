@@ -1,0 +1,7 @@
+dist
+coverage
+.next
+node_modules
+output
+tmp
+package-lock.json

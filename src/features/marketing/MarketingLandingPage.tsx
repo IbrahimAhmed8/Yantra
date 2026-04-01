@@ -110,6 +110,13 @@ function Nav() {
             ))}
 
             <Link
+              href="/editor"
+              className="hoverable text-xs font-bold uppercase tracking-widest text-muted transition-colors hover:text-white"
+            >
+              Editor
+            </Link>
+
+            <Link
               href="/signup"
               className="hoverable rounded-full bg-white px-6 py-2.5 font-mono text-[11px] uppercase tracking-[0.22em] text-black transition-transform duration-300 hover:scale-[0.98]"
             >
@@ -181,10 +188,24 @@ function Nav() {
             ))}
 
             <motion.div
-              className="mt-8 flex w-full max-w-sm flex-col gap-4"
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: marketingNavLinks.length * 0.1 }}
+            >
+              <Link
+                href="/editor"
+                className="hoverable font-heading text-6xl uppercase tracking-widest"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Editor
+              </Link>
+            </motion.div>
+
+            <motion.div
+              className="mt-8 flex w-full max-w-sm flex-col gap-4"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: (marketingNavLinks.length + 1) * 0.1 }}
             >
               <Link
                 href="/signup"
@@ -251,6 +272,12 @@ function Hero() {
             className="hoverable w-full rounded-full bg-white px-10 py-5 text-center text-sm font-bold uppercase tracking-widest text-black transition-transform duration-300 hover:scale-105 sm:w-auto"
           >
             Start Onboarding
+          </Link>
+          <Link
+            href="/editor"
+            className="hoverable inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#7C3AED] bg-transparent px-6 py-2.5 text-center font-mono text-[11px] uppercase tracking-[0.22em] text-[#7C3AED] transition-colors duration-200 ease-in-out hover:bg-[#7C3AED] hover:text-white sm:w-auto"
+          >
+            Open Code Editor <ArrowRight size={14} />
           </Link>
         </motion.div>
 
