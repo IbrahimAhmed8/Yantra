@@ -9,5 +9,10 @@ coverage/
 *.tsbuildinfo
 .env*
 !.env.example
+<<<<<<< Updated upstream
 
 .npm-cache/
+=======
+pnpm-lock.yaml
+note.js
+>>>>>>> Stashed changes
