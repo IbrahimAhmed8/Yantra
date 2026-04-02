@@ -57,21 +57,29 @@ export const MonacoEditor = ({
 
   if (!file) {
     return (
-      <div className="flex h-full items-center justify-center rounded-[24px] border border-dashed border-white/10 bg-black/10">
-        <p className="text-sm text-slate-400">Open a file to start editing.</p>
+      <div
+        className="flex h-full min-h-[60vh] items-center justify-center border border-dashed"
+        style={{
+          background: 'var(--yantra-active-tab)',
+          borderColor: 'var(--yantra-border)',
+        }}
+      >
+        <p className="text-sm" style={{ color: 'var(--yantra-muted)' }}>
+          Open a file to start editing.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="relative h-full">
+    <div className="relative min-h-[60vh] p-0 m-0" style={{ height: '100%', margin: 0, padding: 0 }}>
       <Editor
         beforeMount={setupMonaco}
         height="100%"
         keepCurrentModel
         language={languageToMonaco(file.language)}
         loading={
-          <div className="flex h-full items-center justify-center text-sm text-slate-400">
+          <div className="flex h-full items-center justify-center text-sm" style={{ color: 'var(--yantra-muted)' }}>
             Preparing Yantra editor...
           </div>
         }

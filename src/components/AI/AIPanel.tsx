@@ -27,7 +27,6 @@ export const AIPanel = ({ file, theme }: AIPanelProps) => {
 
   const abortRef = useRef<AbortController | null>(null);
   const activeMessageIdRef = useRef<string | null>(null);
-  const isDark = theme === 'dark';
   const isStreaming = aiPanel.messages.some((message) => message.isStreaming);
 
   useEffect(() => {
@@ -180,26 +179,33 @@ export const AIPanel = ({ file, theme }: AIPanelProps) => {
           aiPanel.open ? 'translate-x-0 opacity-100' : 'translate-x-6 opacity-0 pointer-events-none'
         }`}
         style={{
-          background: isDark ? 'rgba(10, 10, 16, 0.96)' : 'rgba(245, 243, 255, 0.96)',
+          background: 'var(--yantra-sidebar)',
         }}
       >
-        <div className="border-b px-4 py-4" style={{ borderColor: 'var(--yantra-border)' }}>
+        <div
+          className="border-b px-4 py-3"
+          style={{
+            background: 'var(--yantra-sidebar)',
+            borderColor: 'var(--yantra-border)',
+          }}
+        >
           <div className="flex items-start justify-between gap-3">
             <div>
-              <div className={`mb-1 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.24em] ${isDark ? 'text-violet-300' : 'text-violet-700'}`}>
+              <div className="mb-1 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.24em]" style={{ color: 'var(--yantra-muted)' }}>
                 <Sparkles className="h-3.5 w-3.5" />
                 Yantra Intelligence
               </div>
-              <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-slate-950'}`}>Yantra AI</h2>
+              <h2 className="text-lg font-semibold text-[var(--yantra-foreground)]">Yantra AI</h2>
             </div>
 
             <button
               type="button"
-              className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition ${
-                isDark
-                  ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10'
-                  : 'border-slate-900/10 bg-white text-slate-700 hover:bg-slate-50'
-              }`}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md border transition hover:bg-white/5"
+              style={{
+                background: 'var(--yantra-tab-bar)',
+                borderColor: 'var(--yantra-border)',
+                color: 'var(--yantra-foreground)',
+              }}
               onClick={() => setAIPanelOpen(false)}
               aria-label="Close AI panel"
               title="Close AI panel"
@@ -211,7 +217,12 @@ export const AIPanel = ({ file, theme }: AIPanelProps) => {
           <div className="mt-4 flex flex-wrap gap-2">
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-full bg-violet-600 px-3 py-2 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(124,58,237,0.28)] transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:bg-violet-400/60"
+              className="inline-flex h-8 items-center gap-2 rounded-md border px-3 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-60"
+              style={{
+                background: 'var(--yantra-accent)',
+                borderColor: 'var(--yantra-accent)',
+                color: '#ffffff',
+              }}
               onClick={() => handleQuickAction('hint')}
               disabled={!file || isStreaming}
             >
@@ -221,11 +232,12 @@ export const AIPanel = ({ file, theme }: AIPanelProps) => {
 
             <button
               type="button"
-              className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition ${
-                isDark
-                  ? 'border-white/10 bg-white/5 text-slate-100 hover:bg-white/10'
-                  : 'border-slate-900/10 bg-white text-slate-700 hover:bg-slate-50'
-              } disabled:cursor-not-allowed disabled:opacity-60`}
+              className="inline-flex h-8 items-center gap-2 rounded-md border px-3 text-xs font-medium transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
+              style={{
+                background: 'var(--yantra-tab-bar)',
+                borderColor: 'var(--yantra-border)',
+                color: 'var(--yantra-foreground)',
+              }}
               onClick={() => handleQuickAction('review')}
               disabled={!file || isStreaming}
             >
@@ -235,11 +247,12 @@ export const AIPanel = ({ file, theme }: AIPanelProps) => {
 
             <button
               type="button"
-              className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition ${
-                isDark
-                  ? 'border-white/10 bg-white/5 text-slate-100 hover:bg-white/10'
-                  : 'border-slate-900/10 bg-white text-slate-700 hover:bg-slate-50'
-              }`}
+              className="inline-flex h-8 items-center gap-2 rounded-md border px-3 text-xs font-medium transition hover:bg-white/5"
+              style={{
+                background: 'var(--yantra-tab-bar)',
+                borderColor: 'var(--yantra-border)',
+                color: 'var(--yantra-foreground)',
+              }}
               onClick={() => {
                 stopStreaming();
                 clearAIChat();

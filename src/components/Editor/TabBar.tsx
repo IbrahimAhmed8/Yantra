@@ -11,10 +11,10 @@ interface TabBarProps {
 
 export const TabBar = ({ activeTabId, tabs, theme, onClose, onSelect }: TabBarProps) => {
   const canCloseTabs = tabs.length > 1;
-  const isDark = theme === 'dark';
+  const _theme = theme;
 
   return (
-    <div className="flex items-center gap-2 overflow-x-auto px-3 py-3">
+    <div className="flex h-10 items-stretch overflow-x-auto" style={{ background: '#2d2d2d' }}>
       {tabs.map((tab) => {
         const isActive = tab.id === activeTabId;
         const languageMeta = LANGUAGE_META[tab.language];
@@ -22,64 +22,49 @@ export const TabBar = ({ activeTabId, tabs, theme, onClose, onSelect }: TabBarPr
         return (
           <div
             key={tab.id}
-            className={`group flex min-w-[190px] max-w-[260px] items-center gap-3 rounded-2xl border px-3 py-2 transition-all ${
-              isActive
-                ? isDark
-                  ? 'border-violet-500/70 bg-violet-500/15 text-white shadow-[0_10px_40px_rgba(124,58,237,0.16)]'
-                  : 'border-violet-600/40 bg-violet-600/10 text-slate-950 shadow-[0_10px_40px_rgba(109,40,217,0.10)]'
-                : isDark
-                  ? 'border-white/10 bg-white/5 text-slate-300 hover:border-white/15 hover:bg-white/10'
-                  : 'border-slate-900/10 bg-white/75 text-slate-700 hover:border-slate-900/15 hover:bg-white'
+            className={`group relative flex h-10 min-w-[180px] max-w-[240px] shrink-0 items-center border-r ${
+              isActive ? 'bg-[#1e1e1e] text-white' : 'bg-[#2d2d2d] text-[#858585] hover:bg-[#2a2a2a] hover:text-[#cccccc]'
             }`}
+            style={{
+              borderColor: '#252526',
+            }}
           >
+            <span
+              className="pointer-events-none absolute inset-x-0 top-0 h-[2px]"
+              style={{ background: isActive ? '#7C3AED' : 'transparent' }}
+            />
+
             <button
               type="button"
-              className="flex min-w-0 flex-1 items-center gap-3 text-left"
+              className="flex h-full min-w-0 flex-1 items-center gap-2 px-3 text-left text-sm"
               onClick={() => onSelect(tab.id)}
             >
               <span
-                className={`inline-flex h-7 min-w-7 shrink-0 items-center justify-center rounded-lg border px-1.5 font-mono text-[0.62rem] font-bold uppercase ${
-                  isDark
-                    ? 'border-white/10 bg-black/40 text-emerald-300'
-                    : 'border-slate-900/10 bg-slate-100 text-violet-700'
-                }`}
+                className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-sm border px-1 font-mono text-[0.55rem] font-bold uppercase"
+                style={{
+                  background: '#252526',
+                  borderColor: '#3c3c3c',
+                  color: isActive ? '#ffffff' : '#cccccc',
+                }}
               >
                 {languageMeta.icon}
               </span>
 
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-semibold">{tab.name}</span>
-                <span className={`block truncate text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                  {languageMeta.label}
-                </span>
-              </span>
-
-              {tab.isDirty ? (
-                <span
-                  className={`h-2.5 w-2.5 shrink-0 rounded-full ${
-                    isDark ? 'bg-emerald-400 shadow-[0_0_16px_rgba(16,185,129,0.65)]' : 'bg-emerald-600'
-                  }`}
-                  aria-label="Unsaved changes"
-                  title="Unsaved changes"
-                />
-              ) : null}
+              <span className="min-w-0 flex-1 truncate">{tab.name}</span>
             </button>
 
             <button
               type="button"
-              className={`shrink-0 rounded-full p-1.5 transition ${
-                canCloseTabs
-                  ? isDark
-                    ? 'text-slate-400 hover:bg-white/10 hover:text-white'
-                    : 'text-slate-500 hover:bg-slate-900/5 hover:text-slate-950'
-                  : 'cursor-not-allowed text-slate-500/50'
-              }`}
+              className="mr-2 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-xs opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-0"
+              style={{
+                color: isActive ? '#ffffff' : '#cccccc',
+              }}
               disabled={!canCloseTabs}
               onClick={() => onClose(tab.id)}
               aria-label={canCloseTabs ? `Close ${tab.name}` : 'At least one tab must remain open'}
               title={canCloseTabs ? `Close ${tab.name}` : 'At least one tab must remain open'}
             >
-              <X className="h-4 w-4" />
+              <X className="h-3.5 w-3.5" />
             </button>
           </div>
         );

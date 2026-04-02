@@ -30,7 +30,7 @@ export const TestCaseRunner = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<TestCaseResult[]>([]);
   const completedChallengesRef = useRef<Set<string>>(new Set());
-  const isDark = theme === 'dark';
+  const _theme = theme;
 
   useEffect(() => {
     setResults([]);
@@ -106,18 +106,19 @@ export const TestCaseRunner = () => {
           <p className="text-sm font-semibold" style={{ color: 'var(--yantra-foreground)' }}>
             Challenge test cases
           </p>
-          <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+          <p className="text-xs" style={{ color: 'var(--yantra-muted)' }}>
             Runs the active file once per sample case using each case input as stdin.
           </p>
         </div>
 
         <button
           type="button"
-          className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-semibold transition ${
-            isDark
-              ? 'border-white/10 bg-white/5 text-white hover:bg-white/10'
-              : 'border-slate-900/10 bg-white text-slate-900 hover:bg-slate-50'
-          } disabled:cursor-not-allowed disabled:opacity-60`}
+          className="inline-flex h-8 items-center gap-2 rounded-md border px-3 text-xs font-medium transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
+          style={{
+            background: isRunning ? 'var(--yantra-sidebar)' : 'var(--yantra-accent)',
+            borderColor: isRunning ? 'var(--yantra-border)' : 'var(--yantra-accent)',
+            color: '#ffffff',
+          }}
           onClick={() => {
             void runAllTests();
           }}
@@ -129,21 +130,15 @@ export const TestCaseRunner = () => {
       </div>
 
       <div
-        className="rounded-2xl border px-4 py-3 text-sm"
+        className="rounded-md border px-4 py-3 text-sm"
         style={{
-          background: didCompleteChallenge
-            ? isDark
-              ? 'rgba(16, 185, 129, 0.14)'
-              : 'rgba(16, 185, 129, 0.12)'
-            : isDark
-              ? 'rgba(255, 255, 255, 0.03)'
-              : 'rgba(255, 255, 255, 0.9)',
-          borderColor: didCompleteChallenge ? 'rgba(16, 185, 129, 0.24)' : 'var(--yantra-border)',
-          color: didCompleteChallenge ? (isDark ? '#bbf7d0' : '#065f46') : 'var(--yantra-foreground)',
+          background: didCompleteChallenge ? 'rgba(34, 197, 94, 0.12)' : 'var(--yantra-sidebar)',
+          borderColor: didCompleteChallenge ? 'rgba(34, 197, 94, 0.35)' : 'var(--yantra-border)',
+          color: didCompleteChallenge ? '#bbf7d0' : 'var(--yantra-foreground)',
         }}
       >
         {didCompleteChallenge
-          ? '✓ Challenge Complete!'
+          ? 'Challenge Complete!'
           : results.length > 0
             ? `${passedCount}/${TEST_CASES.length} passed`
             : 'Run the suite to see case-by-case results.'}
@@ -157,9 +152,9 @@ export const TestCaseRunner = () => {
           return (
             <article
               key={`${testCase.input}-${testCase.expectedOutput}`}
-              className="rounded-2xl border p-4"
+              className="rounded-md border p-4"
               style={{
-                background: isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(255, 255, 255, 0.92)',
+                background: 'var(--yantra-sidebar)',
                 borderColor: 'var(--yantra-border)',
               }}
             >
@@ -168,15 +163,20 @@ export const TestCaseRunner = () => {
                   Case {index + 1}
                 </p>
                 <span
-                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${
-                    result
+                  className="inline-flex items-center gap-1 rounded-md border px-2.5 py-1 text-xs font-semibold"
+                  style={{
+                    background: result
                       ? didPass
-                        ? 'bg-emerald-500/15 text-emerald-400'
-                        : 'bg-rose-500/15 text-rose-400'
-                      : isDark
-                        ? 'bg-white/5 text-slate-400'
-                        : 'bg-slate-900/5 text-slate-500'
-                  }`}
+                        ? 'rgba(34, 197, 94, 0.12)'
+                        : 'rgba(244, 71, 71, 0.12)'
+                      : 'var(--yantra-active-tab)',
+                    borderColor: result
+                      ? didPass
+                        ? 'rgba(34, 197, 94, 0.35)'
+                        : 'rgba(244, 71, 71, 0.35)'
+                      : 'var(--yantra-border)',
+                    color: result ? (didPass ? '#bbf7d0' : 'var(--yantra-error)') : 'var(--yantra-muted)',
+                  }}
                 >
                   {result ? didPass ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5" /> : <TriangleAlert className="h-3.5 w-3.5" />}
                   {result ? (didPass ? 'PASS' : 'FAIL') : 'Pending'}
@@ -185,45 +185,46 @@ export const TestCaseRunner = () => {
 
               <div className="grid gap-3 text-sm md:grid-cols-3">
                 <div>
-                  <p className={`mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--yantra-muted)' }}>
                     Input
                   </p>
                   <pre
-                    className={`whitespace-pre-wrap break-words rounded-xl px-3 py-2 font-mono text-xs ${
-                      isDark ? 'bg-black/20 text-white' : 'bg-slate-900/[0.06] text-slate-900'
-                    }`}
+                    className="whitespace-pre-wrap break-words rounded-md border px-3 py-2 font-mono text-xs"
+                    style={{
+                      background: 'var(--yantra-active-tab)',
+                      borderColor: 'var(--yantra-border)',
+                      color: 'var(--yantra-foreground)',
+                    }}
                   >
                     {testCase.input}
                   </pre>
                 </div>
                 <div>
-                  <p className={`mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--yantra-muted)' }}>
                     Expected
                   </p>
                   <pre
-                    className={`whitespace-pre-wrap break-words rounded-xl px-3 py-2 font-mono text-xs ${
-                      isDark ? 'bg-black/20 text-emerald-300' : 'bg-emerald-500/10 text-emerald-700'
-                    }`}
+                    className="whitespace-pre-wrap break-words rounded-md border px-3 py-2 font-mono text-xs"
+                    style={{
+                      background: 'rgba(34, 197, 94, 0.12)',
+                      borderColor: 'rgba(34, 197, 94, 0.35)',
+                      color: '#bbf7d0',
+                    }}
                   >
                     {testCase.expectedOutput}
                   </pre>
                 </div>
                 <div>
-                  <p className={`mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--yantra-muted)' }}>
                     Actual
                   </p>
                   <pre
-                    className={`whitespace-pre-wrap break-words rounded-xl px-3 py-2 font-mono text-xs ${
-                      isDark ? 'bg-black/20' : 'bg-slate-900/[0.06]'
-                    } ${
-                      result && !didPass
-                        ? isDark
-                          ? 'text-rose-300'
-                          : 'text-rose-700'
-                        : isDark
-                          ? 'text-white'
-                          : 'text-slate-900'
-                    }`}
+                    className="whitespace-pre-wrap break-words rounded-md border px-3 py-2 font-mono text-xs"
+                    style={{
+                      background: 'var(--yantra-active-tab)',
+                      borderColor: 'var(--yantra-border)',
+                      color: result && !didPass ? 'var(--yantra-error)' : 'var(--yantra-foreground)',
+                    }}
                   >
                     {result ? result.actualOutput || result.stderr || '(no output)' : 'Waiting to run'}
                   </pre>
@@ -232,16 +233,21 @@ export const TestCaseRunner = () => {
 
               {result?.stderr ? (
                 <p
-                  className={`mt-3 rounded-xl px-3 py-2 font-mono text-xs ${
-                    isDark ? 'bg-rose-500/10 text-rose-300' : 'bg-rose-500/10 text-rose-700'
-                  }`}
+                  className="mt-3 rounded-md border px-3 py-2 font-mono text-xs"
+                  style={{
+                    background: 'rgba(244, 71, 71, 0.12)',
+                    borderColor: 'rgba(244, 71, 71, 0.35)',
+                    color: 'var(--yantra-error)',
+                  }}
                 >
                   {result.stderr}
                 </p>
               ) : null}
 
               {result ? (
-                <p className={`mt-3 text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Exit code: {result.exitCode}</p>
+                <p className="mt-3 text-xs" style={{ color: 'var(--yantra-muted)' }}>
+                  Exit code: {result.exitCode}
+                </p>
               ) : null}
             </article>
           );

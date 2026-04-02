@@ -1,28 +1,37 @@
-import { ChevronDown, ChevronUp, Eraser, GripHorizontal, Terminal } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { ChevronDown, ChevronUp, Eraser } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { StdinInput } from '@/components/Execution/StdinInput';
 import { TestCaseRunner } from '@/components/Execution/TestCaseRunner';
 import { useEditorStore } from '@/store/useEditorStore';
 
-const DEFAULT_PANEL_HEIGHT = 200;
-const MIN_PANEL_HEIGHT = 140;
-const MAX_PANEL_HEIGHT = 420;
+const DEFAULT_PANEL_HEIGHT = 280;
+const MIN_PANEL_HEIGHT = 150;
+const MAX_PANEL_HEIGHT = 500;
 
-type ConsoleView = 'output' | 'tests';
+type ConsoleView = 'output' | 'tests' | 'problems';
+
+const TAB_ITEMS: ConsoleView[] = ['output', 'tests', 'problems'];
 
 export const ConsolePanel = () => {
   const executionResult = useEditorStore((state) => state.executionResult);
   const executionStatus = useEditorStore((state) => state.executionStatus);
   const clearConsole = useEditorStore((state) => state.clearConsole);
-  const theme = useEditorStore((state) => state.theme);
 
   const [activeView, setActiveView] = useState<ConsoleView>('output');
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [panelHeight, setPanelHeight] = useState(DEFAULT_PANEL_HEIGHT);
 
   const resizeStateRef = useRef<{ startY: number; startHeight: number } | null>(null);
-  const isDark = theme === 'dark';
   const hasConsoleData = Boolean(executionResult?.stdout || executionResult?.stderr || executionResult);
+
+  const problemLines = useMemo(
+    () =>
+      (executionResult?.stderr ?? '')
+        .split(/\r?\n/)
+        .map((line) => line.trimEnd())
+        .filter((line) => line.trim().length > 0),
+    [executionResult?.stderr],
+  );
 
   useEffect(() => {
     if (executionStatus === 'running' || hasConsoleData) {
@@ -66,144 +75,147 @@ export const ConsolePanel = () => {
     <section
       className="flex shrink-0 flex-col border-t"
       style={{
-        height: isCollapsed ? 56 : panelHeight,
-        borderColor: 'var(--yantra-border)',
-        background: isDark ? 'rgba(9, 9, 11, 0.72)' : 'rgba(250, 250, 250, 0.8)',
+        height: isCollapsed ? 36 : panelHeight,
+        background: '#1e1e1e',
+        borderColor: '#3c3c3c',
         transition: 'height 160ms ease',
       }}
     >
       <button
         type="button"
-        className="flex h-4 items-center justify-center text-slate-500 transition hover:text-violet-400"
+        className="h-1 w-full cursor-ns-resize border-0 p-0"
+        style={{ background: '#3c3c3c' }}
         onMouseDown={startResize}
         aria-label="Resize console panel"
         title="Drag to resize console panel"
-      >
-        <GripHorizontal className="h-4 w-4" />
-      </button>
+      />
 
-      <div className="flex items-center justify-between gap-3 border-b px-4 py-3" style={{ borderColor: 'var(--yantra-border)' }}>
-        <div className="flex items-center gap-2">
-          <Terminal className="h-4 w-4 text-violet-400" />
-          <div className="flex items-center gap-2 rounded-full p-1" style={{ background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(17,17,17,0.05)' }}>
-            {(['output', 'tests'] as const).map((view) => (
+      <div className="flex h-8 items-end justify-between px-4" style={{ background: '#1e1e1e' }}>
+        <div className="flex items-end gap-5">
+          {TAB_ITEMS.map((view) => {
+            const isActive = activeView === view;
+
+            return (
               <button
                 key={view}
                 type="button"
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold capitalize transition ${
-                  activeView === view
-                    ? 'bg-violet-600 text-white shadow-[0_8px_20px_rgba(124,58,237,0.25)]'
-                    : isDark
-                      ? 'text-slate-400 hover:text-white'
-                      : 'text-slate-500 hover:text-slate-900'
-                }`}
+                className="border-b-2 pb-1.5 text-[12px] font-medium uppercase tracking-[0.12em] transition"
+                style={{
+                  borderBottomColor: isActive ? '#7C3AED' : 'transparent',
+                  color: '#d4d4d4',
+                  opacity: isActive ? 1 : 0.72,
+                  background: 'transparent',
+                }}
                 onClick={() => setActiveView(view)}
               >
                 {view}
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 pb-1">
           <button
             type="button"
-            className={`inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-semibold transition ${
-              isDark
-                ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10'
-                : 'border-slate-900/10 bg-white text-slate-700 hover:bg-slate-50'
-            }`}
+            className="inline-flex h-6 w-6 items-center justify-center rounded text-[#858585] transition hover:text-[#d4d4d4]"
             onClick={clearConsole}
+            aria-label="Clear console"
+            title="Clear console"
           >
             <Eraser className="h-3.5 w-3.5" />
-            Clear
           </button>
 
           <button
             type="button"
-            className={`inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-semibold transition ${
-              isDark
-                ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10'
-                : 'border-slate-900/10 bg-white text-slate-700 hover:bg-slate-50'
-            }`}
+            className="inline-flex h-6 w-6 items-center justify-center rounded text-[#858585] transition hover:text-[#d4d4d4]"
             onClick={() => setIsCollapsed((value) => !value)}
+            aria-label={isCollapsed ? 'Expand panel' : 'Collapse panel'}
+            title={isCollapsed ? 'Expand panel' : 'Collapse panel'}
           >
-            {isCollapsed ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-            {isCollapsed ? 'Expand' : 'Collapse'}
+            {isCollapsed ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </button>
         </div>
       </div>
 
       {!isCollapsed ? (
-        <div className="min-h-0 flex-1 overflow-hidden">
+        <div className="min-h-0 flex-1 overflow-hidden border-t" style={{ borderColor: '#3c3c3c' }}>
           {activeView === 'output' ? (
-            <div className="flex h-full min-h-0 flex-col gap-3 p-4">
-              <StdinInput />
-
-              <div className="flex flex-wrap items-center gap-2">
-                <span
-                  className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
-                    executionResult?.exitCode === 0
-                      ? 'bg-emerald-500/15 text-emerald-400'
-                      : executionResult
-                        ? 'bg-rose-500/15 text-rose-400'
-                        : isDark
-                          ? 'bg-white/5 text-slate-400'
-                          : 'bg-slate-900/5 text-slate-500'
-                  }`}
-                >
-                  Exit {executionResult ? executionResult.exitCode : '--'}
-                </span>
-                <span className={`rounded-full px-2.5 py-1 text-xs ${isDark ? 'bg-white/5 text-slate-400' : 'bg-slate-900/5 text-slate-500'}`}>
-                  Time {executionResult?.time ?? '--'}
-                </span>
-                <span className={`rounded-full px-2.5 py-1 text-xs ${isDark ? 'bg-white/5 text-slate-400' : 'bg-slate-900/5 text-slate-500'}`}>
-                  Memory {executionResult?.memory ?? '--'}
-                </span>
+            <div className="flex h-full min-h-0 flex-col">
+              <div className="shrink-0 border-b px-4 py-3" style={{ borderColor: '#3c3c3c' }}>
+                <StdinInput />
               </div>
 
-              <div className="grid min-h-0 flex-1 gap-3 xl:grid-cols-2">
-                <section
-                  className="flex min-h-0 flex-col rounded-2xl border"
-                  style={{
-                    background: isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(255, 255, 255, 0.92)',
-                    borderColor: 'var(--yantra-border)',
-                  }}
-                >
-                  <div className="border-b px-4 py-3" style={{ borderColor: 'var(--yantra-border)' }}>
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">stdout</p>
+              <div className="min-h-0 flex-1 overflow-auto px-4 py-3">
+                <div className="space-y-4">
+                  <div>
+                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: '#858585' }}>
+                      stdout
+                    </p>
+                    <pre className="whitespace-pre-wrap break-words font-mono text-[13px] leading-5" style={{ color: '#d4d4d4' }}>
+                      {executionResult?.stdout || 'No stdout captured yet.'}
+                    </pre>
                   </div>
-                  <pre
-                    className={`min-h-0 flex-1 overflow-auto whitespace-pre-wrap break-words px-4 py-4 font-mono text-sm ${
-                      isDark ? 'text-white' : 'text-slate-900'
-                    }`}
-                  >
-                    {executionResult?.stdout || 'No stdout captured yet.'}
-                  </pre>
-                </section>
 
-                <section
-                  className="flex min-h-0 flex-col rounded-2xl border"
-                  style={{
-                    background: isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(255, 255, 255, 0.92)',
-                    borderColor: 'var(--yantra-border)',
-                  }}
-                >
-                  <div className="border-b px-4 py-3" style={{ borderColor: 'var(--yantra-border)' }}>
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-400">stderr</p>
-                  </div>
-                  <pre
-                    className={`min-h-0 flex-1 overflow-auto whitespace-pre-wrap break-words px-4 py-4 font-mono text-sm ${
-                      isDark ? 'text-rose-300' : 'text-rose-700'
-                    }`}
-                  >
-                    {executionResult?.stderr || 'No stderr.'}
-                  </pre>
-                </section>
+                  {executionResult?.stderr ? (
+                    <div>
+                      <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: '#858585' }}>
+                        stderr
+                      </p>
+                      <pre className="whitespace-pre-wrap break-words font-mono text-[13px] leading-5" style={{ color: '#f44747' }}>
+                        {executionResult.stderr}
+                      </pre>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+
+              <div
+                className="shrink-0 border-t px-4 py-2 font-mono text-[11px]"
+                style={{
+                  borderColor: '#3c3c3c',
+                  color: '#858585',
+                }}
+              >
+                {`Exit ${executionResult ? executionResult.exitCode : '--'}  |  Time ${executionResult?.time ?? '--'}  |  Memory ${executionResult?.memory ?? '--'}`}
               </div>
             </div>
-          ) : (
+          ) : activeView === 'tests' ? (
             <TestCaseRunner />
+          ) : (
+            <div className="flex h-full min-h-0 flex-col">
+              <div className="min-h-0 flex-1 overflow-auto px-4 py-3">
+                {problemLines.length > 0 ? (
+                  <div className="space-y-2">
+                    {problemLines.map((line, index) => (
+                      <div
+                        key={`${line}-${index}`}
+                        className="border-b pb-2 font-mono text-[13px] leading-5"
+                        style={{
+                          borderColor: '#3c3c3c',
+                          color: '#f44747',
+                        }}
+                      >
+                        {line}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[13px]" style={{ color: '#858585' }}>
+                    No problems have been detected.
+                  </p>
+                )}
+              </div>
+
+              <div
+                className="shrink-0 border-t px-4 py-2 font-mono text-[11px]"
+                style={{
+                  borderColor: '#3c3c3c',
+                  color: '#858585',
+                }}
+              >
+                {`${problemLines.length} problem${problemLines.length === 1 ? '' : 's'}`}
+              </div>
+            </div>
           )}
         </div>
       ) : null}

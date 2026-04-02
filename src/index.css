@@ -4,30 +4,25 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: light;
-  --yantra-background: #fafafa;
-  --yantra-foreground: #111111;
-  --yantra-accent: #6d28d9;
-  --yantra-accent-soft: rgba(109, 40, 217, 0.12);
-  --yantra-muted: #6b7280;
-  --yantra-border: rgba(17, 17, 17, 0.08);
-  --yantra-shell: rgba(255, 255, 255, 0.78);
-  --yantra-panel: rgba(255, 255, 255, 0.92);
-  --yantra-shadow: rgba(109, 40, 217, 0.18);
-}
-
-:root[data-theme='dark'] {
+:root,
+:root[data-theme='light'],
+:root[data-theme='dark'],
+:root[data-editor-theme='light'],
+:root[data-editor-theme='dark'] {
   color-scheme: dark;
-  --yantra-background: #0d0d0d;
-  --yantra-foreground: #e5e5e5;
+  --yantra-background: #1e1e1e;
+  --yantra-foreground: #d4d4d4;
   --yantra-accent: #7c3aed;
-  --yantra-accent-soft: rgba(124, 58, 237, 0.18);
-  --yantra-muted: #9ca3af;
-  --yantra-border: rgba(229, 229, 229, 0.08);
-  --yantra-shell: rgba(13, 13, 13, 0.84);
-  --yantra-panel: rgba(18, 18, 24, 0.9);
-  --yantra-shadow: rgba(124, 58, 237, 0.26);
+  --yantra-accent-soft: rgba(124, 58, 237, 0.14);
+  --yantra-muted: #858585;
+  --yantra-border: #3c3c3c;
+  --yantra-shell: #1e1e1e;
+  --yantra-panel: #1e1e1e;
+  --yantra-sidebar: #252526;
+  --yantra-tab-bar: #2d2d2d;
+  --yantra-active-tab: #1e1e1e;
+  --yantra-error: #f44747;
+  --yantra-shadow: rgba(0, 0, 0, 0);
 }
 
 @layer base {
@@ -35,17 +30,19 @@
     box-sizing: border-box;
   }
 
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
   html {
-    background:
-      radial-gradient(circle at top left, var(--yantra-accent-soft), transparent 28%),
-      linear-gradient(180deg, rgba(16, 185, 129, 0.06), transparent 24%),
-      var(--yantra-background);
+    background: var(--yantra-background);
   }
 
   body {
-    min-height: 100vh;
     margin: 0;
-    background: transparent;
+    background: var(--yantra-background);
     color: var(--yantra-foreground);
     font-family: 'Space Grotesk', system-ui, sans-serif;
     text-rendering: optimizeLegibility;
@@ -61,10 +58,6 @@
     cursor: pointer;
   }
 
-  #root {
-    min-height: 100vh;
-  }
-
   ::selection {
     background: var(--yantra-accent);
     color: #ffffff;
@@ -76,15 +69,15 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: transparent;
+    background: var(--yantra-background);
   }
 
   ::-webkit-scrollbar-thumb {
     border-radius: 999px;
-    background: rgba(107, 114, 128, 0.45);
+    background: var(--yantra-border);
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(107, 114, 128, 0.7);
+    background: #4f4f4f;
   }
 }

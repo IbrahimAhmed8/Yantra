@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Analytics } from '@vercel/analytics/react';
 import { Bebas_Neue, Inter, JetBrains_Mono, Space_Grotesk } from 'next/font/google';
 import '../src/styles/globals.css';
 import { ExperienceProvider } from '@/src/features/motion/ExperienceProvider';

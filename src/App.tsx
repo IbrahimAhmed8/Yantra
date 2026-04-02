@@ -1,96 +1,35 @@
-import { MoonStar, Plus, Sparkles, SunMedium } from 'lucide-react';
-import { useEffect } from 'react';
+import { MoonStar, SunMedium } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { EditorShell } from '@/components/Editor/EditorShell';
+import { TabBar } from '@/components/Editor/TabBar';
 import { RunButton } from '@/components/Execution/RunButton';
+import { StatusBar } from '@/components/StatusBar';
 import { useEditorStore } from '@/store/useEditorStore';
-import { LANGUAGE_META, type EditorFile } from '@/types';
 
-const STARTER_FILES: EditorFile[] = [
-  {
-    id: 'learning-loop-python',
-    name: 'learning_loop.py',
-    language: 'python',
-    content: [
-      'def next_milestone(topic: str) -> str:',
-      '    milestones = {',
-      '        "python": "Ship a small CLI project",',
-      '        "algorithms": "Solve five graph problems",',
-      '        "system-design": "Sketch a resilient API",',
-      '    }',
-      '',
-      '    return milestones.get(topic, "Keep building with Yantra")',
-      '',
-      'print(next_milestone("python"))',
-    ].join('\n'),
-  },
-  {
-    id: 'coach-widget-javascript',
-    name: 'coachWidget.js',
-    language: 'javascript',
-    content: [
-      'const lessons = ["arrays", "graphs", "dp"];',
-      '',
-      'export async function recommendLesson(progress = 0.42) {',
-      '  const nextLesson = lessons[Math.floor(progress * lessons.length)] ?? "projects";',
-      '  return `${nextLesson} is ready for today.`;',
-      '}',
-      '',
-      'recommendLesson().then(console.log);',
-    ].join('\n'),
-  },
-  {
-    id: 'roadmap-service-java',
-    name: 'RoadmapService.java',
-    language: 'java',
-    content: [
-      'public class RoadmapService {',
-      '    private final String learnerName;',
-      '',
-      '    public RoadmapService(String learnerName) {',
-      '        this.learnerName = learnerName;',
-      '    }',
-      '',
-      '    public String nextStep() {',
-      '        return learnerName + ", build one practice project this week.";',
-      '    }',
-      '}',
-    ].join('\n'),
-  },
-  {
-    id: 'engine-telemetry-cpp',
-    name: 'engineTelemetry.cpp',
-    language: 'cpp',
-    content: [
-      '#include <iostream>',
-      '#include <vector>',
-      '',
-      'int main() {',
-      '    std::vector<int> scores = {82, 87, 91, 94};',
-      '    for (const auto& score : scores) {',
-      '        std::cout << "Checkpoint: " << score << std::endl;',
-      '    }',
-      '',
-      '    return 0;',
-      '}',
-    ].join('\n'),
-  },
-];
+const SIDEBAR_TOGGLE_GLYPH = String.fromCharCode(0x25a3);
+const AI_BUTTON_GLYPH = String.fromCharCode(0x2726);
 
 export default function App() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const activeFile = useEditorStore((state) => state.activeFile);
   const openTabs = useEditorStore((state) => state.openTabs);
-  const openTab = useEditorStore((state) => state.openTab);
   const theme = useEditorStore((state) => state.theme);
   const toggleTheme = useEditorStore((state) => state.toggleTheme);
   const aiPanelOpen = useEditorStore((state) => state.aiPanel.open);
   const toggleAIPanel = useEditorStore((state) => state.toggleAIPanel);
   const challengeCompletion = useEditorStore((state) => state.challengeCompletion);
   const hideChallengeCompletion = useEditorStore((state) => state.hideChallengeCompletion);
+  const closeTab = useEditorStore((state) => state.closeTab);
+  const setActiveFile = useEditorStore((state) => state.setActiveFile);
   const isDark = theme === 'dark';
 
   useEffect(() => {
     document.documentElement.dataset.editorTheme = theme;
+    document.documentElement.dataset.theme = theme;
+
     return () => {
       delete document.documentElement.dataset.editorTheme;
+      delete document.documentElement.dataset.theme;
     };
   }, [theme]);
 
@@ -109,141 +48,87 @@ export default function App() {
   }, [challengeCompletion.visible, hideChallengeCompletion]);
 
   return (
-    <div className="relative min-h-screen overflow-hidden px-4 py-4 sm:px-6 lg:px-8">
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute left-[-10%] top-[-18%] h-72 w-72 rounded-full bg-violet-500/20 blur-3xl" />
-        <div className="absolute bottom-[-12%] right-[-4%] h-80 w-80 rounded-full bg-emerald-500/10 blur-3xl" />
-      </div>
-
-      <div className="mx-auto flex min-h-[calc(100vh-2rem)] max-w-7xl flex-col gap-4">
-        <header
-          className="relative overflow-hidden rounded-[28px] border px-5 py-5 sm:px-6"
-          style={{
-            background: 'var(--yantra-shell)',
-            borderColor: 'var(--yantra-border)',
-            boxShadow: '0 22px 70px var(--yantra-shadow)',
-          }}
-        >
-          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(124,58,237,0.10),transparent_40%,rgba(16,185,129,0.05))]" />
-
-          <div className="relative flex flex-col gap-5">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div className="max-w-3xl">
-                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-500/20 bg-violet-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-violet-300">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  Day 3 AI Intelligence Layer
-                </div>
-
-                <div className="space-y-2">
-                  <h1
-                    className={`font-display text-3xl font-bold tracking-tight sm:text-4xl ${
-                      isDark ? 'text-white' : 'text-slate-950'
-                    }`}
-                  >
-                    Code with inline AI hints, reviews, and debugging help woven directly into the editor.
-                  </h1>
-                  <p
-                    className={`max-w-2xl text-sm leading-6 sm:text-base ${
-                      isDark ? 'text-slate-300' : 'text-slate-600'
-                    }`}
-                  >
-                    Day 3 adds a streaming Yantra AI side panel, line-level explanations inside Monaco, and challenge completion
-                    guidance when your tests land cleanly.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2 self-start">
-                <RunButton />
-                <button
-                  type="button"
-                  className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition ${
-                    aiPanelOpen
-                      ? 'bg-violet-500 text-white shadow-[0_12px_30px_rgba(124,58,237,0.28)]'
-                      : isDark
-                        ? 'bg-violet-500/14 text-violet-200 hover:bg-violet-500/20'
-                        : 'bg-violet-500/12 text-violet-700 hover:bg-violet-500/18'
-                  }`}
-                  onClick={toggleAIPanel}
-                  aria-label={aiPanelOpen ? 'Close AI panel' : 'Open AI panel'}
-                  title={aiPanelOpen ? 'Close AI panel' : 'Open AI panel'}
-                >
-                  <span aria-hidden="true">✦</span>
-                  AI
-                </button>
-                <button
-                  type="button"
-                  className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-semibold transition ${
-                    isDark
-                      ? 'border-white/10 bg-white/5 text-white hover:bg-white/10'
-                      : 'border-slate-900/10 bg-white/80 text-slate-950 hover:bg-white'
-                  }`}
-                  onClick={toggleTheme}
-                  aria-label={`Switch to ${isDark ? 'light' : 'dark'} theme`}
-                  title={`Switch to ${isDark ? 'light' : 'dark'} theme`}
-                >
-                  {isDark ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
-                  {isDark ? 'Light mode' : 'Dark mode'}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between gap-3">
-                <p className={`text-xs font-semibold uppercase tracking-[0.18em] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Quick open starter files
-                </p>
-                <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{openTabs.length} tabs open</span>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {STARTER_FILES.map((file) => {
-                  const isOpen = openTabs.some((tab) => tab.id === file.id);
-                  const meta = LANGUAGE_META[file.language];
-
-                  return (
-                    <button
-                      key={file.id}
-                      type="button"
-                      className={`inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm transition ${
-                        isOpen
-                          ? isDark
-                            ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200'
-                            : 'border-emerald-600/20 bg-emerald-600/10 text-emerald-800'
-                          : isDark
-                            ? 'border-white/10 bg-black/20 text-slate-200 hover:border-white/15 hover:bg-black/30'
-                            : 'border-slate-900/10 bg-white/70 text-slate-700 hover:border-slate-900/15 hover:bg-white'
-                      }`}
-                      onClick={() => openTab(file)}
-                    >
-                      <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-lg bg-black/20 px-1.5 font-mono text-[0.65rem] font-bold uppercase">
-                        {meta.icon}
-                      </span>
-                      <span>{file.name}</span>
-                      <Plus className="h-3.5 w-3.5" />
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {challengeCompletion.visible ? (
-          <div
-            className={`flex items-center justify-between gap-3 rounded-[24px] border px-4 py-3 text-sm shadow-[0_18px_40px_rgba(16,185,129,0.12)] ${
-              isDark
-                ? 'border-emerald-400/20 bg-emerald-500/12 text-emerald-100'
-                : 'border-emerald-500/20 bg-emerald-500/10 text-emerald-800'
-            }`}
+    <div
+      className="flex min-h-screen flex-col overflow-hidden"
+      style={{
+        height: '100dvh',
+        background: 'var(--yantra-background)',
+        color: 'var(--yantra-foreground)',
+      }}
+    >
+      <header
+        className="flex h-10 shrink-0 items-stretch border-b"
+        style={{
+          background: '#2d2d2d',
+          borderColor: 'var(--yantra-border)',
+        }}
+      >
+        <div className="flex shrink-0 items-center gap-2 px-3">
+          <button
+            type="button"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-sm font-semibold transition hover:bg-[#3a3a3a]"
+            style={{
+              color: '#d4d4d4',
+            }}
+            onClick={() => setIsSidebarOpen((value) => !value)}
+            aria-label={isSidebarOpen ? 'Collapse file explorer' : 'Open file explorer'}
+            title={isSidebarOpen ? 'Collapse file explorer' : 'Open file explorer'}
           >
-            <span className="font-semibold">✓ Challenge Complete!</span>
-            <span className={isDark ? 'text-emerald-200/80' : 'text-emerald-700/80'}>All visible test cases passed.</span>
-          </div>
-        ) : null}
+            {SIDEBAR_TOGGLE_GLYPH}
+          </button>
 
-        <EditorShell />
-      </div>
+          <div className="text-sm font-bold tracking-tight text-white">Yantra</div>
+        </div>
+
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <TabBar
+            activeTabId={activeFile?.id ?? null}
+            onClose={closeTab}
+            onSelect={setActiveFile}
+            tabs={openTabs}
+            theme={theme}
+          />
+        </div>
+
+        <div className="flex shrink-0 items-center gap-2 px-3">
+          <RunButton />
+
+          <button
+            type="button"
+            className="inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-medium transition hover:bg-[rgba(124,58,237,0.12)]"
+            style={{
+              background: 'transparent',
+              borderColor: '#7C3AED',
+              color: '#c4b5fd',
+            }}
+            onClick={toggleAIPanel}
+            aria-label={aiPanelOpen ? 'Close AI panel' : 'Open AI panel'}
+            title={aiPanelOpen ? 'Close AI panel' : 'Open AI panel'}
+          >
+            <span aria-hidden="true">{AI_BUTTON_GLYPH}</span>
+            <span>AI</span>
+          </button>
+
+          <button
+            type="button"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium transition hover:bg-[#3a3a3a]"
+            style={{
+              color: '#d4d4d4',
+            }}
+            onClick={toggleTheme}
+            aria-label={`Switch to ${isDark ? 'light' : 'dark'} theme`}
+            title={`Switch to ${isDark ? 'light' : 'dark'} theme`}
+          >
+            {isDark ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
+          </button>
+        </div>
+      </header>
+
+      <main className="flex min-h-0 flex-1 flex-row overflow-hidden">
+        <EditorShell isSidebarOpen={isSidebarOpen} />
+      </main>
+
+      <StatusBar />
     </div>
   );
 }

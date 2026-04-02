@@ -25,7 +25,7 @@ export const AIChatInterface = ({
   onStop,
 }: AIChatInterfaceProps) => {
   const endRef = useRef<HTMLDivElement | null>(null);
-  const isDark = theme === 'dark';
+  const _theme = theme;
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -50,55 +50,72 @@ export const AIChatInterface = ({
           </div>
         ) : (
           <div
-            className={`flex h-full min-h-[220px] items-center justify-center rounded-[24px] border border-dashed px-6 text-center text-sm leading-6 ${
-              isDark ? 'border-white/10 text-slate-400' : 'border-slate-900/10 text-slate-500'
-            }`}
+            className="flex h-full min-h-[220px] items-center justify-center rounded-md border border-dashed px-6 text-center text-sm leading-6"
+            style={{
+              background: 'var(--yantra-active-tab)',
+              borderColor: 'var(--yantra-border)',
+              color: 'var(--yantra-muted)',
+            }}
           >
             Ask for a hint, request a review, or type your own question about the active file.
           </div>
         )}
       </div>
 
-      <div className="border-t px-4 py-4" style={{ borderColor: 'var(--yantra-border)' }}>
+      <div
+        className="border-t px-4 py-4"
+        style={{
+          background: 'var(--yantra-sidebar)',
+          borderColor: 'var(--yantra-border)',
+        }}
+      >
         {error ? (
           <div
-            className={`mb-3 rounded-2xl border px-3 py-2 text-xs leading-5 ${
-              isDark ? 'border-rose-500/20 bg-rose-500/10 text-rose-200' : 'border-rose-500/20 bg-rose-500/8 text-rose-700'
-            }`}
+            className="mb-3 rounded-md border px-3 py-2 text-xs leading-5"
+            style={{
+              background: 'rgba(244, 71, 71, 0.12)',
+              borderColor: 'rgba(244, 71, 71, 0.35)',
+              color: 'var(--yantra-error)',
+            }}
           >
             {error}
           </div>
         ) : null}
 
         <div
-          className={`rounded-[24px] border px-3 py-3 ${
-            isDark ? 'bg-white/[0.03]' : 'bg-white/90'
-          }`}
-          style={{ borderColor: 'var(--yantra-border)' }}
+          className="rounded-md border px-3 py-3"
+          style={{
+            background: 'var(--yantra-tab-bar)',
+            borderColor: 'var(--yantra-border)',
+          }}
         >
           <textarea
             rows={2}
             value={draft}
             onChange={(event) => onDraftChange(event.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask AI…"
-            className={`w-full resize-none bg-transparent text-sm leading-6 outline-none ${
-              isDark ? 'text-slate-100 placeholder:text-slate-500' : 'text-slate-900 placeholder:text-slate-400'
-            }`}
+            placeholder="Ask AI..."
+            className="w-full resize-none bg-transparent text-sm leading-6 outline-none"
+            style={{
+              color: 'var(--yantra-foreground)',
+            }}
           />
 
           <div className="mt-3 flex items-center justify-between gap-3">
-            <p className={`text-[11px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Enter to send, Shift+Enter for a new line.</p>
+            <p className="text-[11px]" style={{ color: 'var(--yantra-muted)' }}>
+              Enter to send, Shift+Enter for a new line.
+            </p>
 
             <div className="flex items-center gap-2">
               {isStreaming ? (
                 <button
                   type="button"
-                  className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold ${
-                    isDark
-                      ? 'border-white/10 bg-white/5 text-slate-100 hover:bg-white/10'
-                      : 'border-slate-900/10 bg-white text-slate-700 hover:bg-slate-50'
-                  }`}
+                  className="inline-flex h-8 items-center gap-2 rounded-md border px-3 text-xs font-medium transition hover:bg-white/5"
+                  style={{
+                    background: 'var(--yantra-active-tab)',
+                    borderColor: 'var(--yantra-border)',
+                    color: 'var(--yantra-foreground)',
+                  }}
                   onClick={onStop}
                 >
                   <Square className="h-3.5 w-3.5 fill-current" />
@@ -108,7 +125,12 @@ export const AIChatInterface = ({
 
               <button
                 type="button"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-violet-600 text-white shadow-[0_10px_24px_rgba(124,58,237,0.28)] transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:bg-violet-400/60"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md border transition disabled:cursor-not-allowed disabled:opacity-60"
+                style={{
+                  background: 'var(--yantra-accent)',
+                  borderColor: 'var(--yantra-accent)',
+                  color: '#ffffff',
+                }}
                 onClick={onSend}
                 disabled={draft.trim().length === 0 || isStreaming}
                 aria-label="Send AI message"

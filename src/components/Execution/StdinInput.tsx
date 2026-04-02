@@ -7,7 +7,7 @@ export const StdinInput = () => {
   const setStdin = useEditorStore((state) => state.setStdin);
   const theme = useEditorStore((state) => state.theme);
   const [isExpanded, setIsExpanded] = useState(Boolean(stdin));
-  const isDark = theme === 'dark';
+  const _theme = theme;
 
   useEffect(() => {
     if (stdin.length > 0) {
@@ -17,22 +17,18 @@ export const StdinInput = () => {
 
   return (
     <section
-      className="rounded-2xl border"
+      className="rounded-md border"
       style={{
-        background: isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(255, 255, 255, 0.88)',
+        background: 'var(--yantra-sidebar)',
         borderColor: 'var(--yantra-border)',
       }}
     >
-      <button
-        type="button"
-        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
-        onClick={() => setIsExpanded((value) => !value)}
-      >
+      <button type="button" className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left" onClick={() => setIsExpanded((value) => !value)}>
         <span className="inline-flex items-center gap-2 text-sm font-semibold" style={{ color: 'var(--yantra-foreground)' }}>
-          <TerminalSquare className="h-4 w-4 text-violet-400" />
+          <TerminalSquare className="h-4 w-4" style={{ color: 'var(--yantra-accent)' }} />
           stdin
         </span>
-        <span className={`inline-flex items-center gap-2 text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+        <span className="inline-flex items-center gap-2 text-xs" style={{ color: 'var(--yantra-muted)' }}>
           {stdin.length > 0 ? `${stdin.length} chars` : 'Optional input'}
           {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </span>
@@ -45,11 +41,12 @@ export const StdinInput = () => {
             onChange={(event) => setStdin(event.target.value)}
             rows={3}
             placeholder="Optional stdin..."
-            className={`w-full resize-none rounded-2xl border px-3 py-3 font-mono text-sm outline-none transition ${
-              isDark
-                ? 'border-white/10 bg-black/30 text-slate-100 placeholder:text-slate-500 focus:border-violet-400/40'
-                : 'border-slate-900/10 bg-white text-slate-900 placeholder:text-slate-400 focus:border-violet-600/35'
-            }`}
+            className="w-full resize-none rounded-md border px-3 py-3 font-mono text-sm outline-none transition"
+            style={{
+              background: 'var(--yantra-active-tab)',
+              borderColor: 'var(--yantra-border)',
+              color: 'var(--yantra-foreground)',
+            }}
           />
         </div>
       ) : null}

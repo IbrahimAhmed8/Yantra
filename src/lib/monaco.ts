@@ -109,8 +109,10 @@ export const languageToMonaco = (language: Language) => LANGUAGE_IDS[language];
 export const editorOptions: editor.IStandaloneEditorConstructionOptions = {
   automaticLayout: true,
   autoClosingBrackets: 'always',
-  cursorBlinking: 'smooth',
+  cursorBlinking: 'blink',
   cursorSmoothCaretAnimation: 'on',
+  cursorStyle: 'line',
+  cursorWidth: 2,
   fontFamily: 'JetBrains Mono, ui-monospace, SFMono-Regular, monospace',
   fontLigatures: true,
   fontSize: 14,
@@ -123,7 +125,7 @@ export const editorOptions: editor.IStandaloneEditorConstructionOptions = {
   mouseWheelZoom: true,
   multiCursorModifier: 'ctrlCmd',
   padding: {
-    top: 20,
+    top: 0,
     bottom: 20,
   },
   quickSuggestions: {
@@ -157,10 +159,11 @@ export const setupMonaco = (monaco: Monaco) => {
       { token: 'type.identifier', foreground: 'E5E5E5' },
     ],
     colors: {
-      'editor.background': '#0D0D0D',
-      'editor.foreground': '#E5E5E5',
-      'editor.lineHighlightBackground': '#1A1A2E',
+      'editor.background': '#1E1E1E',
+      'editor.foreground': '#D4D4D4',
+      'editor.lineHighlightBackground': '#2A2A2A',
       'editorCursor.foreground': '#7C3AED',
+      'editorCursor.background': '#7C3AED',
       'editorLineNumber.foreground': '#6B7280',
       'editorLineNumber.activeForeground': '#E5E5E5',
       'editor.selectionBackground': '#7C3AED33',

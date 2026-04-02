@@ -6,9 +6,7 @@ export const RunButton = () => {
   const activeFile = useEditorStore((state) => state.activeFile);
   const executionStatus = useEditorStore((state) => state.executionStatus);
   const runCode = useEditorStore((state) => state.runCode);
-  const theme = useEditorStore((state) => state.theme);
 
-  const isDark = theme === 'dark';
   const isRunning = executionStatus === 'running';
   const isSuccess = executionStatus === 'success';
   const isError = executionStatus === 'error';
@@ -32,26 +30,38 @@ export const RunButton = () => {
   }, [isDisabled, runCode]);
 
   const baseClassName =
-    'inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-semibold transition duration-200 disabled:cursor-not-allowed disabled:opacity-75';
+    'inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-medium transition duration-200 disabled:cursor-not-allowed disabled:opacity-75';
 
-  const statusClassName = isRunning
-    ? isDark
-      ? 'border-white/10 bg-white/5 text-white'
-      : 'border-slate-900/10 bg-white/90 text-slate-900'
-    : isSuccess
-      ? isDark
-        ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-200 shadow-[0_0_0_1px_rgba(16,185,129,0.18)]'
-        : 'border-emerald-600/30 bg-emerald-500/12 text-emerald-700 shadow-[0_0_0_1px_rgba(5,150,105,0.12)]'
-      : isError
-        ? isDark
-          ? 'border-rose-400/40 bg-rose-500/15 text-rose-200 shadow-[0_0_0_1px_rgba(244,63,94,0.18)]'
-          : 'border-rose-600/30 bg-rose-500/12 text-rose-700 shadow-[0_0_0_1px_rgba(225,29,72,0.12)]'
-        : 'border-violet-500/40 bg-violet-600 text-white shadow-[0_12px_32px_rgba(124,58,237,0.28)] hover:bg-violet-500';
+  const statusStyle =
+    isRunning
+      ? {
+          background: 'var(--yantra-sidebar)',
+          borderColor: 'var(--yantra-border)',
+          color: 'var(--yantra-foreground)',
+        }
+      : isSuccess
+        ? {
+            background: 'rgba(34, 197, 94, 0.12)',
+            borderColor: 'rgba(34, 197, 94, 0.35)',
+            color: '#bbf7d0',
+          }
+        : isError
+          ? {
+              background: 'rgba(244, 71, 71, 0.12)',
+              borderColor: 'rgba(244, 71, 71, 0.35)',
+              color: 'var(--yantra-error)',
+            }
+          : {
+              background: 'var(--yantra-accent)',
+              borderColor: 'var(--yantra-accent)',
+              color: '#ffffff',
+            };
 
   return (
     <button
       type="button"
-      className={`${baseClassName} ${statusClassName}`}
+      className={baseClassName}
+      style={statusStyle}
       onClick={() => {
         void runCode();
       }}
@@ -70,7 +80,6 @@ export const RunButton = () => {
       )}
 
       <span>{isRunning ? 'Running...' : isSuccess ? 'Success' : isError ? 'Error' : 'Run'}</span>
-      <span className={`hidden text-[11px] font-medium sm:inline ${isRunning ? 'opacity-0' : 'opacity-80'}`}>Ctrl/Cmd + Enter</span>
     </button>
   );
 };
