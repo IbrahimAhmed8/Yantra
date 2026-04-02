@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>YANTRA | THE LEARNING SANCTUM</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #000000;
+            overflow: hidden;
+        }
+        .grain-texture {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            pointer-events: none;
+        }
+        .neural-grid {
+            background-image: radial-gradient(circle at 2px 2px, rgba(255, 255, 255, 0.03) 1px, transparent 0);
+            background-size: 40px 40px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "surface-tint": "#c6c6c7",
+                "surface-container-highest": "#353535",
+                "on-tertiary-fixed-variant": "#e4e1e5",
+                "inverse-on-surface": "#303030",
+                "tertiary-container": "#919094",
+                "secondary-fixed-dim": "#abaab4",
+                "surface-dim": "#131313",
+                "primary": "#ffffff",
+                "on-primary-fixed": "#ffffff",
+                "on-surface": "#e2e2e2",
+                "on-error": "#690005",
+                "surface-container-lowest": "#0e0e0e",
+                "secondary": "#c6c5cf",
+                "on-background": "#e2e2e2",
+                "on-tertiary": "#1b1b1e",
+                "tertiary-fixed-dim": "#47464a",
+                "on-primary-fixed-variant": "#e2e2e2",
+                "on-surface-variant": "#c6c6c6",
+                "primary-container": "#d4d4d4",
+                "inverse-primary": "#5d5f5f",
+                "inverse-surface": "#e2e2e2",
+                "on-secondary-fixed-variant": "#3a3b43",
+                "surface-container": "#1f1f1f",
+                "surface-container-low": "#1b1b1b",
+                "surface-bright": "#393939",
+                "error": "#ffb4ab",
+                "background": "#131313",
+                "on-secondary-container": "#e3e1ec",
+                "secondary-container": "#46464e",
+                "outline-variant": "#474747",
+                "surface": "#131313",
+                "outline": "#919191",
+                "on-tertiary-container": "#000000",
+                "on-secondary-fixed": "#1a1b22",
+                "tertiary-fixed": "#5f5e61",
+                "surface-container-high": "#2a2a2a",
+                "surface-variant": "#353535",
+                "on-primary-container": "#000000",
+                "on-error-container": "#ffdad6",
+                "on-tertiary-fixed": "#ffffff",
+                "secondary-fixed": "#c6c5cf",
+                "on-primary": "#1a1c1c",
+                "on-secondary": "#1a1b22",
+                "tertiary": "#e4e1e5",
+                "error-container": "#93000a",
+                "primary-fixed-dim": "#454747",
+                "primary-fixed": "#5d5f5f"
+              },
+              fontFamily: {
+                "headline": ["Space Grotesk"],
+                "body": ["Inter"],
+                "label": ["Space Grotesk"]
+              },
+              borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+            },
+          },
+        }
+    </script>
+</head>
+<body class="font-body text-on-surface">
+<!-- Cinematic Background -->
+<div class="fixed inset-0 z-0">
+<div class="absolute inset-0 bg-[#000000]"></div>
+<div class="absolute inset-0 grain-texture"></div>
+<div class="absolute inset-0 neural-grid"></div>
+<!-- Ethereal Radial Glows -->
+<div class="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-primary/5 blur-[120px]"></div>
+<div class="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] rounded-full bg-primary/5 blur-[100px]"></div>
+</div>
+<!-- TopNavBar -->
+<nav class="fixed top-0 left-0 right-0 z-50 flex justify-between items-center bg-neutral-950/40 backdrop-blur-3xl rounded-full mt-4 mx-6 px-6 py-3 border border-white/10 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.8)]">
+<div class="text-2xl font-bold tracking-tighter text-white">YANTRA</div>
+<div class="hidden md:flex gap-8">
+<a class="font-['Space_Grotesk'] tracking-[0.2em] uppercase text-xs font-bold text-white border-b-2 border-white pb-1 transition-all duration-300" href="#">Sanctum</a>
+<a class="font-['Space_Grotesk'] tracking-[0.2em] uppercase text-xs font-bold text-white/40 hover:text-white transition-all duration-300" href="#">Archives</a>
+<a class="font-['Space_Grotesk'] tracking-[0.2em] uppercase text-xs font-bold text-white/40 hover:text-white transition-all duration-300" href="#">Nexus</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-white/60 hover:text-white transition-all" data-icon="notifications">notifications</button>
+<button class="material-symbols-outlined text-white/60 hover:text-white transition-all" data-icon="settings">settings</button>
+<img alt="Guardian Profile" class="w-8 h-8 rounded-full border border-white/20" data-alt="portrait of a highly detailed futuristic human guardian wearing obsidian armor with minimalist white light accents cinematic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAj1cGzeBI2nq7HsyuufRpOfnMuFJWEEGSA_QpppeNpgKpQPYvfBIc24U9Bo6V66LUSZRyb42880DQpTwyNEgv-TX37jty3JcBSI-NlBapB_uNFyF5aMNGDotelPpEfYYFIw2KVZeb2iLiKU0tzZDUzIcj5r29ks-JpkWFBIuo3ecncrL-Sl3EMXS6CY6z6OFPXz7E8YO8ZSWQ07iRd4f0Z2_XhLDEVSz_VSK0iuxtsjYOwR-OooJ_IrqArmoBZD9IDQp6NcGE5CMAG"/>
+</div>
+</nav>
+<!-- SideNavBar (Hidden on smaller screens, contextually suppressed in main sanctum view as per filter rules) -->
+<!-- Main Content: The Three-Column Architecture -->
+<main class="relative z-10 pt-24 px-6 h-screen flex gap-6 pb-6 overflow-hidden">
+<!-- Left Column: Mission Briefing -->
+<section class="w-1/4 h-full flex flex-col gap-6 overflow-y-auto pr-2">
+<div class="bg-surface-container-low/40 backdrop-blur-3xl p-8 rounded-lg border border-white/5 flex flex-col h-full">
+<div class="mb-8">
+<span class="font-label uppercase tracking-[0.2em] text-[10px] text-white/40 mb-2 block">Phase 04 // Objective</span>
+<h1 class="font-headline text-4xl font-bold tracking-tight text-white leading-tight uppercase">Neural Interface Handshake</h1>
+</div>
+<div class="space-y-8 flex-grow">
+<div>
+<h3 class="font-label text-[10px] uppercase tracking-widest text-white/60 mb-4 flex items-center gap-2">
+<span class="w-1 h-1 bg-primary rounded-full"></span> Instructions
+                        </h3>
+<p class="text-on-surface-variant font-light leading-relaxed text-sm">
+                            Configure the asynchronous handshake protocol for the Yantra Core. You must establish a persistent connection between the logic flow and the artifact repository without triggering a terminal interrupt.
+                        </p>
+</div>
+<div>
+<h3 class="font-label text-[10px] uppercase tracking-widest text-white/60 mb-4 flex items-center gap-2">
+<span class="w-1 h-1 bg-primary rounded-full"></span> Success Criteria
+                        </h3>
+<ul class="space-y-4">
+<li class="flex items-start gap-3 group">
+<span class="material-symbols-outlined text-[18px] text-white/20 group-hover:text-white transition-colors" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-sm text-on-surface-variant group-hover:text-white transition-colors">Implement async await wrapper</span>
+</li>
+<li class="flex items-start gap-3 group">
+<span class="material-symbols-outlined text-[18px] text-white/20 group-hover:text-white transition-colors" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-sm text-on-surface-variant group-hover:text-white transition-colors">Handle 404 neural disconnects</span>
+</li>
+<li class="flex items-start gap-3 group">
+<span class="material-symbols-outlined text-[18px] text-white/20 group-hover:text-white transition-colors" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-sm text-on-surface-variant group-hover:text-white transition-colors">Optimize packet synchronization</span>
+</li>
+</ul>
+</div>
+</div>
+<div class="mt-auto pt-8 border-t border-white/5">
+<div class="flex items-center justify-between text-[10px] font-label uppercase tracking-widest text-white/30">
+<span>Complexity: Elite</span>
+<span>Estimated: 45m</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Center Column: Execution Deck -->
+<section class="flex-grow h-full flex flex-col relative group">
+<div class="absolute inset-0 bg-white/5 rounded-lg blur-xl opacity-0 group-hover:opacity-20 transition-opacity duration-1000"></div>
+<div class="bg-surface-container-low/60 backdrop-blur-3xl rounded-lg border border-white/10 flex flex-col h-full overflow-hidden relative">
+<!-- Editor Header -->
+<div class="flex items-center justify-between px-6 py-4 bg-white/5 border-b border-white/5">
+<div class="flex gap-2">
+<div class="w-2.5 h-2.5 rounded-full bg-white/10"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-white/10"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-white/10"></div>
+</div>
+<div class="font-label text-[10px] tracking-[0.3em] text-white/40 uppercase">handshake_protocol.py</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-sm text-white/40" data-icon="terminal">terminal</span>
+<span class="material-symbols-outlined text-sm text-white/40" data-icon="settings_ethernet">settings_ethernet</span>
+</div>
+</div>
+<!-- Code Workspace -->
+<div class="flex-grow p-8 font-mono text-sm leading-relaxed overflow-y-auto">
+<div class="flex">
+<span class="text-white/20 w-8 inline-block select-none">01</span>
+<span class="text-white/60">import</span> <span class="text-white">yantra_core</span>
+</div>
+<div class="flex">
+<span class="text-white/20 w-8 inline-block select-none">02</span>
+<span class="text-white/40"># Initialize Neural Handshake</span>
+</div>
+<div class="flex">
+<span class="text-white/20 w-8 inline-block select-none">03</span>
+<span class="text-white/60">async def</span> <span class="text-white">establish_link</span>():
+                    </div>
+<div class="flex">
+<span class="text-white/20 w-8 inline-block select-none">04</span>
+<span class="pl-4 text-white">try:</span>
+</div>
+<div class="flex">
+<span class="text-white/20 w-8 inline-block select-none">05</span>
+<span class="pl-8 text-white/60">await</span> <span class="text-white">yantra_core.handshake()</span>
+</div>
+<div class="flex">
+<span class="text-white/20 w-8 inline-block select-none">06</span>
+<span class="pl-8 text-white/40">return "SYNCHRONIZED"</span>
+</div>
+<div class="flex">
+<span class="text-white/20 w-8 inline-block select-none">07</span>
+<span class="pl-4 text-white">except ConnectionError:</span>
+</div>
+<div class="flex">
+<span class="text-white/20 w-8 inline-block select-none">08</span>
+<span class="pl-8 text-white/60">print</span>(<span class="text-white">"Neural Interface Failure"</span>)
+                    </div>
+<div class="flex">
+<span class="text-white/20 w-8 inline-block select-none">09</span>
+<span class="text-white"></span>
+</div>
+<div class="flex">
+<span class="text-white/20 w-8 inline-block select-none">10</span>
+<span class="text-white/40 animate-pulse">|</span>
+</div>
+</div>
+<!-- Run Action -->
+<div class="p-8 bg-gradient-to-t from-black to-transparent flex justify-center">
+<button class="bg-primary text-on-primary font-headline font-bold uppercase tracking-[0.3em] px-12 py-4 rounded-xl hover:scale-105 active:opacity-80 transition-all duration-500 shadow-[0_0_40px_rgba(255,255,255,0.1)] flex items-center gap-4">
+<span class="material-symbols-outlined" data-icon="play_arrow" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                        RUN CODE
+                    </button>
+</div>
+</div>
+</section>
+<!-- Right Column: AI Intelligence -->
+<section class="w-1/4 h-full flex flex-col gap-6">
+<div class="bg-surface-container-low/40 backdrop-blur-3xl p-8 rounded-lg border border-white/5 flex flex-col h-full">
+<!-- AI Core Visualization -->
+<div class="relative w-full aspect-square mb-8 flex items-center justify-center">
+<div class="absolute inset-0 bg-primary/5 rounded-full animate-pulse scale-90"></div>
+<div class="absolute inset-4 border border-white/10 rounded-full animate-[spin_10s_linear_infinite]"></div>
+<div class="absolute inset-10 border border-white/5 rounded-full animate-[spin_6s_linear_infinite_reverse]"></div>
+<!-- The Pulse -->
+<div class="w-24 h-24 bg-gradient-to-tr from-white to-white/20 rounded-full blur-xl animate-pulse flex items-center justify-center">
+<div class="w-8 h-8 bg-white rounded-full opacity-80"></div>
+</div>
+<div class="mt-32 pt-16 text-center w-full">
+<div class="flex items-center justify-center gap-2 mb-1">
+<div class="w-1.5 h-1.5 bg-primary rounded-full animate-pulse shadow-[0_0_8px_white]"></div>
+<span class="font-label text-[10px] tracking-[0.2em] text-white">YANTRA AI ACTIVE</span>
+</div>
+<p class="text-[11px] text-white/40 font-label tracking-widest">OBSERVING EXECUTION PATH</p>
+</div>
+</div>
+<!-- Inquiry Streams -->
+<div class="flex-grow space-y-4">
+<h3 class="font-label text-[10px] uppercase tracking-widest text-white/60 mb-4">Inquiry Streams</h3>
+<button class="w-full text-left p-4 rounded-lg bg-white/5 border border-white/0 hover:border-white/10 hover:bg-white/10 transition-all group">
+<span class="text-[12px] text-white/80 block mb-1 group-hover:text-white">Explain asynchronous logic?</span>
+<span class="text-[9px] font-label text-white/30 uppercase tracking-tighter">Command: /LITERAL_EXPLAIN</span>
+</button>
+<button class="w-full text-left p-4 rounded-lg bg-white/5 border border-white/0 hover:border-white/10 hover:bg-white/10 transition-all group">
+<span class="text-[12px] text-white/80 block mb-1 group-hover:text-white">Review code performance</span>
+<span class="text-[9px] font-label text-white/30 uppercase tracking-tighter">Command: /OPT_QUERY</span>
+</button>
+<button class="w-full text-left p-4 rounded-lg bg-white/5 border border-white/0 hover:border-white/10 hover:bg-white/10 transition-all group">
+<span class="text-[12px] text-white/80 block mb-1 group-hover:text-white">Neural protocol docs</span>
+<span class="text-[9px] font-label text-white/30 uppercase tracking-tighter">Command: /SYS_ARCHIVE</span>
+</button>
+</div>
+<!-- AI Output Box -->
+<div class="mt-6 p-4 bg-white/5 rounded-lg border-l-2 border-primary/20">
+<p class="text-[12px] leading-relaxed text-white/70 italic">
+                        "Guardian, your connection pattern seems slightly fragmented at line 5. Ensure the await call isn't nested within a non-async closure."
+                    </p>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Suppressed in Desktop context per pivot rules, but following JSON definition for structure) -->
+<div class="md:hidden">
+<footer class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-12 py-6 bg-neutral-950/80 backdrop-blur-2xl rounded-t-[2.5rem] border-t border-white/10 shadow-[0_-24px_48px_rgba(0,0,0,0.6)]">
+<div class="flex flex-col items-center justify-center bg-white text-black rounded-full w-12 h-12 transition-transform duration-700 ease-in-out">
+<span class="material-symbols-outlined" data-icon="play_arrow" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+<span class="font-['Space_Grotesk'] font-medium text-[9px] uppercase tracking-[0.15em] hidden">Execute</span>
+</div>
+<div class="flex flex-col items-center justify-center text-white/40 hover:text-white transition-opacity">
+<span class="material-symbols-outlined" data-icon="bug_report">bug_report</span>
+</div>
+<div class="flex flex-col items-center justify-center text-white/40 hover:text-white transition-opacity">
+<span class="material-symbols-outlined" data-icon="inventory">inventory</span>
+</div>
+<div class="flex flex-col items-center justify-center text-white/40 hover:text-white transition-opacity">
+<span class="material-symbols-outlined" data-icon="rocket_launch">rocket_launch</span>
+</div>
+</footer>
+</div>
+</body></html>

@@ -1,14 +1,19 @@
 export type PythonRoomDayOneContent = {
+  phaseLabel: string;
   title: string;
   description: string;
   task: string;
   starterCode: string;
   fakeOutput: string;
   level: string;
+  modeLabel: string;
   estimatedMinutes: number;
+  successCriteria: string[];
+  starterGuidance: string[];
 };
 
 export const pythonRoomDayOneContent: PythonRoomDayOneContent = {
+  phaseLabel: 'Day 01 // Objective',
   title: 'Control Flow Calibration',
   description:
     'This first room is a quiet shell for focused Python work. You are not being graded yet. The goal is to settle into Yantra’s room flow and practice writing one clean pass through simple learner data.',
@@ -35,5 +40,16 @@ Kabir - 61 - Needs Work
 
 Status: Simulated Day 1 output. Real execution begins in Day 2.`,
   level: 'Beginner',
+  modeLabel: 'Live Practice',
   estimatedMinutes: 18,
+  successCriteria: [
+    'Loop through every learner in the scores list.',
+    'Assign one label: Strong, Average, or Needs Work.',
+    'Print one clean summary line for each learner.',
+  ],
+  starterGuidance: [
+    'Decide the label first, then print the final sentence.',
+    'Use one conditional block inside the loop, not many separate prints.',
+    'Keep the output to one readable line per learner.',
+  ],
 };

@@ -2,7 +2,6 @@
 
 import { AnimatePresence, motion } from 'motion/react';
 import {
-  AlertTriangle,
   LoaderCircle,
   Mic,
   PanelRightClose,
@@ -20,6 +19,7 @@ type RoomVoiceAssistantProps = {
   roomKey: string;
   roomLabel: string;
   roomSummary: string;
+  desktopLayout?: 'sidebar' | 'panel';
 };
 
 export type RoomVoiceAssistantAnnouncement = {
@@ -57,7 +57,7 @@ function useDesktopSidebar() {
   const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
-    const media = window.matchMedia('(min-width: 1280px)');
+    const media = window.matchMedia('(min-width: 1024px)');
     const sync = () => setIsDesktop(media.matches);
     sync();
     media.addEventListener('change', sync);
@@ -103,21 +103,74 @@ function createVoiceReply(text: string) {
   return cleaned || 'I am here. Ask me about your code, errors, or the next step in this room.';
 }
 
+function getMaxFrequency(values: string[]) {
+  const counts = new Map<string, number>();
+  let max = 0;
+
+  for (const value of values) {
+    const nextCount = (counts.get(value) ?? 0) + 1;
+    counts.set(value, nextCount);
+    if (nextCount > max) {
+      max = nextCount;
+    }
+  }
+
+  return max;
+}
+
+function getCleanTranscriptOrNull(rawTranscript: string) {
+  const cleaned = rawTranscript.normalize('NFKC').replace(/\s+/gu, ' ').trim();
+
+  if (!cleaned) {
+    return null;
+  }
+
+  const alphanumericChars = cleaned.match(/[\p{L}\p{N}]/gu) ?? [];
+  if (alphanumericChars.length < 2) {
+    return null;
+  }
+
+  const compact = cleaned.replace(/\s/gu, '');
+  const uniqueChars = new Set(alphanumericChars.map((value) => value.toLocaleLowerCase())).size;
+  const tokens = cleaned.split(' ').filter(Boolean);
+  const normalizedTokens = tokens.map((value) => value.toLocaleLowerCase());
+  const dominantTokenFrequency = getMaxFrequency(normalizedTokens);
+  const singleCharTokenCount = tokens.filter((token) => (token.match(/[\p{L}\p{N}]/gu) ?? []).length <= 1).length;
+
+  if (/(.)\1{4,}/u.test(compact)) {
+    return null;
+  }
+
+  if (compact.length >= 6 && uniqueChars <= 2) {
+    return null;
+  }
+
+  if (tokens.length >= 4 && dominantTokenFrequency / tokens.length >= 0.7) {
+    return null;
+  }
+
+  if (tokens.length >= 5 && singleCharTokenCount / tokens.length >= 0.8 && uniqueChars <= 3) {
+    return null;
+  }
+
+  return cleaned;
+}
+
 function toneForStatus(status: VoiceStatus) {
   switch (status) {
     case 'recording':
-      return 'from-emerald-300/70 via-white/80 to-emerald-300/70';
+      return 'from-white/16 via-white/94 to-white/16';
     case 'transcribing':
     case 'thinking':
-      return 'from-amber-300/70 via-white/82 to-amber-300/70';
+      return 'from-white/14 via-white/82 to-white/14';
     case 'speaking':
-      return 'from-cyan-300/70 via-white/88 to-cyan-300/70';
+      return 'from-white/18 via-white/90 to-white/18';
     case 'warming':
-      return 'from-white/26 via-white/72 to-white/26';
+      return 'from-white/10 via-white/68 to-white/10';
     case 'error':
-      return 'from-rose-300/70 via-white/82 to-rose-300/70';
+      return 'from-white/12 via-white/74 to-white/12';
     default:
-      return 'from-white/15 via-white/52 to-white/15';
+      return 'from-white/8 via-white/44 to-white/8';
   }
 }
 
@@ -142,14 +195,14 @@ function VoiceOrb({ status, small = false }: { status: VoiceStatus; small?: bool
 
   return (
     <div className={`relative flex items-center justify-center ${sizeClass}`}>
-      <div className="absolute inset-0 rounded-full border border-cyan-300/12 bg-cyan-300/[0.03]" />
+      <div className="absolute inset-0 rounded-full border border-white/10 bg-white/[0.02]" />
       <motion.div
         className={`absolute inset-[8%] rounded-full bg-gradient-to-br ${tone} blur-2xl`}
         animate={{ opacity: pulse ? [0.18, 0.42, 0.2] : 0.22, scale: pulse ? [0.96, 1.04, 0.98] : 1 }}
         transition={{ duration: 1.6, repeat: pulse ? Infinity : 0, ease: 'easeInOut' }}
       />
       <div className="absolute inset-[18%] rounded-full border border-white/10 bg-black/60" />
-      <div className="relative z-10 text-cyan-100/84">
+      <div className="relative z-10 text-white/82">
         {status === 'recording' ? <Mic size={small ? 16 : 20} /> : status === 'speaking' ? <Volume2 size={small ? 16 : 20} /> : status === 'warming' || status === 'transcribing' || status === 'thinking' ? <LoaderCircle size={small ? 16 : 20} className="animate-spin" /> : <Waves size={small ? 16 : 20} />}
       </div>
     </div>
@@ -167,10 +220,10 @@ function ActionButton({
 }) {
   const className =
     tone === 'primary'
-      ? 'border-cyan-300/18 bg-cyan-300/10 text-cyan-50 hover:border-cyan-200/30 hover:bg-cyan-300/16'
+      ? 'border-white/14 bg-white text-black hover:bg-white/92'
       : tone === 'danger'
-        ? 'border-white/10 bg-white/[0.045] text-white hover:border-rose-300/24 hover:bg-rose-400/10'
-        : 'border-white/10 bg-white/[0.045] text-white hover:border-cyan-200/28 hover:bg-cyan-300/10';
+        ? 'border-white/10 bg-white/[0.045] text-white hover:border-white/16 hover:bg-white/[0.08]'
+        : 'border-white/10 bg-white/[0.045] text-white hover:border-white/16 hover:bg-white/[0.08]';
 
   return (
     <button
@@ -184,7 +237,7 @@ function ActionButton({
 }
 
 const RoomVoiceAssistant = forwardRef<RoomVoiceAssistantHandle, RoomVoiceAssistantProps>(function RoomVoiceAssistant(
-  { roomLabel, roomSummary }: RoomVoiceAssistantProps,
+  { roomLabel, roomSummary, desktopLayout = 'sidebar' }: RoomVoiceAssistantProps,
   ref,
 ) {
   const isDesktop = useDesktopSidebar();
@@ -195,7 +248,7 @@ const RoomVoiceAssistant = forwardRef<RoomVoiceAssistantHandle, RoomVoiceAssista
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [backendReady, setBackendReady] = useState(false);
-  const [audioPrimed, setAudioPrimed] = useState(false);
+  const [, setAudioPrimed] = useState(false);
   const [userTranscript, setUserTranscript] = useState('');
   const [assistantReply, setAssistantReply] = useState('');
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
@@ -219,7 +272,7 @@ const RoomVoiceAssistant = forwardRef<RoomVoiceAssistantHandle, RoomVoiceAssista
   const peakMicLevelRef = useRef(0);
   const silentSinceRef = useRef<number | null>(null);
   const noSpeechTimerRef = useRef<number | null>(null);
-  const [micLevel, setMicLevel] = useState(0);
+  const [, setMicLevel] = useState(0);
   const shouldResumeAfterSpeechRef = useRef(false);
   const handsFreeEnabledRef = useRef(false);
   const lastAnalyserTickRef = useRef<number | null>(null);
@@ -227,6 +280,32 @@ const RoomVoiceAssistant = forwardRef<RoomVoiceAssistantHandle, RoomVoiceAssista
   useOverlayLock('room-voice-assistant', isOpen && !isDesktop);
 
   const stateLabel = useMemo(() => labelForStatus(status), [status]);
+  const desktopShellClassName =
+    desktopLayout === 'panel'
+      ? 'flex h-full min-h-[52rem] self-stretch overflow-hidden rounded-[2rem] border border-white/8 bg-[linear-gradient(180deg,rgba(10,10,10,0.98),rgba(6,6,6,0.99))] shadow-[0_28px_90px_rgba(0,0,0,0.44)] backdrop-blur-[28px]'
+      : 'sticky top-28 flex h-[calc(100svh-8.5rem)] max-h-[calc(100svh-8.5rem)] self-start overflow-hidden rounded-[2rem] border border-white/8 bg-[linear-gradient(180deg,rgba(10,10,10,0.98),rgba(6,6,6,0.99))] shadow-[0_28px_90px_rgba(0,0,0,0.44)] backdrop-blur-[28px]';
+  const desktopCardWrapperClassName =
+    desktopLayout === 'panel' ? 'hidden lg:flex h-full min-h-[52rem]' : 'hidden lg:block lg:sticky lg:top-28 lg:self-start';
+  const inquiryStreams = useMemo(
+    () => [
+      {
+        label: 'Explain this error',
+        sublabel: 'command.error_explain',
+        prompt: 'Explain the current Python error in this room and point me to the first thing I should fix.',
+      },
+      {
+        label: 'Review my logic',
+        sublabel: 'command.logic_review',
+        prompt: 'Review the logic I am writing in this Python room and tell me what to check next.',
+      },
+      {
+        label: 'Show related concept',
+        sublabel: 'command.concept_map',
+        prompt: 'Explain the core Python concept behind this room in simple words and connect it to what I am coding now.',
+      },
+    ],
+    [],
+  );
 
   useEffect(() => {
     handsFreeEnabledRef.current = handsFreeEnabled;
@@ -488,7 +567,7 @@ const RoomVoiceAssistant = forwardRef<RoomVoiceAssistantHandle, RoomVoiceAssista
 
       const audioBlob = await ttsResponse.blob();
       await playReply(audioBlob, {
-        blockedMessage: 'Yantra wrote the reply, but the browser blocked audio playback. Use "Turn on audio" if you want spoken feedback.',
+        blockedMessage: 'Yantra wrote the reply, but browser audio is blocked right now. The reply is still shown here.',
         failHard: false,
       });
     } catch (speechError) {
@@ -539,6 +618,45 @@ const RoomVoiceAssistant = forwardRef<RoomVoiceAssistantHandle, RoomVoiceAssista
     [status],
   );
 
+  async function requestAssistantReply(prompt: string, options?: { speak?: boolean }) {
+    const speak = options?.speak ?? true;
+    const requestNonce = requestNonceRef.current + 1;
+    requestNonceRef.current = requestNonce;
+
+    try {
+      setStatus('thinking');
+      setError(null);
+      setNotice(null);
+      setUserTranscript(prompt);
+
+      const nextMessages = [...messages, { role: 'user' as const, content: prompt }];
+      const chatResponse = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: nextMessages }),
+      });
+      const chatData = (await chatResponse.json()) as ChatReply;
+
+      if (!chatResponse.ok || !chatData.reply?.trim()) {
+        throw new Error(chatData.error || 'Yantra could not answer right now.');
+      }
+
+      const reply = createVoiceReply(chatData.reply.trim());
+      setMessages([...nextMessages, { role: 'assistant' as const, content: reply }].slice(-8));
+      setAssistantReply(reply);
+
+      if (!speak) {
+        setStatus('ready');
+        return;
+      }
+
+      await speakAssistantReply(reply);
+    } catch (requestError) {
+      setStatus('error');
+      setError(requestError instanceof Error ? requestError.message : 'Yantra could not answer right now.');
+    }
+  }
+
   async function handleAudio(blob: Blob) {
     if (blob.size === 0) {
       setStatus('error');
@@ -576,7 +694,16 @@ const RoomVoiceAssistant = forwardRef<RoomVoiceAssistantHandle, RoomVoiceAssista
         throw new Error(message);
       }
 
-      const transcript = transcriptData.transcript.trim();
+      const transcript = getCleanTranscriptOrNull(transcriptData.transcript);
+      if (!transcript) {
+        stopHandsFreeLoop();
+        setStatus('error');
+        setUserTranscript('');
+        setError('Yantra could not get a clear voice prompt. Speak one short sentence and start again.');
+        shouldResumeAfterSpeechRef.current = false;
+        return;
+      }
+
       setUserTranscript(transcript);
 
       setStatus('thinking');
@@ -613,7 +740,7 @@ const RoomVoiceAssistant = forwardRef<RoomVoiceAssistantHandle, RoomVoiceAssista
       const audioBlob = await ttsResponse.blob();
       if (requestNonce === requestNonceRef.current) {
         await playReply(audioBlob, {
-          blockedMessage: 'Yantra has a reply ready, but the browser blocked playback. Click "Turn on audio" and try again.',
+          blockedMessage: 'Yantra has a reply ready, but browser audio is blocked right now. The reply is still shown here.',
         });
       }
     } catch (requestError) {
@@ -796,121 +923,113 @@ const RoomVoiceAssistant = forwardRef<RoomVoiceAssistantHandle, RoomVoiceAssista
       animate={{ opacity: 1, x: 0, y: 0 }}
       exit={isDesktop ? { opacity: 0, x: 14 } : { opacity: 0, y: 18 }}
       transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-      className={
-        isDesktop
-          ? 'sticky top-28 flex h-[calc(100svh-8.5rem)] max-h-[calc(100svh-8.5rem)] self-start overflow-hidden rounded-[2rem] border border-cyan-300/14 bg-[linear-gradient(180deg,rgba(4,10,16,0.96),rgba(2,6,10,0.98))] shadow-[0_20px_64px_rgba(0,0,0,0.3)] backdrop-blur-[24px]'
-          : 'fixed inset-x-3 bottom-3 top-20 z-[72] flex overflow-hidden rounded-[2rem] border border-cyan-300/14 bg-[linear-gradient(180deg,rgba(4,10,16,0.96),rgba(2,6,10,0.98))] shadow-[0_28px_100px_rgba(0,0,0,0.55)] backdrop-blur-[24px]'
-      }
+      className={isDesktop ? desktopShellClassName : 'fixed inset-x-3 bottom-3 top-20 z-[72] flex overflow-hidden rounded-[2rem] border border-white/8 bg-[linear-gradient(180deg,rgba(10,10,10,0.98),rgba(6,6,6,0.99))] shadow-[0_28px_100px_rgba(0,0,0,0.55)] backdrop-blur-[28px]'}
     >
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <div className="border-b border-white/8 px-5 py-5">
+        <div className="px-5 py-5">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <div className="font-mono text-[10px] uppercase tracking-[0.28em] text-cyan-100/42">Yantra Voice</div>
+              <div className="font-mono text-[10px] uppercase tracking-[0.28em] text-white/34">Yantra AI</div>
               <div className="mt-3 flex min-w-0 items-center gap-3">
-                <div className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-cyan-300/18 bg-cyan-300/8 text-cyan-100">
+                <div className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.035] text-white/82">
                   <Sparkles size={17} />
                 </div>
                 <div className="min-w-0">
                   <div className="truncate text-lg font-semibold tracking-tight text-white">{roomLabel}</div>
-                  <div className="mt-1 font-mono text-[11px] uppercase tracking-[0.2em] text-cyan-100/58">{stateLabel}</div>
+                  <div className="mt-1 font-mono text-[11px] uppercase tracking-[0.2em] text-white/48">{stateLabel}</div>
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button type="button" onClick={endSession} className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white/58 transition-colors hover:border-rose-300/28 hover:text-rose-200" aria-label="End Yantra session"><Power size={15} /></button>
+              <button type="button" onClick={endSession} className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white/58 transition-colors hover:border-white/16 hover:bg-white/[0.06] hover:text-white" aria-label="End Yantra session"><Power size={15} /></button>
               <button type="button" onClick={() => setIsOpen(false)} className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white/58 transition-colors hover:border-white/20 hover:text-white" aria-label="Close Yantra sidebar">{isDesktop ? <PanelRightClose size={15} /> : <X size={15} />}</button>
             </div>
-          </div>
-
-          <p className="mt-4 text-sm leading-relaxed text-white/58">{roomSummary}</p>
-
-          <div className="mt-4 space-y-3">
-            <div className="rounded-[1.05rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/72">
-              Backend: <span className={backendReady ? 'text-emerald-200' : 'text-amber-200'}>{backendReady ? 'awake' : 'warming up'}</span>
-            </div>
-            {status === 'recording' ? (
-              <div className="rounded-[1.05rem] border border-cyan-300/14 bg-cyan-300/[0.06] px-4 py-3 text-sm text-cyan-50/86">
-                Hands-free is on. Speak now and Yantra will send automatically when you pause.
-              </div>
-            ) : null}
-            {handsFreeEnabled && status !== 'recording' && status !== 'transcribing' && status !== 'thinking' && status !== 'speaking' ? (
-              <div className="rounded-[1.05rem] border border-emerald-300/14 bg-emerald-300/[0.06] px-4 py-3 text-sm text-emerald-50/86">
-                Hands-free is armed. Yantra will start listening again after each spoken reply.
-              </div>
-            ) : null}
-            {!audioPrimed ? (
-              <ActionButton onClick={() => { void primeAudio(); }} tone="primary">
-                <Volume2 size={15} />
-                <span>Turn on audio</span>
-              </ActionButton>
-            ) : null}
-            {error ? (
-              <>
-                <div className="max-h-40 overflow-y-auto break-words rounded-[1.05rem] border border-rose-300/18 bg-rose-400/10 px-4 py-3 text-sm leading-relaxed text-rose-100">
-                  {error}
-                </div>
-                <ActionButton onClick={retryAssistant}>
-                  <Sparkles size={15} />
-                  <span>Try again</span>
-                </ActionButton>
-              </>
-            ) : null}
-            {notice ? (
-              <div className="max-h-40 overflow-y-auto break-words rounded-[1.05rem] border border-amber-300/16 bg-amber-300/[0.08] px-4 py-3 text-sm leading-relaxed text-amber-50/88">
-                {notice}
-              </div>
-            ) : null}
           </div>
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 pb-4 pt-4">
-            <div className="shrink-0 rounded-[1.5rem] border border-white/8 bg-[radial-gradient(circle_at_top,rgba(90,220,255,0.14),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.015))] px-4 py-4">
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 pb-4 pt-0">
+            <div className="shrink-0 px-2 py-5">
               <div className="flex flex-col items-center text-center">
-                <VoiceOrb status={status} />
-                <div className="mt-3 text-2xl font-semibold tracking-tight text-white">Yantra</div>
-                <div className="mt-1.5 font-mono text-[11px] uppercase tracking-[0.22em] text-cyan-100/58">{stateLabel}</div>
-                <div className="mt-4 w-full rounded-full border border-white/8 bg-black/34 p-1">
-                  <div className="h-2 rounded-full bg-[linear-gradient(90deg,rgba(80,230,255,0.25),rgba(80,230,255,0.9))] transition-[width] duration-100" style={{ width: `${Math.max(4, micLevel * 100)}%` }} />
+                <div className="relative flex h-52 w-52 items-center justify-center">
+                  <div className="absolute inset-0 rounded-full border border-white/7" />
+                  <div className="absolute inset-[12%] rounded-full border border-white/6" />
+                  <div className="absolute inset-[24%] rounded-full border border-white/5" />
+                  <div className="absolute inset-[36%] rounded-full border border-white/4" />
+                  <div className="absolute inset-[18%] rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.16),rgba(255,255,255,0.03)_42%,transparent_70%)] blur-2xl" />
+                  <VoiceOrb status={status} />
                 </div>
-                <div className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/36">Mic level</div>
+                <div className="mt-5 flex items-center gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-white/80 shadow-[0_0_10px_rgba(255,255,255,0.4)]" />
+                  <div className="font-mono text-[10px] uppercase tracking-[0.28em] text-white/56">Yantra AI Active</div>
+                </div>
+                <div className="mt-2 text-[11px] uppercase tracking-[0.18em] text-white/42">Observing execution path</div>
+                <div className="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-white/28">{stateLabel}</div>
               </div>
             </div>
 
-            <div className="shrink-0 rounded-[1.5rem] border border-white/8 bg-black/28 p-4">
-              <div className="mb-3 flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.18em] text-white/40">
-                <span>Your voice</span>
-                <span className={status === 'recording' ? 'text-emerald-200' : 'text-white/48'}>{status === 'recording' ? 'capturing' : 'idle'}</span>
-              </div>
-              <div className="rounded-[1.2rem] border border-white/8 bg-white/[0.03] p-3">
-                <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/38">Heard you say</div>
-                <div className="mt-2 text-sm leading-relaxed text-white/74">{userTranscript || 'Press Mic once to arm hands-free mode, then speak naturally. Yantra will send after you pause.'}</div>
-              </div>
-              <div className="mt-3 rounded-[1.2rem] border border-white/8 bg-white/[0.03] p-3">
-                <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-white/38"><Volume2 size={13} />Yantra reply</div>
-                <div className="mt-2 max-h-40 overflow-y-auto text-sm leading-relaxed text-white/74">{assistantReply || 'Yantra’s next spoken answer will appear here.'}</div>
+            <div className="mt-3">
+              <div className="font-mono text-[10px] uppercase tracking-[0.28em] text-white/34">Inquiry Streams</div>
+              <div className="mt-4 space-y-3">
+                {inquiryStreams.map((stream) => (
+                  <button
+                    key={stream.label}
+                    type="button"
+                    onClick={() => {
+                      void requestAssistantReply(stream.prompt, { speak: false });
+                    }}
+                    className="w-full rounded-[1.35rem] border border-white/8 bg-white/[0.03] px-4 py-4 text-left transition-colors hover:border-white/14 hover:bg-white/[0.055]"
+                  >
+                    <div className="text-sm font-medium text-white/88">{stream.label}</div>
+                  </button>
+                ))}
               </div>
             </div>
 
-            {error ? (
-              <div className="shrink-0 rounded-[1.35rem] border border-rose-300/18 bg-rose-400/10 p-4 text-sm text-rose-100">
-                <div className="flex items-start gap-3"><AlertTriangle size={16} className="mt-0.5" /><span>{error}</span></div>
+            <div className="mt-5 space-y-3">
+              {error ? (
+                <>
+                  <div className="max-h-40 overflow-y-auto break-words rounded-[1.2rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-relaxed text-white/76">
+                    {error}
+                  </div>
+                  <ActionButton onClick={retryAssistant}>
+                    <Sparkles size={15} />
+                    <span>Try again</span>
+                  </ActionButton>
+                </>
+              ) : notice ? (
+                <div className="max-h-40 overflow-y-auto break-words rounded-[1.2rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-relaxed text-white/68">
+                  {notice}
+                </div>
+              ) : !backendReady ? (
+                <div className="rounded-[1.2rem] border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-white/60">Yantra backend is still waking up.</div>
+              ) : status === 'recording' ? (
+                <div className="rounded-[1.2rem] border border-white/8 bg-white/[0.03] px-4 py-3 text-sm leading-relaxed text-white/68">
+                  Listening now. Yantra will send your voice when you pause.
+                </div>
+              ) : handsFreeEnabled && status !== 'transcribing' && status !== 'thinking' && status !== 'speaking' ? (
+                <div className="rounded-[1.2rem] border border-white/8 bg-white/[0.03] px-4 py-3 text-sm leading-relaxed text-white/68">
+                  Hands-free is armed.
+                </div>
+              ) : null}
+            </div>
+
+            <div className="mt-auto pt-5">
+              <div className="rounded-[1.45rem] border border-white/8 bg-white/[0.03] p-4">
+                <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/32">Yantra Reply</div>
+                {userTranscript ? <div className="mt-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white/28">Last prompt: {userTranscript}</div> : null}
+                <div className="mt-3 text-sm italic leading-relaxed text-white/72">
+                  {assistantReply || '“Stay in flow. When you need a fix, a concept link, or a logic review, open one inquiry stream or press start.”'}
+                </div>
               </div>
-            ) : null}
+            </div>
           </div>
 
-          <div className="shrink-0 border-t border-white/8 bg-black/26 px-5 py-4">
-            <div className="grid grid-cols-2 gap-3">
-              <ActionButton onClick={toggleRecording}>
-                {handsFreeEnabled ? <Square size={16} /> : <Mic size={16} />}
-                <span>{handsFreeEnabled ? 'Pause Voice' : 'Start Hands-Free'}</span>
-              </ActionButton>
-              <ActionButton onClick={endSession} tone="danger">
-                <Power size={16} />
-                <span>End</span>
-              </ActionButton>
-            </div>
+          <div className="shrink-0 border-t border-white/6 bg-black/24 px-5 py-4">
+            <ActionButton onClick={toggleRecording} tone="primary">
+              {handsFreeEnabled ? <Square size={16} /> : <Mic size={16} />}
+              <span>{handsFreeEnabled ? 'Stop' : 'Start'}</span>
+            </ActionButton>
           </div>
         </div>
       </div>
@@ -929,23 +1048,23 @@ const RoomVoiceAssistant = forwardRef<RoomVoiceAssistantHandle, RoomVoiceAssista
 
       {!isLaunched ? (
         <>
-          <aside className="hidden xl:block xl:sticky xl:top-28 xl:self-start">
-            <div className="overflow-hidden rounded-[2rem] border border-cyan-300/14 bg-[linear-gradient(180deg,rgba(4,10,16,0.96),rgba(2,6,10,0.98))] p-5 shadow-[0_20px_64px_rgba(0,0,0,0.3)] backdrop-blur-[24px] sm:p-6">
+          <aside className={desktopCardWrapperClassName}>
+            <div className={`overflow-hidden rounded-[2rem] border border-white/8 bg-[linear-gradient(180deg,rgba(10,10,10,0.98),rgba(6,6,6,0.99))] p-5 shadow-[0_28px_90px_rgba(0,0,0,0.42)] backdrop-blur-[28px] sm:p-6 ${desktopLayout === 'panel' ? 'flex h-full min-h-[52rem] flex-1 flex-col justify-between' : ''}`}>
               <div className="flex items-center gap-3">
-                <div className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-cyan-300/16 bg-cyan-300/8 text-cyan-100">
+                <div className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/[0.035] text-white/84">
                   {status === 'warming' ? <LoaderCircle size={18} className="animate-spin" /> : <Sparkles size={18} />}
                 </div>
                 <div>
-                  <div className="font-mono text-[10px] uppercase tracking-[0.26em] text-cyan-100/42">Yantra Voice</div>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.26em] text-white/34">Yantra AI</div>
                   <div className="mt-1 text-lg font-semibold tracking-tight text-white">{roomLabel}</div>
                 </div>
               </div>
               <p className="mt-5 text-sm leading-relaxed text-white/60">{roomSummary}</p>
               <div className="mt-6 rounded-[1.5rem] border border-white/8 bg-black/28 p-4">
-                <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/38">Sarvam voice flow</div>
-                <div className="mt-3 text-sm leading-relaxed text-white/72">Speak into the room, let Sarvam transcribe it, route the prompt through Yantra chat, then hear the answer back in a natural voice.</div>
+                <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/32">Room Sidebar</div>
+                <div className="mt-3 text-sm leading-relaxed text-white/70">Open Yantra on the right when you want a hint, an error explanation, or a quick concept check.</div>
               </div>
-              {error ? <div className="mt-5 rounded-[1.35rem] border border-rose-300/18 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">{error}</div> : null}
+              {error ? <div className="mt-5 rounded-[1.35rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/76">{error}</div> : null}
               <button type="button" onClick={() => { void openAssistant(); }} className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-full bg-white px-5 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-black transition-transform duration-300 hover:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70" disabled={status === 'warming'}>
                 {status === 'warming' ? <LoaderCircle size={16} className="animate-spin" /> : <Mic size={16} />}
                 <span>{status === 'warming' ? 'Opening' : 'Open Yantra'}</span>
@@ -956,37 +1075,37 @@ const RoomVoiceAssistant = forwardRef<RoomVoiceAssistantHandle, RoomVoiceAssista
           <motion.button
             type="button"
             onClick={() => { void openAssistant(); }}
-            className="pointer-events-auto fixed bottom-5 right-4 z-[55] flex items-center gap-3 rounded-full border border-cyan-300/18 bg-black/78 px-4 py-3 text-left shadow-[0_20px_70px_rgba(0,0,0,0.56)] backdrop-blur-2xl transition-colors hover:border-cyan-200/34 sm:right-5 lg:bottom-7 lg:right-6 xl:hidden"
+            className="pointer-events-auto fixed bottom-5 right-4 z-[55] flex items-center gap-3 rounded-full border border-white/10 bg-black/82 px-4 py-3 text-left shadow-[0_20px_70px_rgba(0,0,0,0.56)] backdrop-blur-2xl transition-colors hover:border-white/16 sm:right-5 lg:bottom-7 lg:right-6 lg:hidden"
             initial={{ opacity: 0, y: 22 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
             aria-label="Open Yantra room assistant"
           >
-            <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-[radial-gradient(circle_at_center,rgba(80,230,255,0.22),rgba(0,0,0,0.92))]">
-              <div className="absolute inset-[0.22rem] rounded-full bg-cyan-300/18 blur-md" />
+            <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.14),rgba(0,0,0,0.92))]">
+              <div className="absolute inset-[0.22rem] rounded-full bg-white/[0.12] blur-md" />
               {status === 'warming' ? <LoaderCircle size={18} className="relative z-10 animate-spin text-white" /> : <Sparkles size={18} className="relative z-10 text-white" />}
             </div>
             <div>
               <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/42">Room AI</div>
               <div className="mt-1 text-sm font-medium text-white">Launch Yantra</div>
-              <div className="mt-1 text-[11px] uppercase tracking-[0.18em] text-cyan-100/62">{stateLabel}</div>
+              <div className="mt-1 text-[11px] uppercase tracking-[0.18em] text-white/46">{stateLabel}</div>
             </div>
           </motion.button>
         </>
       ) : !isOpen ? (
         <>
-          <aside className="hidden xl:block xl:sticky xl:top-28 xl:self-start">
-            <div className="overflow-hidden rounded-[2rem] border border-cyan-300/14 bg-[linear-gradient(180deg,rgba(4,10,16,0.96),rgba(2,6,10,0.98))] p-5 shadow-[0_20px_64px_rgba(0,0,0,0.3)] backdrop-blur-[24px] sm:p-6">
+          <aside className={desktopCardWrapperClassName}>
+            <div className={`overflow-hidden rounded-[2rem] border border-white/8 bg-[linear-gradient(180deg,rgba(10,10,10,0.98),rgba(6,6,6,0.99))] p-5 shadow-[0_28px_90px_rgba(0,0,0,0.42)] backdrop-blur-[28px] sm:p-6 ${desktopLayout === 'panel' ? 'flex h-full min-h-[52rem] flex-1 flex-col justify-between' : ''}`}>
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
                   <VoiceOrb status={status} small />
                   <div className="min-w-0">
-                    <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-cyan-100/42">Yantra Voice</div>
+                    <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/34">Yantra AI</div>
                     <div className="truncate text-base font-semibold tracking-tight text-white">{roomLabel}</div>
-                    <div className="mt-1 text-[11px] uppercase tracking-[0.18em] text-cyan-100/62">{stateLabel}</div>
+                    <div className="mt-1 text-[11px] uppercase tracking-[0.18em] text-white/46">{stateLabel}</div>
                   </div>
                 </div>
-                <button type="button" onClick={endSession} className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white/58 transition-colors hover:border-rose-300/28 hover:text-rose-200" aria-label="End Yantra session"><Power size={15} /></button>
+                <button type="button" onClick={endSession} className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white/58 transition-colors hover:border-white/16 hover:bg-white/[0.06] hover:text-white" aria-label="End Yantra session"><Power size={15} /></button>
               </div>
 
               <div className="mt-5 rounded-[1.4rem] border border-white/8 bg-black/26 p-4">
@@ -998,7 +1117,7 @@ const RoomVoiceAssistant = forwardRef<RoomVoiceAssistantHandle, RoomVoiceAssista
               <button
                 type="button"
                 onClick={() => setIsOpen(true)}
-                className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-full border border-cyan-300/18 bg-cyan-300/8 px-5 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-cyan-100 transition-colors hover:border-cyan-200/36 hover:bg-cyan-300/14"
+                className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-full border border-white/10 bg-white/[0.045] px-5 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-white transition-colors hover:border-white/16 hover:bg-white/[0.08]"
               >
                 <Sparkles size={16} />
                 Open Sidebar
@@ -1009,27 +1128,27 @@ const RoomVoiceAssistant = forwardRef<RoomVoiceAssistantHandle, RoomVoiceAssista
           <motion.button
             type="button"
             onClick={() => setIsOpen(true)}
-            className="pointer-events-auto fixed bottom-5 right-4 z-[55] flex items-center gap-3 rounded-full border border-cyan-300/18 bg-black/78 px-4 py-3 text-left shadow-[0_20px_70px_rgba(0,0,0,0.56)] backdrop-blur-2xl transition-colors hover:border-cyan-200/34 sm:right-5 lg:bottom-7 lg:right-6 xl:hidden"
+            className="pointer-events-auto fixed bottom-5 right-4 z-[55] flex items-center gap-3 rounded-full border border-white/10 bg-black/82 px-4 py-3 text-left shadow-[0_20px_70px_rgba(0,0,0,0.56)] backdrop-blur-2xl transition-colors hover:border-white/16 sm:right-5 lg:bottom-7 lg:right-6 lg:hidden"
             initial={{ opacity: 0, y: 22 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
             aria-label="Open Yantra room assistant"
           >
-            <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-[radial-gradient(circle_at_center,rgba(80,230,255,0.22),rgba(0,0,0,0.92))]">
-              <div className="absolute inset-[0.22rem] rounded-full bg-cyan-300/18 blur-md" />
+            <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.14),rgba(0,0,0,0.92))]">
+              <div className="absolute inset-[0.22rem] rounded-full bg-white/[0.12] blur-md" />
               <Waves size={18} className="relative z-10 text-white" />
             </div>
             <div>
               <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/42">Room AI</div>
-              <div className="mt-1 text-sm font-medium text-white">Yantra Voice</div>
-              <div className="mt-1 text-[11px] uppercase tracking-[0.18em] text-cyan-100/62">{stateLabel}</div>
+              <div className="mt-1 text-sm font-medium text-white">Yantra</div>
+              <div className="mt-1 text-[11px] uppercase tracking-[0.18em] text-white/46">{stateLabel}</div>
             </div>
           </motion.button>
         </>
       ) : (
         <>
-          <div className="hidden xl:block">{panel}</div>
-          <div className="xl:hidden">
+          <div className="hidden lg:block">{panel}</div>
+          <div className="lg:hidden">
             <AnimatePresence>
               <motion.button
                 type="button"
