@@ -1,5 +1,7 @@
 .pytest_cache/
 .venv/
+.tmp/
+pytest-cache-files-*/
 data/*.json
 !data/knowledge_index.json
 __pycache__/

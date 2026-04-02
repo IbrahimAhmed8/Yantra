@@ -14,6 +14,8 @@ Use it to understand what is actually implemented now, what is seeded but limite
   Route-by-route and folder-by-folder map of the active codebase.
 - `engineering/SETUP_AND_DEPLOYMENT.md`
   Local setup, environment variables, smoke tests, and deployment guidance.
+- `engineering/ONE_COMMAND_SETUP.md`
+  Fast onboarding path for a fresh machine with `npm run setup`.
 - `engineering/SUPABASE_SETUP.md`
   Supabase auth setup, schema application, redirect configuration, OAuth setup, and persistence details.
 - `engineering/WORKFLOW.md`
@@ -58,7 +60,7 @@ Use it to understand what is actually implemented now, what is seeded but limite
 ## Fast Start For A New Builder
 
 1. Read `handoff/CURRENT_STATE.md`.
-2. Read `engineering/SETUP_AND_DEPLOYMENT.md`.
+2. Read `engineering/ONE_COMMAND_SETUP.md`.
 3. Read `engineering/CODEBASE_MAP.md`.
 4. Read the relevant file inside `features/`.
 5. Read `product/OPEN_WORK.md` before starting implementation.

@@ -127,6 +127,16 @@ Yantra/
 - a Sarvam API key for Python Room voice
 - Python 3.11 or newer if you want to run `ai/` locally
 
+### One-command bootstrap
+
+For a new local machine, start with:
+
+```powershell
+npm run setup
+```
+
+That command creates the local env files if needed, installs the web and Python dependencies, and runs the current validation suite. Full details live in `docs/engineering/ONE_COMMAND_SETUP.md`.
+
 ### Install
 
 ```bash

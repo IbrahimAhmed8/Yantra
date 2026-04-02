@@ -9,6 +9,31 @@
 - a Sarvam API key for Python Room voice
 - Python 3.11 or newer if you want to run `ai/` locally
 
+## One-Command Bootstrap
+
+For a fresh local machine, start from the repo root with:
+
+```powershell
+npm run setup
+```
+
+That command is implemented by [`scripts/setup.mjs`](/c:/Users/pavan/Contribute/Yantra/scripts/setup.mjs) and will:
+
+- create `.env.local` from `.env.example` when missing
+- create `ai/.env` from `ai/.env.example` when missing
+- install root dependencies
+- create and hydrate `ai/.venv`
+- run the current web and Python validation commands
+
+Use these flags when needed:
+
+```powershell
+npm run setup -- --reindex
+npm run setup -- --skip-validation
+```
+
+Read [`ONE_COMMAND_SETUP.md`](/c:/Users/pavan/Contribute/Yantra/docs/engineering/ONE_COMMAND_SETUP.md) for the streamlined onboarding version.
+
 ## Install
 
 ```bash
