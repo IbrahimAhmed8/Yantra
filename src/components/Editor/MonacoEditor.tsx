@@ -72,7 +72,7 @@ export const MonacoEditor = ({
   }
 
   return (
-    <div className="relative min-h-[60vh]" style={{ height: '100%' }}>
+    <div className="relative min-h-[60vh] p-0 m-0" style={{ height: '100%', margin: 0, padding: 0 }}>
       <Editor
         beforeMount={setupMonaco}
         height="100%"
