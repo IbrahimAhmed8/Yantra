@@ -82,7 +82,7 @@ export async function GET(
             doc.end();
         });
 
-        return new NextResponse(pdfBuffer, {
+        return new NextResponse(new Uint8Array(pdfBuffer), {
             headers: {
                 'Content-Type': 'application/pdf',
                 'Content-Disposition': `attachment; filename="yantra-mastery-${certificate.skill_key}.pdf"`,
