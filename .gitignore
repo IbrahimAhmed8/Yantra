@@ -11,3 +11,9 @@ coverage/
 !.env.example
 
 .npm-cache/
+
+pnpm-lock.yaml
+
+20260403070000_add_mastery_and_rooms.sql
+
+note.js
