@@ -17,3 +17,5 @@ coverage/
 note.js
 
 pnpm-lock.yaml
+
+package.json
