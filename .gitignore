@@ -12,10 +12,10 @@ coverage/
 
 .npm-cache/
 
-20260403070000_add_mastery_and_rooms.sql
-
 pnpm-lock.yaml
 
 note.js
 
-package.json
+20260403070000_add_mastery_and_rooms.sql
+
+package-lock.json

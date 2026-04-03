@@ -3,7 +3,6 @@ import { Analytics } from '@vercel/analytics/react';
 import { Bebas_Neue, Inter, JetBrains_Mono, Space_Grotesk } from 'next/font/google';
 import '../src/styles/globals.css';
 import { ExperienceProvider } from '@/src/features/motion/ExperienceProvider';
-import { Analytics } from '@vercel/analytics/react';
 
 const displayFont = Space_Grotesk({
   subsets: ['latin'],
