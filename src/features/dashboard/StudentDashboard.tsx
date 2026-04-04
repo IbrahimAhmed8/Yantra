@@ -701,10 +701,11 @@ function HeroSection({
               </div>
               <button
                 type="button"
-                className="shrink-0 rounded-full border border-white/12 bg-white/[0.05] p-3 text-white transition-colors hover:bg-white/[0.12] hoverable"
+                className="shrink-0 rounded-full border border-white/12 bg-white/[0.05] p-3 text-white transition-colors hover:bg-white/[0.12] hoverable min-h-12 min-w-12 inline-flex items-center justify-center"
                 onClick={() => openChat({ message: resolvedView.hero.nextActionPrompt })}
+                aria-label="Next action"
               >
-                <ArrowRight size={16} />
+                <ArrowRight size={16} aria-hidden="true" />
               </button>
             </div>
           </div>

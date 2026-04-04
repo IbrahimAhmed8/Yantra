@@ -250,3 +250,60 @@ html[data-yantra-motion='reduced'] {
   border-left: 3px solid rgba(251, 113, 133, 0.95);
   margin-left: 4px;
 }
+
+/* ===== ACCESSIBILITY FIXES — Issue #8 ===== */
+
+/* Focus ring — replaces inconsistent browser defaults */
+*:focus {
+  outline: none;
+}
+*:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.dark *:focus-visible {
+  outline-color: #a5b4fc;
+}
+
+/* Skip to main content link */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 1rem;
+  z-index: 9999;
+  padding: 0.75rem 1.5rem;
+  background: #4f46e5;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: 0 0 0.5rem 0.5rem;
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+.skip-link:focus {
+  top: 0;
+}
+
+/* Screen reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* WCAG AA color contrast fix */
+:root {
+  --color-text-muted: #595959;
+  --color-text-secondary: #4b5563;
+}
+.dark {
+  --color-text-muted: #94a3b8;
+  --color-text-secondary: #cbd5e1;
+}

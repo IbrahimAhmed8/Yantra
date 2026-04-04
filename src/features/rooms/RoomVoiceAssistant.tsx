@@ -213,10 +213,14 @@ function ActionButton({
   onClick,
   children,
   tone = 'default',
+  ariaLabel,
+  ariaPressed,
 }: {
   onClick: () => void;
   children: ReactNode;
   tone?: 'default' | 'primary' | 'danger';
+  ariaLabel?: string;
+  ariaPressed?: boolean;
 }) {
   const className =
     tone === 'primary'
@@ -230,6 +234,8 @@ function ActionButton({
       type="button"
       onClick={onClick}
       className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-[1.2rem] border px-4 py-3 text-sm font-medium transition-colors ${className}`}
+      aria-label={ariaLabel}
+      aria-pressed={ariaPressed}
     >
       {children}
     </button>
@@ -1026,8 +1032,13 @@ const RoomVoiceAssistant = forwardRef<RoomVoiceAssistantHandle, RoomVoiceAssista
           </div>
 
           <div className="shrink-0 border-t border-white/6 bg-black/24 px-5 py-4">
-            <ActionButton onClick={toggleRecording} tone="primary">
-              {handsFreeEnabled ? <Square size={16} /> : <Mic size={16} />}
+            <ActionButton 
+              onClick={toggleRecording} 
+              tone="primary"
+              ariaLabel="Start voice input"
+              ariaPressed={status === 'recording'}
+            >
+              {handsFreeEnabled ? <Square size={16} aria-hidden="true" /> : <Mic size={16} aria-hidden="true" />}
               <span>{handsFreeEnabled ? 'Stop' : 'Start'}</span>
             </ActionButton>
           </div>
@@ -1065,8 +1076,8 @@ const RoomVoiceAssistant = forwardRef<RoomVoiceAssistantHandle, RoomVoiceAssista
                 <div className="mt-3 text-sm leading-relaxed text-white/70">Open Yantra on the right when you want a hint, an error explanation, or a quick concept check.</div>
               </div>
               {error ? <div className="mt-5 rounded-[1.35rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/76">{error}</div> : null}
-              <button type="button" onClick={() => { void openAssistant(); }} className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-full bg-white px-5 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-black transition-transform duration-300 hover:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70" disabled={status === 'warming'}>
-                {status === 'warming' ? <LoaderCircle size={16} className="animate-spin" /> : <Mic size={16} />}
+              <button type="button" onClick={() => { void openAssistant(); }} className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-full bg-white px-5 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-black transition-transform duration-300 hover:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70" disabled={status === 'warming'} aria-label="Start voice input" aria-pressed={status === 'recording'}>
+                {status === 'warming' ? <LoaderCircle size={16} className="animate-spin" aria-hidden="true" /> : <Mic size={16} aria-hidden="true" />}
                 <span>{status === 'warming' ? 'Opening' : 'Open Yantra'}</span>
               </button>
             </div>
