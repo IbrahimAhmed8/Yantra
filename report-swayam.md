@@ -1,60 +1,109 @@
 # Yantra AI — Validation Report
 
-**By:** Swayam Awari  
-**Date:** April 3, 2026  
+**By:** Swayam Awari
+**Date:** April 2026
 **Issue:** #5
 
 ## Setup Notes
 
-- Cloned from: `https://github.com/anierse07/yantra-ai.git`
 - Node version: v25.2.1
-- Env vars needed: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SARVAM_API_KEY, GEMINI_API_KEY, GROQ_API_KEY
-- Issues during setup:
-  - Found a duplicate import of `Analytics` in `app/layout.tsx` which caused a 500 error during Next.js compilation. Fixed by removing the redundant import.
-  - Python AI microservice initially failed to load API keys due to path mismatches in diagnostic scripts, but verified working once the `.env` was correctly placed in `ai/`.
+- Python version: Python 3.12.6
+- Issues during setup: Next.js dev server exited immediately on initial start. Resolved by re-running the test script alongside the Dev server. Python standard library `urllib` used instead of `requests` for robust web API checks.
 
 ## Test Results
-
-### Sarvam AI
-
-- Status: ✅ Working
-- Latency: ~1200ms (TTS)
-- Quality: High-quality audio/wav synthesis received from `/api/sarvam/tts`.
-- Issues: None.
-
-### Gemini
-
-- Status: ✅ Working
-- Latency: ~2000ms
-- Quality: Gemini 2.5 Flash providing accurate grounded responses via `/api/docs-support`.
-- Issues: None.
 
 ### Groq
 
 - Status: ✅ Working
-- Latency: ~850ms
-- Quality: Fast inference using `openai/gpt-oss-20b` confirmed via the Python microservice. Response is grounded and accurate.
-- Issues: None.
+- Model: openai/gpt-oss-20b
+- Latency: ~2006ms
+- Response quality: Grounded, formatted properly, fully answered the list comprehension question concisely without excessive jargon.
+- Issues: None observed.
+
+### Gemini
+
+- Status: ✅ Working
+- Model: gemini-2.5-flash
+- Latency: ~1780ms
+- Response quality: Detailed, grounded, accurately explained list comprehension with code examples.
+- Issues: None observed.
+
+### Sarvam AI (TTS)
+
+- Status: ✅ Working
+- Latency: ~2800ms
+- Output: audio/wav confirmed
+- Issues: Initial Localhost resolution quirks. Required explicit Dev server uptime during background API checking.
+
+## Provider Ring Failover
+
+- Groq → Gemini failover: ✅ Confirmed
+- Attempts taken: 2
+- Notes: Passed invalid key to Groq lane, forced switch to Gemini lane which successfully responded to the decorator prompt.
+
+## Python Test Suite
+
+- Total tests: 17
+- Passed: 17
+- Failed: 0
+- Time: ~1.5s
 
 ## Bugs Found
 
-### Bug 1: Duplicate Analytics Import
+### Bug 1: N/A
 
-- **Steps to reproduce:** Run `npm run dev` with the original `app/layout.tsx`.
-- **Expected:** App should compile and load.
-- **Actual:** 500 error due to `Analytics` being defined multiple times.
-- **Workaround:** Manually removed the duplicate import at line 6 of `app/layout.tsx`.
+- Steps to reproduce: N/A
+- Expected: N/A
+- Actual: All tests pass natively.
+- Workaround: N/A
 
 ## Comparison Summary
 
-| Metric         | Sarvam AI  | Gemini   | Groq            |
-| -------------- | ---------- | -------- | --------------- |
-| Speed          | Fast (TTS) | Moderate | Very Fast       |
-| Output Quality | Excellent  | High     | Good (Grounded) |
-| Stability      | Stable     | Stable   | Stable          |
+| Metric         | Groq      | Gemini    | Sarvam AI   |
+| -------------- | --------- | --------- | ----------- |
+| Speed          | Very Fast | Fast      | Moderate    |
+| Output Quality | High      | Very High | N/A (Audio) |
+| Stability      | Stable    | Stable    | Stable      |
+| Free Tier      | Generous  | Generous  | Generous    |
 
 ## Recommendations
 
-1. **Linting**: Add a lint rule to prevent duplicate imports to avoid the `app/layout.tsx` issue in the future.
-2. **Backend**: The Python microservice defaults to local grounded responses for smalltalk or short queries; ensure live LLM fallback is clearly visible to users when needed.
-3. **Voice**: Ensure the `/dashboard/rooms/python` route has a clear guide for users to enable push-to-talk.
+1. The Groq model is set to "openai/gpt-oss-20b" — verify this is an intentional alias and not a misconfiguration. Standard Groq models are llama3-70b-8192, mixtral-8x7b, etc.
+
+## CLI Proof (paste actual terminal outputs here)
+
+[Pytest Output]
+========================================= test session starts =========================================
+platform win32 -- Python 3.12.6, pytest-8.4.2, pluggy-1.6.0 -- D:\Yantra\ai\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Yantra\ai
+plugins: anyio-4.13.0
+collected 17 items
+
+tests/test_chat.py::test_chat_returns_grounded_reply PASSED [ 5%]
+...
+st_terminal_chat.py::test_sanitize_for_console_replaces_unprintable_characters PASSED [100%]
+
+[Groq Output]
+--- GROQ TEST ---
+Provider: groq
+Lane: groq_primary
+Model: openai/gpt-oss-20b
+Latency: 2006ms
+Response preview: ### What is a List Comprehension?
+A **list comprehension** is a concise, expressive way to create a new list...
+
+[Gemini Output]
+--- GEMINI TEST ---
+Provider: gemini
+Lane: gemini_primary
+Model: gemini-2.5-flash
+Latency: 1780ms
+Response preview: A list comprehension is...
+
+[Sarvam Output]
+--- SARVAM TTS TEST ---
+Status: 200
+Content-Type: audio/wav
+Audio bytes received: 154245
+Latency: 2854ms
