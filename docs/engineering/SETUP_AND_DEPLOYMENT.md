@@ -84,11 +84,11 @@ That script creates:
 - the relevant `updated_at` trigger functions and triggers
 - row-level security policies for authenticated users and anonymous access requests
 
-Important current mismatch:
+Dashboard room persistence note:
 
 - `src/lib/supabase/dashboard.ts` also expects `public.student_practice_rooms`
-- `supabase/schema.sql` does not currently create that table
-- when it is missing, the dashboard falls back to starter room data instead of persisted room rows
+- `supabase/schema.sql` now creates that table with matching RLS policies
+- if your Supabase project predates this change, re-run `supabase/schema.sql` before expecting persisted room rows
 
 ## Local Development
 
@@ -327,4 +327,4 @@ Check:
 
 - `supabase/schema.sql` has been applied
 - the dashboard tables and RLS policies exist
-- `student_practice_rooms` still needs to be created separately because the current schema file does not include it
+- `student_practice_rooms` exists in the applied schema and dashboard room rows can load without fallback

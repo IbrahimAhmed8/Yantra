@@ -240,7 +240,7 @@ Project SQL required for the current auth, profile, dashboard, access-request, a
 - `MarketingLandingPage.tsx` is still one of the largest single UI files in the repo.
 - `StudentDashboard.tsx` and `StudentProfilePage.tsx` still contain a significant amount of presentation-heavy layout code.
 - `src/features/docs/docs-content.ts` is the content source of truth for the docs system and the Support Desk retrieval layer.
-- `src/lib/supabase/dashboard.ts` is the persistence boundary for starter dashboard data and currently expects `student_practice_rooms`.
+- `src/lib/supabase/dashboard.ts` is the persistence boundary for starter dashboard data and reads and seeds `student_practice_rooms`.
 - `proxy.ts` at the repo root is required for Supabase SSR cookie refresh and should be treated as active runtime code, not a leftover file.
 - `ai/` is part of the live AI path when the target resolves to it; it is not just a disconnected local experiment.
 

@@ -453,34 +453,8 @@ export default function StudentProfilePage({
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-black text-white selection:bg-white selection:text-black [cursor:default]">
-      <YantraAmbientBackground />
-      <header className="fixed left-0 top-0 z-40 w-full border-b border-white/8 bg-black/72 px-4 py-4 backdrop-blur-2xl lg:hidden">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
-          <Link href="/dashboard" className="font-display text-2xl font-bold tracking-tight text-white uppercase cursor-pointer">
-            YANTRA
-          </Link>
-          <div className="flex items-center gap-2">
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-white/78 transition-colors hover:bg-white/[0.08] cursor-pointer sm:px-4 sm:tracking-[0.18em]"
-            >
-              <Grid2x2 size={14} />
-              Back
-            </Link>
-            <YantraMobileMenu
-              menuId="student-profile-mobile-menu"
-              title="Student Profile"
-              items={[
-                { label: 'Home', href: '/' },
-                { label: 'Dashboard', href: '/dashboard' },
-                { label: 'Docs', href: '/docs/first-dashboard-session' },
-                { label: 'Profile', href: '/dashboard/student-profile' },
-              ]}
-              triggerClassName="text-white hoverable"
-            />
-          </div>
-        </div>
-      </header>
+
+
 
       {activePanel === 'notifications' && (
         <PanelShell title="Updates" eyebrow="Notifications" onClose={() => setActivePanel(null)}>
@@ -518,79 +492,11 @@ export default function StudentProfilePage({
         </PanelShell>
       )}
 
-      {activePanel === 'settings' && (
-        <PanelShell title="Profile Settings" eyebrow="Controls" onClose={() => setActivePanel(null)}>
-          <button
-            type="button"
-            className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-left transition-colors hover:bg-white/[0.08] cursor-pointer"
-            onClick={() => {
-              profileCardRef.current?.openEditor();
-              setActiveSection('overview');
-              scrollToSection(PROFILE_SECTION_ID);
-              setActivePanel(null);
-              showStatusMessage('Editor opened with the latest saved profile.');
-            }}
-          >
-            <div className="font-display text-lg font-medium text-white">Resume editing</div>
-            <div className="mt-1 text-sm text-white/52">Reopen the form using the latest saved values.</div>
-          </button>
 
-          <button
-            type="button"
-            className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-left transition-colors hover:bg-white/[0.08] cursor-pointer"
-            onClick={async () => {
-              try {
-                await persistProfile(defaultProfileState || defaultStudentProfile, 'Profile reset to the default record.');
-                profileCardRef.current?.closeEditor();
-              } catch (error) {
-                showStatusMessage(error instanceof Error ? error.message : 'Yantra could not reset the current profile.');
-              }
-            }}
-          >
-            <div className="font-display text-lg font-medium text-white">Reset profile</div>
-            <div className="mt-1 text-sm text-white/52">Restore the default student record saved for this account.</div>
-          </button>
 
-          <Link
-            href="/dashboard"
-            className="block rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 transition-colors hover:bg-white/[0.08] cursor-pointer"
-          >
-            <div className="font-display text-lg font-medium text-white">Go to dashboard</div>
-            <div className="mt-1 text-sm text-white/52">Return to the main student dashboard overview.</div>
-          </Link>
-        </PanelShell>
-      )}
 
-      <aside className="fixed left-0 top-0 z-30 hidden h-full w-64 flex-col border-r border-white/8 bg-black/62 px-4 pb-8 pt-10 backdrop-blur-2xl xl:flex">
-        <div className="mb-12 flex flex-col gap-2 px-2">
-          <div className="font-display text-xl font-bold text-white">YANTRA</div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">Institutional Portal</div>
-        </div>
 
-        <div className="flex flex-1 flex-col gap-1">
-          {sideNavItems.map((item) => (
-            <NavEntry
-              key={item.label}
-              item={item}
-              onAction={handleNavAction}
-              isActive={item.action ? activeSection === item.action : Boolean(item.active)}
-            />
-          ))}
-        </div>
-
-        <div className="mt-auto flex flex-col gap-1">
-          {supportNavItems.map((item) => (
-            <NavEntry
-              key={item.label}
-              item={item}
-              onAction={handleNavAction}
-              isActive={item.action ? activeSection === item.action : Boolean(item.active)}
-            />
-          ))}
-        </div>
-      </aside>
-
-      <main className="relative z-10 min-h-screen px-4 pb-14 pt-24 sm:pb-16 md:px-8 md:pt-28 xl:pl-72 xl:pr-10 xl:pt-10">
+      <main className="relative z-10 min-h-screen px-4 pb-14 pt-10 sm:pb-16 md:px-8 xl:pr-10">
         <div className="mx-auto max-w-[88rem]">
           {statusMessage ? (
             <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 font-mono text-[10px] uppercase tracking-[0.14em] text-white/72 shadow-[0_16px_36px_rgba(0,0,0,0.16)] sm:rounded-full sm:tracking-[0.18em]">
@@ -621,7 +527,7 @@ export default function StudentProfilePage({
                   <span className="h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.38)]" />
                   <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/42 sm:text-[10px] sm:tracking-[0.28em]">Student Identity / Synced Theme</span>
                 </div>
-                <h1 className="font-display text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-7xl">Student Profile</h1>
+                <h1 className="font-display text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-7xl">{profile.name}&apos;s Profile</h1>
                 <p className="mt-3 max-w-xl text-sm font-light leading-relaxed text-white/58 sm:mt-4 sm:text-base">
                   Academic tracking and personal identity management for the Yantra ecosystem. Manage core student data and
                   skill progression from a single institutional view.
@@ -636,13 +542,7 @@ export default function StudentProfilePage({
                   <Grid2x2 size={16} />
                   Back to Dashboard
                 </Link>
-                <Link
-                  href="/docs/student-profile"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white/70 transition-colors hover:bg-white/[0.08] cursor-pointer"
-                >
-                  <BookOpen size={14} />
-                  Docs
-                </Link>
+
                 <button
                   type="button"
                   className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white/70 transition-colors hover:bg-white/[0.08] cursor-pointer"
@@ -653,16 +553,7 @@ export default function StudentProfilePage({
                   <Bell size={14} />
                   Updates
                 </button>
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white/70 transition-colors hover:bg-white/[0.08] cursor-pointer"
-                  aria-label="Settings"
-                  aria-expanded={activePanel === 'settings'}
-                  onClick={() => handlePanelToggle('settings')}
-                >
-                  <Settings2 size={14} />
-                  Profile Tools
-                </button>
+
               </div>
             </div>
           </section>

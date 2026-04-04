@@ -7,7 +7,6 @@
 - add broader tests for auth redirects, onboarding writes, profile reads and writes, dashboard seeding, chat routes, and docs-support routes
 - add monitoring and error reporting for auth, chat, room feedback, and docs support
 - harden deployment checks and post-deploy smoke validation
-- align `supabase/schema.sql` with the dashboard loader's `student_practice_rooms` expectation
 
 ### Dashboard intelligence
 
@@ -59,7 +58,6 @@
 - no internal access-request operations UI
 - no content-management workflow for docs or marketing content
 - no richer learner-memory or support-escalation system
-- `supabase/schema.sql` still does not create `student_practice_rooms`
 
 ## Existing Automated Coverage
 

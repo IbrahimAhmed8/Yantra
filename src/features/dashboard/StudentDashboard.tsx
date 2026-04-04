@@ -25,7 +25,7 @@ import { motion, useInView } from 'motion/react';
 import { createContext, memo, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ChatProvider, useChatWidgetActions } from '@/src/features/chat/ChatWidget';
 import { useScrollThreshold } from '@/src/features/motion/useScrollThreshold';
-import YantraMobileMenu from '@/src/features/navigation/YantraMobileMenu';
+import GlobalSidebar from '@/src/features/navigation/GlobalSidebar';
 import {
   type DashboardRoomTextureKey,
   type DashboardSkillIconKey,
@@ -43,7 +43,6 @@ import type {
   DashboardSkillCard,
 } from './dashboard-content';
 import { dashboardSectionLinks } from './dashboard-content';
-import type { StudentProfile } from './student-profile-model';
 
 type StudentDashboardProps = {
   data: StudentDashboardData;
@@ -116,6 +115,19 @@ const roomTextures = {
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
+}
+
+function getInitials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+
+  if (parts.length === 0) {
+    return 'YG';
+  }
+
+  return parts
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join('');
 }
 
 function buildWeeklyMomentumBars(progress: number): DashboardMomentumBar[] {
@@ -283,94 +295,102 @@ function buildRooms(progress: number): DashboardRoomCard[] {
   ];
 }
 
-function buildDashboardViewModel(profile: StudentProfile): DashboardViewModel {
-  const progress = profile.progress;
-  const isStarter = progress < 20;
-  const isAdvanced = progress >= 70;
-  const streakDays = progress === 0 ? 0 : progress < 30 ? 2 : progress < 70 ? 4 : 7;
-  const sessionsThisWeek = progress === 0 ? 0 : progress < 30 ? 1 : progress < 70 ? 3 : 5;
-  const unlockedNodes = progress === 0 ? 0 : clamp(Math.round((progress / 100) * 18), 1, 18);
-  const roleLabel = profile.userRole ?? 'Starter Track';
+function buildDashboardViewModel(data: StudentDashboardData): DashboardViewModel {
+  const { profile, path, curriculumNodes, rooms, skills, weeklyActivity } = data;
+  const featuredRoom = rooms.find((room) => room.featured) ?? rooms[0] ?? null;
+  const primaryNode = curriculumNodes[0] ?? null;
+  const primarySkill = skills.find((skill) => !skill.locked) ?? skills[0] ?? null;
+  const progress = path.pathProgress;
+  const isStarter = progress <= 12;
+  const sessionsThisWeek = path.weeklyCompletedSessions;
+  const streakValue = sessionsThisWeek > 0 ? String(Math.min(99, sessionsThisWeek)).padStart(2, '0') : '00';
+  const learningPrompt =
+    path.recommendedActionPrompt || featuredRoom?.prompt || 'Help me understand my current progress and what to do next.';
 
   return {
     hero: {
-      headlineLead: progress === 0 ? 'Welcome to Yantra,' : 'Welcome back,',
-      body:
-        progress === 0
-          ? 'Your account is fresh. Start the first guided lesson and Yantra will begin shaping the dashboard around your real progress.'
-          : 'Yantra tracks your progress, shows what to learn next, and keeps every practice room tied to real outcomes with a quieter, more focused learning surface.',
-      primaryCtaLabel: progress === 0 ? 'Start First Session' : 'Continue Learning',
-      primaryCtaPrompt:
-        progress === 0
-          ? 'Start my first Yantra lesson and tell me what to focus on.'
-          : 'What should I learn next based on my current Yantra dashboard?',
+      headlineLead: isStarter ? 'Welcome to Yantra,' : 'Welcome back,',
+      body: isStarter
+        ? `Your first roadmap is live. It starts from ${path.learningTrackTitle.toLowerCase()} and will tighten once you give Yantra real signals from practice.`
+        : `Your dashboard is centered on ${path.currentFocus.toLowerCase()}. The next best move is ${path.recommendedActionTitle.toLowerCase()}.`,
+      primaryCtaLabel: featuredRoom?.ctaLabel || 'Open Next Step',
+      primaryCtaPrompt: learningPrompt,
       secondaryCtaLabel: 'View Practice Rooms',
-      currentPath: isStarter ? 'Getting Started' : isAdvanced ? 'Applied AI Projects' : 'AI Foundations',
-      pathDescription: isStarter
-        ? 'You are at the beginning of the Yantra journey, setting up the basics before the first deep practice cycle.'
-        : isAdvanced
-          ? 'You are in the finishing stretch, translating theory into polished project work.'
-          : 'Moving from logic confidence into visual model understanding.',
-      focusLabel: isStarter ? 'Complete your first learning session' : isAdvanced ? 'Capstone build sprint' : 'Neural networks basics',
-      nextActionTitle: isStarter ? 'Start Your First Guided Lesson' : isAdvanced ? 'Ship Your Next Portfolio Project' : 'Enter Neural Net Builder',
-      nextActionDescription: isStarter
-        ? 'Begin with the first fundamentals session so Yantra can start tailoring the dashboard to your progress.'
-        : isAdvanced
-          ? 'Wrap up a production-style build, document your approach, and prepare it for review.'
-          : 'You are ready to move from abstract ML ideas to a more spatial, visual model-building exercise.',
-      nextActionPrompt:
-        progress === 0
-          ? 'Start my first guided lesson and explain why it matters.'
-          : isAdvanced
-            ? 'Help me scope the next portfolio project from my dashboard.'
-            : 'Open my next room and explain what I should focus on there.',
+      currentPath: path.pathTitle,
+      pathDescription: path.pathDescription,
+      focusLabel: path.currentFocus,
+      nextActionTitle: path.recommendedActionTitle,
+      nextActionDescription: path.recommendedActionDescription,
+      nextActionPrompt: learningPrompt,
       summaryCards: [
-        { label: 'Momentum', value: streakDays === 0 ? 'No streak yet' : `${streakDays}-day streak` },
-        { label: 'Focus', value: isStarter ? 'AI basics' : isAdvanced ? 'Project shipping' : 'Model thinking' },
-        { label: 'Role', value: roleLabel },
+        { label: 'Momentum', value: path.momentumSummary },
+        { label: 'Focus', value: path.focusSummary },
+        { label: 'Role', value: profile.userRole ?? 'Starter Track' },
       ],
-      streakValue: streakDays.toString().padStart(2, '0'),
-      streakLabel: '7-day streak',
+      streakValue,
+      streakLabel: sessionsThisWeek > 0 ? 'Sessions This Week' : 'Fresh Account',
     },
     overview: {
-      trackTitle: isStarter ? 'AI Foundations' : isAdvanced ? 'Applied AI Projects' : 'ML Starter Track',
-      trackDescription: isStarter
-        ? 'Your account is fresh. Start with the first guided lesson and Yantra will begin shaping a real path for you.'
-        : isAdvanced
-          ? 'You are now turning foundations into projects, stronger reasoning, and more confident execution.'
-          : 'Your current path is moving from logic confidence into model thinking, guided practice, and stronger project readiness.',
-      primaryCtaLabel: isStarter ? 'Start First Lesson' : 'Continue Module',
-      secondaryCtaLabel: 'View Roadmap',
-      estimatedCompletion: isStarter ? 'Start one session to estimate' : isAdvanced ? 'Final stretch' : '2-3 guided cycles remaining',
-      masteryProgress: progress,
-      unlockedNodes,
-      totalNodes: 18,
+      trackTitle: path.learningTrackTitle,
+      trackDescription: path.learningTrackDescription,
+      primaryCtaLabel: featuredRoom?.ctaLabel || path.recommendedActionTitle,
+      secondaryCtaLabel: 'View Skills',
+      estimatedCompletion: path.completionEstimateLabel,
+      masteryProgress: path.masteryProgress,
+      unlockedNodes: path.masteryUnlockedCount,
+      totalNodes: path.masteryTotalCount,
       upcomingSession: {
-        badgeValue: progress === 0 ? 'GO' : isAdvanced ? '14' : '09',
-        badgeLabel: progress === 0 ? 'NOW' : 'APR',
-        title: progress === 0 ? 'First Guided Lesson' : isAdvanced ? 'Capstone Review' : 'Neural Architectures',
-        dayLabel: progress === 0 ? 'Ready when you are' : isAdvanced ? 'Next review' : 'Today',
-        timeLabel: progress === 0 ? '25 min' : isAdvanced ? '45 min' : '14:00 - 15:30',
-        guideName: progress === 0 ? 'Yantra Guide' : 'Yantra Mentor',
-        guideRole: progress === 0 ? 'Adaptive Coach' : 'Learning Coach',
-        guideInitials: progress === 0 ? 'YG' : 'YM',
+        badgeValue: path.nextSessionDateDay,
+        badgeLabel: path.nextSessionDateMonth,
+        title: path.nextSessionTitle,
+        dayLabel: path.nextSessionDayLabel,
+        timeLabel: path.nextSessionTimeLabel,
+        guideName: path.nextSessionInstructorName,
+        guideRole: path.nextSessionInstructorRole,
+        guideInitials: getInitials(path.nextSessionInstructorName),
       },
       sessionsThisWeek,
-      momentumDelta: sessionsThisWeek === 0 ? 'Start the first learning session' : `+${Math.max(4, sessionsThisWeek * 3)}% vs last week`,
+      momentumDelta: path.weeklyChangeLabel,
     },
-    weeklyMomentumBars: buildWeeklyMomentumBars(progress),
-    curriculumNodes: buildCurriculumNodes(progress),
-    skills: buildSkills(progress),
-    rooms: buildRooms(progress),
+    weeklyMomentumBars: weeklyActivity.map((day) => ({
+      day: day.dayLabel,
+      containerHeight: day.containerHeight,
+      fillHeight: day.fillHeight,
+      bright: day.highlighted,
+    })),
+    curriculumNodes: curriculumNodes.map((node) => ({
+      module: node.moduleLabel,
+      title: node.title,
+      description: node.description,
+      status: node.statusLabel,
+      unlocked: node.unlocked,
+    })),
+    skills: skills.map((skill) => ({
+      title: skill.title,
+      description: skill.description,
+      level: skill.levelLabel,
+      progress: skill.progress,
+      icon: skill.locked ? Lock : skillIconMap[skill.iconKey],
+      tone: skillToneClassMap[skill.toneKey],
+      locked: skill.locked,
+    })),
+    rooms: rooms.map((room) => ({
+      title: room.title,
+      description: room.description,
+      status: room.statusLabel,
+      cta: room.ctaLabel,
+      prompt: room.prompt,
+      featured: room.featured,
+      texture: roomTextureMap[room.textureKey],
+    })),
     ai: {
-      description:
-        'Your AI teacher for concepts, practice, and next steps. It stays context-aware inside this dashboard so the conversation starts with what you are already doing.',
-      fullChatPrompt: 'Open a full Yantra AI coaching conversation for my current dashboard context.',
-      emptyDraftPrompt: 'Help me understand my current progress and what to do next.',
+      description: `Yantra AI is grounded in your ${path.learningTrackTitle.toLowerCase()} roadmap, current focus, and recommended rooms so the conversation starts from what you are learning now.`,
+      fullChatPrompt: `Help me continue with my ${path.learningTrackTitle} roadmap and focus on ${path.currentFocus}.`,
+      emptyDraftPrompt: learningPrompt,
       prompts: [
-        progress === 0 ? 'How should I start learning here?' : 'What should I learn next?',
-        'Explain this concept simply',
-        isAdvanced ? 'Help me scope my next project' : 'Open my next room',
+        primarySkill ? `How do I improve ${primarySkill.title}?` : 'What should I learn next?',
+        primaryNode ? `Explain ${primaryNode.title} simply` : 'Explain this concept simply',
+        featuredRoom ? `Open ${featuredRoom.title}` : 'Open my next room',
       ],
     },
   };
@@ -537,23 +557,16 @@ function DashboardNav() {
             </Link>
           </div>
 
-          <YantraMobileMenu
-            menuId="dashboard-mobile-nav"
-            title="Dashboard"
-            items={[
-              ...dashboardSectionLinks.map((link) => ({ label: link.label, href: link.href })),
-              { label: 'Docs', href: '/docs/first-dashboard-session' },
-              { label: 'Student Profile', href: '/dashboard/student-profile' },
-            ]}
-            footerItems={[
-              {
-                label: 'Open Yantra AI',
-                tone: 'primary',
-                action: () => openChat({ message: 'Help me continue learning from my current student dashboard context.' }),
-              },
-            ]}
-            triggerClassName="text-white hoverable md:hidden"
-          />
+          <div className="flex items-center gap-4 md:hidden">
+            <Link
+              href="/dashboard/student-profile"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/12 bg-white/[0.04] text-white/70 transition-colors hover:bg-white/[0.08]"
+              aria-label="Student Profile"
+            >
+              <UserCircle2 size={16} />
+            </Link>
+            <GlobalSidebar className="text-white hoverable" />
+          </div>
         </div>
       </motion.nav>
     </>
@@ -562,18 +575,16 @@ function DashboardNav() {
 
 function HeroSection({
   firstName,
-  profile,
   view,
 }: {
   firstName: string;
-  profile: StudentDashboardData['profile'];
   view: DashboardViewModel;
 }) {
   const { path } = useDashboardData();
   const { openChat } = useChatWidgetActions();
   const statRef = useRef<HTMLDivElement>(null);
   const statInView = useInView(statRef, { once: true, margin: '-60px' });
-  const progress = profile.progress;
+  const progress = path.pathProgress;
   const progressWidth = `${progress}%`;
   const resolvedView = view;
 
@@ -852,14 +863,20 @@ function OverviewSection({ view }: { view: DashboardViewModel }) {
             </div>
 
             <div className="flex items-center gap-4 rounded-[1.25rem] border border-white/8 bg-white/[0.05] p-4">
-              <div className="relative h-9 w-9 overflow-hidden rounded-full border border-white/20">
-                <Image
-                  className="object-cover"
-                  src={path.nextSessionInstructorImageUrl}
-                  alt={`${path.nextSessionInstructorName} portrait`}
-                  fill
-                  sizes="36px"
-                />
+              <div className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-white/20 bg-white/[0.06]">
+                {path.nextSessionInstructorImageUrl.trim() ? (
+                  <Image
+                    className="object-cover"
+                    src={path.nextSessionInstructorImageUrl}
+                    alt={`${path.nextSessionInstructorName} portrait`}
+                    fill
+                    sizes="36px"
+                  />
+                ) : (
+                  <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/72">
+                    {view.overview.upcomingSession.guideInitials}
+                  </span>
+                )}
               </div>
 
               <div>
@@ -1252,8 +1269,8 @@ function DashboardFooter() {
 }
 
 function DashboardExperience() {
-  const { profile } = useDashboardData();
-  const view = buildDashboardViewModel(profile);
+  const data = useDashboardData();
+  const view = buildDashboardViewModel(data);
 
   return (
     <div className="relative min-h-screen bg-black text-white">
@@ -1261,7 +1278,7 @@ function DashboardExperience() {
       <DashboardNav />
 
       <main className="mx-auto flex w-full max-w-[1520px] flex-col gap-24 px-5 pb-20 md:gap-32 md:px-8 md:pb-24 xl:px-10">
-        <HeroSection firstName={profile.firstName || 'Learner'} profile={profile} view={view} />
+        <HeroSection firstName={data.profile.firstName || 'Learner'} view={view} />
         <OverviewSection view={view} />
         <SkillsSection />
         <RoomsSection />

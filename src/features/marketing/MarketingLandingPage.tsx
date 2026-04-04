@@ -16,6 +16,7 @@ import {
   marketingNavLinks,
   marketingTickerItems,
 } from './marketing-content';
+import GlobalSidebar from '@/src/features/navigation/GlobalSidebar';
 
 const AccessRequestForm = dynamic(
   () => import('@/src/features/access/AccessRequestForm').then((module) => module.AccessRequestForm),
@@ -68,9 +69,6 @@ function FluidBackground() {
 
 function Nav() {
   const scrolled = useScrollThreshold(50);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  useOverlayLock('marketing-mobile-nav', mobileMenuOpen);
 
   return (
     <>
@@ -124,100 +122,9 @@ function Nav() {
             </Link>
           </div>
 
-          <button
-            type="button"
-            className="text-white hoverable md:hidden"
-            onClick={() => setMobileMenuOpen(true)}
-            aria-label="Open menu"
-          >
-            <Menu size={24} />
-          </button>
+          <GlobalSidebar disableDesktop={true} />
         </div>
       </motion.nav>
-
-      {mobileMenuOpen && (
-        <motion.div
-          data-lenis-prevent
-          className="fixed inset-0 z-[60] flex flex-col overflow-y-auto bg-black/95 p-6 backdrop-blur-xl"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          <div className="flex justify-end">
-            <button
-              type="button"
-              className="p-2 text-white hoverable"
-              onClick={() => setMobileMenuOpen(false)}
-              aria-label="Close menu"
-            >
-              <X size={24} />
-            </button>
-          </div>
-
-          <div className="flex flex-1 flex-col items-center justify-center gap-6 py-10">
-            {marketingNavLinks.map((link, index) => (
-              link.href.startsWith('#') ? (
-                <motion.a
-                  key={link.label}
-                  href={link.href}
-                  data-no-route-loader="true"
-                  className="hoverable font-heading text-6xl uppercase tracking-widest"
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: index * 0.1 }}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {link.label}
-                </motion.a>
-              ) : (
-                <motion.div
-                  key={link.label}
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Link
-                    href={link.href}
-                    className="hoverable font-heading text-6xl uppercase tracking-widest"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {link.label}
-                  </Link>
-                </motion.div>
-              )
-            ))}
-
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: marketingNavLinks.length * 0.1 }}
-            >
-              <Link
-                href="/editor"
-                className="hoverable font-heading text-6xl uppercase tracking-widest"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Editor
-              </Link>
-            </motion.div>
-
-            <motion.div
-              className="mt-8 flex w-full max-w-sm flex-col gap-4"
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: (marketingNavLinks.length + 1) * 0.1 }}
-            >
-              <Link
-                href="/signup"
-                className="hoverable rounded-full bg-white px-8 py-4 text-center font-mono text-[11px] uppercase tracking-[0.24em] text-black"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Onboard
-              </Link>
-            </motion.div>
-          </div>
-        </motion.div>
-      )}
     </>
   );
 }

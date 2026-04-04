@@ -197,6 +197,39 @@ to authenticated
 using ((select auth.uid()) = user_id)
 with check ((select auth.uid()) = user_id);
 
+create table if not exists public.student_personalization_profiles (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  source_provider text check (source_provider is null or source_provider in ('chatgpt', 'gemini', 'other')),
+  source_prompt_version text,
+  approved_facts jsonb,
+  learner_summary text not null default '',
+  confidence_summary text not null default '',
+  assumptions text[] not null default '{}',
+  dismissed_at timestamptz,
+  last_generated_at timestamptz,
+  last_model_provider text,
+  last_model_name text,
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
+create or replace function public.set_student_personalization_profiles_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = timezone('utc', now());
+  return new;
+end;
+$$;
+
+drop trigger if exists set_student_personalization_profiles_updated_at on public.student_personalization_profiles;
+
+create trigger set_student_personalization_profiles_updated_at
+before update on public.student_personalization_profiles
+for each row
+execute function public.set_student_personalization_profiles_updated_at();
+
 create table if not exists public.student_dashboard_paths (
   user_id uuid primary key references auth.users (id) on delete cascade,
   path_title text not null,
@@ -254,6 +287,20 @@ create table if not exists public.student_curriculum_nodes (
   primary key (user_id, node_key)
 );
 
+create table if not exists public.student_practice_rooms (
+  user_id uuid not null references auth.users (id) on delete cascade,
+  room_key text not null,
+  title text not null,
+  description text not null,
+  status_label text not null,
+  cta_label text not null,
+  prompt text not null,
+  featured boolean not null default false,
+  texture_key text not null check (texture_key in ('python-room', 'neural-builder', 'data-explorer', 'prompt-lab')),
+  sort_order integer not null default 0,
+  primary key (user_id, room_key)
+);
+
 create table if not exists public.student_weekly_activity (
   user_id uuid not null references auth.users (id) on delete cascade,
   day_key text not null,
@@ -265,10 +312,34 @@ create table if not exists public.student_weekly_activity (
   primary key (user_id, day_key)
 );
 
+alter table public.student_personalization_profiles enable row level security;
 alter table public.student_dashboard_paths enable row level security;
 alter table public.student_skill_progress enable row level security;
 alter table public.student_curriculum_nodes enable row level security;
+alter table public.student_practice_rooms enable row level security;
 alter table public.student_weekly_activity enable row level security;
+
+drop policy if exists "Users can view their own personalization profile" on public.student_personalization_profiles;
+create policy "Users can view their own personalization profile"
+on public.student_personalization_profiles
+for select
+to authenticated
+using ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can insert their own personalization profile" on public.student_personalization_profiles;
+create policy "Users can insert their own personalization profile"
+on public.student_personalization_profiles
+for insert
+to authenticated
+with check ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can update their own personalization profile" on public.student_personalization_profiles;
+create policy "Users can update their own personalization profile"
+on public.student_personalization_profiles
+for update
+to authenticated
+using ((select auth.uid()) = user_id)
+with check ((select auth.uid()) = user_id);
 
 drop policy if exists "Users can view their own dashboard path" on public.student_dashboard_paths;
 create policy "Users can view their own dashboard path"
@@ -331,6 +402,28 @@ with check ((select auth.uid()) = user_id);
 drop policy if exists "Users can update their own curriculum nodes" on public.student_curriculum_nodes;
 create policy "Users can update their own curriculum nodes"
 on public.student_curriculum_nodes
+for update
+to authenticated
+using ((select auth.uid()) = user_id)
+with check ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can view their own practice rooms" on public.student_practice_rooms;
+create policy "Users can view their own practice rooms"
+on public.student_practice_rooms
+for select
+to authenticated
+using ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can insert their own practice rooms" on public.student_practice_rooms;
+create policy "Users can insert their own practice rooms"
+on public.student_practice_rooms
+for insert
+to authenticated
+with check ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can update their own practice rooms" on public.student_practice_rooms;
+create policy "Users can update their own practice rooms"
+on public.student_practice_rooms
 for update
 to authenticated
 using ((select auth.uid()) = user_id)

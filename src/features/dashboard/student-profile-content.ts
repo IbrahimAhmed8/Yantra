@@ -8,6 +8,8 @@ import {
   Lock,
   LogOut,
   Rocket,
+  ShieldAlert,
+  Sparkles,
   TrendingUp,
   Users,
   type LucideIcon,
@@ -17,7 +19,7 @@ export type StudentProfileNavItem = {
   label: string;
   icon: LucideIcon;
   href?: string;
-  action?: 'overview' | 'roster' | 'curriculum' | 'performance' | 'help';
+  action?: 'overview' | 'roster' | 'curriculum' | 'performance' | 'help' | 'personalization' | 'danger';
   active?: boolean;
 };
 
@@ -52,13 +54,15 @@ export const topNavItems: StudentProfileTopNavItem[] = [
 ];
 
 export const sideNavItems: StudentProfileNavItem[] = [
-  { label: 'Overview', icon: LayoutGrid, action: 'overview', active: true },
-  { label: 'Roster', icon: Users, action: 'roster' },
-  { label: 'Curriculum', icon: BookOpen, action: 'curriculum' },
-  { label: 'Performance', icon: BarChart3, action: 'performance' },
+  { label: 'Overview', icon: LayoutGrid, href: '/dashboard/student-profile' },
+  { label: 'Personalization', icon: Sparkles, href: '/dashboard/student-profile/personalization' },
+  { label: 'Roster', icon: Users, href: '/dashboard/student-profile/roster' },
+  { label: 'Curriculum', icon: BookOpen, href: '/dashboard/student-profile/curriculum' },
+  { label: 'Performance', icon: BarChart3, href: '/dashboard/student-profile/performance' },
 ];
 
 export const supportNavItems: StudentProfileNavItem[] = [
+  { label: 'Danger Zone', icon: ShieldAlert, href: '/dashboard/student-profile/danger-zone' },
   { label: 'Docs', icon: HelpCircle, href: '/docs/student-profile' },
   { label: 'Logout', icon: LogOut, href: '/auth/signout' },
 ];

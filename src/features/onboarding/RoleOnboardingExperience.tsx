@@ -43,6 +43,7 @@ import {
   type UserRole,
 } from '@/src/features/dashboard/student-profile-model';
 import { usePageTransition } from '@/src/features/motion/ExperienceProvider';
+import GlobalSidebar from '@/src/features/navigation/GlobalSidebar';
 
 type OnboardingStatus =
   | {
@@ -283,7 +284,7 @@ export default function RoleOnboardingExperience({
     }
 
     setIsSubmitting(true);
-    setStatus({ kind: 'info', message: 'Saving your selections and preparing the first version of your roadmap...' });
+    setStatus({ kind: 'info', message: 'Saving your selections and generating the first version of your roadmap...' });
 
     try {
       const response = await fetch('/api/profile', {
@@ -311,7 +312,22 @@ export default function RoleOnboardingExperience({
         throw new Error(payload.error || 'Yantra could not save your onboarding answers right now.');
       }
 
-      setStatus({ kind: 'success', message: 'Roadmap settings saved. Opening your dashboard...' });
+      setStatus({ kind: 'info', message: 'Profile saved. Building your dashboard roadmap...' });
+
+      const generateResponse = await fetch('/api/dashboard/generate', {
+        method: 'POST',
+      });
+
+      if (generateResponse.status === 401) {
+        window.location.href = '/login?message=Your%20session%20expired.%20Please%20log%20in%20again.&kind=error';
+        return;
+      }
+
+      if (!generateResponse.ok) {
+        console.error('Dashboard generation failed after onboarding.', await generateResponse.text().catch(() => ''));
+      }
+
+      setStatus({ kind: 'success', message: 'Roadmap ready. Opening your dashboard...' });
       startPageTransition();
       router.replace('/dashboard');
       router.refresh();
@@ -466,9 +482,7 @@ export default function RoleOnboardingExperience({
       <header className="fixed inset-x-0 top-0 z-40 border-b border-white/8 bg-black/65 backdrop-blur-2xl">
         <div className="flex h-14 items-center justify-between px-4 lg:px-6">
           <div className="flex items-center gap-3">
-            <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/8 bg-white/[0.04] text-white/80 lg:hidden">
-              <Menu size={15} aria-hidden="true" />
-            </span>
+            <GlobalSidebar disableDesktop={true} className="flex h-12 w-12 items-center justify-center rounded-full border border-white/8 bg-white/[0.04] text-white/80 hover:bg-white/[0.1] lg:hidden cursor-pointer" />
             <Link href="/" className="inline-flex min-h-12 items-center font-heading text-2xl tracking-wider text-white lg:text-3xl">
               YANTRA
             </Link>

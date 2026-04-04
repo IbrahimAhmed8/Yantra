@@ -74,7 +74,7 @@ const StudentProfileCard = forwardRef<StudentProfileCardHandle, StudentProfileCa
   const studentInitial = profile.name.trim().charAt(0).toUpperCase() || 'A';
 
   return (
-    <section className="group relative lg:col-span-5">
+    <section className="group relative">
       <div className={profileCardSurfaceClassName}>
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/18 to-transparent" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.05)_0%,transparent_52%)]" />

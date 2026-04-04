@@ -69,10 +69,10 @@ The loader expects:
 - `student_practice_rooms`
 - `student_weekly_activity`
 
-Current mismatch:
+Dashboard room persistence now ships in the checked-in schema:
 
-- `supabase/schema.sql` does not create `student_practice_rooms`
-- room cards therefore fall back to starter data on a fresh schema
+- `supabase/schema.sql` creates `student_practice_rooms` with the row shape expected by the loader
+- if a Supabase project predates this change, re-run `supabase/schema.sql` so room rows persist instead of falling back to starter data
 
 ### What is still static or seeded today
 
@@ -180,6 +180,5 @@ There is still no broad dashboard-route or profile-save test coverage.
 
 - replace seeded dashboard copy with real learner-adaptive state
 - add tests for `/api/profile`, dashboard seeding, and route protection
-- align Supabase schema with `student_practice_rooms`
 - deepen Python Room evaluation beyond runtime errors
 - design additional real room routes before treating the wider room grid as shipped

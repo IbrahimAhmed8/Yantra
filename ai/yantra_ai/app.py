@@ -5,15 +5,15 @@ from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, Response
 
+logger = logging.getLogger(__name__)
+AI_ROOT = Path(__file__).resolve().parents[1]
+AI_ENV_FILE = AI_ROOT / ".env"
+load_dotenv(AI_ENV_FILE if AI_ENV_FILE.exists() else None)
+
 from yantra_ai.api.routes.chat import router as chat_router
 from yantra_ai.api.routes.rooms import router as rooms_router
 from yantra_ai.core.config import get_settings
 from yantra_ai.core.rag import warmup_retrieval
-
-
-logger = logging.getLogger(__name__)
-AI_ROOT = Path(__file__).resolve().parents[1]
-AI_ENV_FILE = AI_ROOT / ".env"
 
 
 @asynccontextmanager
@@ -33,8 +33,6 @@ async def lifespan(_: FastAPI):
 
 
 def create_app() -> FastAPI:
-    load_dotenv(AI_ENV_FILE if AI_ENV_FILE.exists() else None)
-
     app = FastAPI(
         title="Yantra AI Service",
         version="0.1.0",

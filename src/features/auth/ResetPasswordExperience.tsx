@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import { ArrowRight, CheckCircle2, Eye, EyeOff, Orbit, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import YantraMobileMenu from '@/src/features/navigation/YantraMobileMenu';
+import GlobalSidebar from '@/src/features/navigation/GlobalSidebar';
 import { startRouteTransition } from '@/src/features/motion/ExperienceProvider';
 import { createClient as createSupabaseBrowserClient, createTransientClient } from '@/src/lib/supabase/client';
 
@@ -299,18 +299,7 @@ export default function ResetPasswordExperience({
           >
             Back to Login
           </Link>
-          <YantraMobileMenu
-            menuId="reset-password-mobile-menu"
-            title="Reset Password"
-            items={[
-              { label: 'Home', href: '/' },
-              { label: 'Docs', href: '/docs' },
-              { label: 'Login', href: '/login' },
-              { label: 'Signup', href: '/signup' },
-            ]}
-            footerItems={[{ label: 'Back to Login', href: '/login', tone: 'primary' }]}
-            triggerClassName="text-white hoverable md:hidden"
-          />
+          <GlobalSidebar disableDesktop={true} />
         </div>
       </header>
 

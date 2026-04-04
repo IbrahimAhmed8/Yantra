@@ -206,11 +206,11 @@ The dashboard loader reads starter product data from:
 - `public.student_practice_rooms`
 - `public.student_weekly_activity`
 
-Important mismatch:
+Dashboard room persistence note:
 
 - `src/lib/supabase/dashboard.ts` expects `student_practice_rooms`
-- `supabase/schema.sql` does not currently create that table
-- on a fresh schema, dashboard room data falls back to starter content instead of persisted room rows
+- `supabase/schema.sql` now creates that table with the matching RLS policies
+- older Supabase projects still need the updated schema applied before room rows persist
 
 ## Request Flows
 

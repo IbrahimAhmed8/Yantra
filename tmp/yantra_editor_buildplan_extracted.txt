@@ -1,0 +1,257 @@
+--- PAGE 1 ---
+1
+YANTRA · CODE EDITOR
+Complete Build Plan · yantra-tau.vercel.app · 2 Members: Rishi (Frontend) + Tobe (Backend)
+01 / PRODUCT CONTEXT
+Why the Editor Belongs in Yantra
+Yantra is an AI-native learning OS — skill diagnosis → personalized roadmaps → certifications → job matching. The
+Python Room is already live and documented. Learners are already expected to write and run code inside the platform.
+The /editor page is the natural execution surface for that promise — not a bolt-on feature, but the place where
+roadmap-guided learning becomes hands-on practice.
+The editor must feel like a native part of Yantra — same #060608 background, same glass card aesthetic, same auth
+layer, same AI assistant — not a third-party iframe dropped into the page.
+02 / SCOPE & FEATURE SET
+What You're Building (v1)
+Feature
+v1 (This Build)
+Future
+Editor engine
+Monaco (VS Code core)
+—
+Languages
+Python, JavaScript, TypeScript
++ 67 more via Piston
+Code execution
+Piston API (server-side)
+Self-hosted sandbox
+AI panel
+Gemini — explain selected code
+Roadmap-aware context
+File system
+Single file per session
+Multi-file tabs
+Snippet save
+Supabase code_snippets table
+Snippet library page
+Auth
+Protected — requireAuthenticatedProfile
+—
+Terminal
+stdout/stderr output panel
+Real WebSocket TTY
+03 / LAYOUT BLUEPRINT
+3-Panel Editor Layout
+The editor uses a classic IDE chrome split into three zones, styled entirely in Yantra's glass aesthetic.
+Panel
+Width
+Contents
+Yantra Classes
+Left Sidebar
+220 px
+Language selector, file name, save
+button, snippet history
+bg-white/[0.035] border-r
+border-white/8
+
+
+--- PAGE 2 ---
+2
+Centre Editor
+flex-1
+Monaco editor with Yantra dark theme,
+line numbers, syntax highlight
+bg-[#060608] border-white/8
+Right Panel
+340 px
+Run output (stdout/stderr/exit), AI
+Explain response stream
+bg-white/[0.035] border-l
+border-white/8
+backdrop-blur
+04 / API CONTRACT — LOCK BY DAY 1 · 6 PM
+The handshake between Rishi and Tobe
+Both members must agree on this before any code is written. Rishi mocks this response on Day 1 while Tobe builds the
+real endpoint.
+POST /api/editor/run
+ 
+// Request
+{ code: string, language: string, stdin?: string }
+ 
+// Response
+{ stdout: string, stderr: string, exitCode: number, executionTime: number }
+POST /api/editor/ai
+ 
+// Request
+{ code: string, language: string, selection?: string }
+ 
+// Response  (streaming)
+{ explanation: string }   // streamed via ReadableStream
+05 / FRONTEND WORK — RISHI
+● DAY 1 — Foundation & Editor Shell
+Rishi (Frontend)
+■ Create app/editor/page.tsx
+– Copy the auth guard from app/dashboard/page.tsx — use requireAuthenticatedProfile so the route stays protected
+behind Supabase session cookies. Unauthenticated users redirect to /login.
+■ Install Monaco editor
+– Run: npm install @monaco-editor/react
+– Import Editor from '@monaco-editor/react' — it drops into Next.js with zero Webpack config needed.
+■ Define the Yantra Monaco theme
+– Call monaco.editor.defineTheme('yantra-dark', { ... }) inside a useEffect with the editor instance.
+– base: 'vs-dark', background: '#060608', use existing Yantra colour tokens for syntax groups.
+■ Build the 3-panel layout skeleton
+– Outer wrapper: flex h-screen bg-[#060608] text-white overflow-hidden
+– Left sidebar: w-[220px] border-r border-white/8 bg-white/[0.035] flex flex-col p-4
+
+
+--- PAGE 3 ---
+3
+– Centre: flex-1 flex flex-col — top bar (language + run button) + editor filling remaining height.
+– Right panel: w-[340px] border-l border-white/8 bg-white/[0.035] backdrop-blur flex flex-col
+■ Language selector in sidebar
+– Dropdown with Python, JavaScript, TypeScript only for v1. Wire to Monaco's language prop.
+– Use existing Yantra select/dropdown component if available, or build with same border-white/8 styling.
+■ Top bar: Run button
+– Style: bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold px-4 py-2 rounded-md
+– On Day 1: clicking Run calls a mock function that returns fake stdout so the UI is testable without the backend.
+● DAY 2 — Wiring & AI Panel
+Rishi (Frontend)
+■ Wire Run button to POST /api/editor/run
+– Replace mock with real fetch call. Send { code, language } from editor state.
+– Show a spinner on the Run button during execution. Display stdout in green, stderr in red/amber in the right panel.
+– Show exit code and execution time as small muted labels below the output.
+■ AI Explain panel in right panel
+– Add an Explain button in the top bar (secondary style, next to Run).
+– On click, POST to /api/editor/ai with current code + language. Send selected text if any, else full code.
+– Stream the Gemini response using ReadableStream and render it progressively — reuse
+DeferredChatMessageContent if the component exists in the codebase.
+– AI panel and output panel share the right column — toggle between them with tab pills: 'Output' | 'Explain'.
+■ Save snippet button
+– A small save icon in the top bar. On click, POST snippet to /api/editor/save (Tobe's endpoint).
+– Show a toast: 'Snippet saved' — use the same toast/notification pattern already in the dashboard.
+■ Yantra AI context — learning-aware explain prompt
+– Before sending to /api/editor/ai, pull the user's current roadmap/skill level from their Supabase profile.
+– Pass this as context: 'The learner is studying Python basics, explain at beginner level.' This is what separates Yantra's
+editor from a generic CodePen.
+■ Keyboard shortcuts
+– Cmd/Ctrl + Enter → Run. Cmd/Ctrl + Shift + E → Explain. These feel native to VS Code users.
+■ Responsive & polish
+– On screens below 900px, collapse the sidebar into a top dropdown. Hide right panel by default, open via a toggle
+button.
+– Add a subtle glow on the Run button matching Yantra's existing CTA glow pattern on the homepage.
+06 / BACKEND WORK — TOBE
+● DAY 1 — Execution Engine
+Tobe (Backend)
+■ Create app/api/editor/run/route.ts
+– This is a Next.js API route. Extract { code, language, stdin } from the request body.
+
+
+--- PAGE 4 ---
+4
+– Validate the Supabase session server-side before executing — reject unauthenticated requests with 401.
+■ Piston API integration
+– Endpoint: POST https://emkc.org/api/v2/piston/execute
+– Body: { language, version: '*', files: [{ content: code }], stdin }
+– Piston returns: { run: { stdout, stderr, code, cpu_time, wall_time } } — map this to the agreed response shape.
+– For v1 use the public Piston instance (free, no key needed). Document self-hosting steps in the repo for later.
+■ 10-second execution timeout
+– Wrap the Piston fetch in an AbortController with a 10 000 ms timeout. If it fires, return a timeout error in stderr.
+■ Rate limiting
+– Read the user's sub (user ID) from the Supabase session.
+– Use an in-memory store (or Upstash Redis if available) to cap at 30 runs per user per minute.
+– Return HTTP 429 with a clear message if limit is hit — Rishi will display this in the output panel.
+■ Language version pinning
+– Call GET https://emkc.org/api/v2/piston/runtimes once and cache the latest versions for Python, JavaScript,
+TypeScript.
+– Hardcode these versions in a SUPPORTED_LANGUAGES config object to avoid mismatch errors.
+● DAY 2 — AI Endpoint & Database
+Tobe (Backend)
+■ Create app/api/editor/ai/route.ts
+– Copy the Gemini setup pattern from app/api/chat/route.ts — reuse the same client init and streaming logic.
+– System prompt: 'You are Yantra's learning assistant. Explain the following {language} code clearly. The learner's
+current skill level is {level} from their profile. Keep the explanation practical and learning-focused.'
+– Stream the response back using ReadableStream + TransformStream so Rishi can render tokens progressively.
+■ Create Supabase table: code_snippets
+– Mirror the chat_histories table pattern exactly.
+id          uuid primary key default gen_random_uuid()
+user_id     uuid references auth.users(id) on delete cascade
+language    text not null
+title       text
+code        text not null
+created_at  timestamptz default now()
+updated_at  timestamptz default now()
+– Add RLS policy: users can only read/write their own snippets.
+– Add index on user_id for fast lookup.
+■ Create app/api/editor/save/route.ts
+– POST endpoint. Validate session, upsert into code_snippets by user_id + title. Return the saved row ID.
+■ Create app/api/editor/snippets/route.ts
+– GET endpoint. Returns the last 20 snippets for the authenticated user ordered by updated_at desc.
+– Rishi displays these in the left sidebar as snippet history.
+07 / SYNC POINTS & CHECKPOINTS
+
+
+--- PAGE 5 ---
+5
+When Rishi and Tobe must talk
+Day 1 · Start
+Both
+Read this plan. Agree on the API contract shapes. Rishi sets up mock responses. Tobe sets up the route files.
+Day 1 · 6 PM
+Both
+API contract locked. Rishi's mock and Tobe's real endpoint must return identical shapes. No surprises on Day 2.
+Day 2 · Morning
+Both
+Tobe deploys /api/editor/run. Rishi swaps mock for real call. Run a live test together: Python hello world.
+Day 2 · Afternoon
+Rishi
+AI panel streaming working. Save/load snippets wired. Keyboard shortcuts done.
+Day 2 · Afternoon
+Tobe
+Rate limiting live. /api/editor/ai streaming confirmed. code_snippets table has RLS policy active.
+Day 2 · End
+Both
+End-to-end test on staging: sign in → write Python → run → explain → save → reload → load snippet.
+08 / TECH STACK SUMMARY
+Everything used in this build
+@monaco-editor/react
+Frontend
+VS Code editor engine in React. npm install @monaco-editor/react
+Piston API
+Backend
+Free code execution. 70+ languages. Public: emkc.org/api/v2/piston/execute
+Gemini (existing)
+Backend
+Reuse app/api/chat/route.ts setup. Streaming via ReadableStream.
+Supabase (existing)
+Backend
+New code_snippets table. RLS mirrors chat_histories pattern.
+Next.js API Routes
+Backend
+/api/editor/run, /api/editor/ai, /api/editor/save, /api/editor/snippets
+Tailwind (existing)
+Frontend
+All existing utility classes — no new CSS files needed.
+AbortController
+Backend
+10s execution timeout wrapper around Piston fetch call.
+09 / FUTURE UPGRADES (POST v1)
+Where to take the editor after launch
+■ Roadmap-aware AI: Pull the learner's current Yantra skill level and roadmap position into the Gemini prompt. The
+explanation depth should match where the learner is — not generic.
+■ Multi-file tabs: Add a tab strip above the editor. Store tabs in local state; persist to Supabase as a snippet group.
+■ Real terminal via WebSockets: Replace the stdout panel with an xterm.js terminal connected to a Docker
+container. This enables npm install, file navigation, persistent processes.
+■ LSP support: Add the Monaco language client package for JavaScript/TypeScript LSP. Enables go-to-definition,
+real IntelliSense, inline error squiggles.
+■ Self-hosted Piston: Deploy Piston on a VPS or Railway for zero cold-start, custom resource limits, and private
+language environments.
+■ Snippet library page: A dedicated /editor/snippets route showing all saved snippets with search, tags, and
+one-click load.
+
+
+--- PAGE 6 ---
+6
+■ Python Room integration: When the learner is in the Python Room, auto-load the current exercise into the editor.
+Run output feeds back into the room's progress tracking.
+ YANTRA · Code Editor Build Plan · Rishi (Frontend) + Tobe (Backend) · yantra-tau.vercel.app
+
+

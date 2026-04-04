@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import YantraMobileMenu from '@/src/features/navigation/YantraMobileMenu';
+import GlobalSidebar from '@/src/features/navigation/GlobalSidebar';
 
 type InfoSection = {
   title: string;
@@ -48,17 +48,7 @@ export default function InfoPageShell({
               Log In
             </Link>
           </div>
-          <YantraMobileMenu
-            menuId="legal-mobile-menu"
-            title="Yantra"
-            items={[
-              { label: 'Home', href: '/' },
-              { label: 'Docs', href: '/docs' },
-              { label: 'Login', href: '/login' },
-              { label: 'Signup', href: '/signup' },
-            ]}
-            triggerClassName="text-white hoverable md:hidden"
-          />
+          <GlobalSidebar disableDesktop={true} />
         </div>
       </header>
 

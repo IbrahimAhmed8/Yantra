@@ -17,7 +17,7 @@ import {
   Waypoints,
 } from 'lucide-react';
 import { useState, type FormEvent, type ReactNode } from 'react';
-import YantraMobileMenu from '@/src/features/navigation/YantraMobileMenu';
+import GlobalSidebar from '@/src/features/navigation/GlobalSidebar';
 import { createClient as createSupabaseBrowserClient } from '@/src/lib/supabase/client';
 import { startRouteTransition } from '@/src/features/motion/ExperienceProvider';
 
@@ -595,17 +595,7 @@ export default function AuthExperience({
               AI-Native Learning OS
             </span>
           </div>
-          <YantraMobileMenu
-            menuId={`auth-mobile-menu-${mode}`}
-            title="Authentication"
-            items={[
-              { label: 'Home', href: '/' },
-              { label: 'Docs', href: '/docs' },
-              { label: 'Login', href: '/login' },
-              { label: 'Signup', href: '/signup' },
-            ]}
-            triggerClassName="text-white hoverable md:hidden"
-          />
+          <GlobalSidebar disableDesktop={true} />
         </div>
       </header>
 

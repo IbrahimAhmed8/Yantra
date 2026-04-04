@@ -18,6 +18,7 @@ import {
 import { useState, type ReactNode } from 'react';
 import { useOverlayLock } from '@/src/features/motion/ExperienceProvider';
 import { docsGroups, getDocsArticleBySlug, getDocsArticleHref, getDocsArticlesByGroup, type DocsGroupId } from './docs-content';
+import GlobalSidebar from '@/src/features/navigation/GlobalSidebar';
 
 const DocsSupportWidget = dynamic(() => import('./DocsSupportWidget'), {
   loading: () => null,
@@ -264,51 +265,16 @@ export default function DocsShell({
   showRightRail,
   toc,
 }: DocsShellProps) {
-  const [mobileOpen, setMobileOpen] = useState(false);
   const shouldShowRightRail = showRightRail ?? Boolean(toc?.length);
 
-  useOverlayLock('docs-mobile-nav', mobileOpen);
+
 
   return (
     <div id="top" className="min-h-screen bg-black text-white">
       <DocsAmbientBackground />
       <DocsTopNav isHome={isHome} />
 
-      <AnimatePresence>
-        {mobileOpen ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[70] bg-black/96 px-5 pb-8 pt-24 backdrop-blur-xl lg:hidden"
-          >
-            <div className="mx-auto max-w-xl">
-              <div className="mb-6 flex items-center justify-between">
-                <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/34">Yantra Docs</p>
-                <button
-                  type="button"
-                  onClick={() => setMobileOpen(false)}
-                  className="rounded-full border border-white/10 p-2 text-white/70 transition-colors hover:border-white/20 hover:text-white"
-                  aria-label="Close docs navigation"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <DocsSidebar activeSlug={activeSlug} mobile onNavigate={() => setMobileOpen(false)} />
-            </div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
-
-      <button
-        type="button"
-        onClick={() => setMobileOpen(true)}
-        className="fixed right-5 top-24 z-30 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-black/72 text-white/70 backdrop-blur-xl transition-colors hover:border-white/20 hover:text-white lg:hidden"
-        aria-label="Open docs navigation"
-      >
-        <Menu size={18} />
-      </button>
+      <GlobalSidebar className="fixed right-5 top-24 z-30 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-black/72 text-white/70 backdrop-blur-xl transition-colors hover:border-white/20 hover:text-white lg:hidden" />
 
       <div className="mx-auto max-w-[1620px] px-5 pb-16 pt-24 sm:px-6 lg:px-8">
         <div

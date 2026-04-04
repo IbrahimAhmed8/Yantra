@@ -177,14 +177,15 @@ Run the SQL in `supabase/schema.sql` against your Supabase project. It creates:
 - `public.student_dashboard_paths`
 - `public.student_skill_progress`
 - `public.student_curriculum_nodes`
+- `public.student_practice_rooms`
 - `public.student_weekly_activity`
 - the relevant update triggers and row-level security policies
 
-Current mismatch to know about:
+Dashboard room persistence is also included:
 
-- `src/lib/supabase/dashboard.ts` also expects `public.student_practice_rooms`
-- `supabase/schema.sql` does not currently create that table
-- when it is missing, the dashboard falls back to starter room data instead of loading persisted room rows
+- `src/lib/supabase/dashboard.ts` reads and seeds `public.student_practice_rooms`
+- `supabase/schema.sql` now creates that table with matching RLS policies
+- if your Supabase project was initialized before this change, re-run `supabase/schema.sql` to add the table before expecting persisted room rows
 
 ### Start the web app
 

@@ -526,7 +526,11 @@ export function useChatWidgetActions() {
   const context = useContext(ChatWidgetActionsContext);
 
   if (!context) {
-    throw new Error('useChatWidgetActions must be used inside ChatProvider.');
+    // If not within a ChatProvider, provide a no-op mock action to prevent crashes on non-chat enabled routes (like Auth).
+    return {
+      openChat: () => console.warn('openChat called outside of ChatProvider context'),
+      closeChat: () => console.warn('closeChat called outside of ChatProvider context'),
+    } as ChatWidgetActionsContextValue;
   }
 
   return context;

@@ -78,6 +78,114 @@ def test_chat_greeting_uses_fast_local_path() -> None:
     assert "Yantra AI" in data["reply"]
 
 
+def test_dashboard_recommendation_route_imports_memory_and_path_context() -> None:
+    response = client.post(
+        "/dashboard/recommendation",
+        json={
+            "student": {
+                "name": "Aarav",
+                "skill_level": "Beginner",
+                "current_path": "AI Foundations",
+                "current_surface": "Yantra Dashboard",
+                "progress": 24,
+                "learning_goals": ["Ship the first AI project"],
+                "current_focus": "Neural Networks Basics",
+                "path_description": "Moving from logic confidence into visual model understanding.",
+                "recommended_action_title": "Enter Neural Net Builder",
+                "recommended_action_description": "Move into a more spatial model-building exercise next.",
+                "strongest_skills": ["Python Basics", "Logic Building"],
+                "active_rooms": ["Python Room", "Neural Net Builder"],
+                "memory_summary": "Recent learner questions: What should I learn next?",
+            }
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["title"] == "Enter Neural Net Builder"
+    assert "Recent learner questions" in data["description"]
+    assert "Neural Networks Basics" in data["prompt"]
+
+
+def test_personalization_extract_route_returns_reviewable_fact_sections() -> None:
+    response = client.post(
+        "/personalization/extract",
+        json={
+            "source_provider": "chatgpt",
+            "source_summary": "\n".join(
+                [
+                    "Confirmed Facts:",
+                    "- Wants to build AI projects.",
+                    "- Likes learning with small practical exercises.",
+                    "Goals:",
+                    "- Artificial Intelligence & ML",
+                    "Current Skill Level:",
+                    "- Beginner",
+                    "Time Availability:",
+                    "- Focused",
+                    "Topics of Interest:",
+                    "- Neural networks",
+                    "Confidence:",
+                    "- Mostly based on prior learner requests, with some uncertainty about pace.",
+                ]
+            ),
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["source_provider"] == "chatgpt"
+    assert "approved_facts" in data
+    assert "confirmed_facts" in data["approved_facts"]
+    assert data["approved_facts"]["normalized"]["target_goals"] == ["Artificial Intelligence & ML"]
+    assert data["approved_facts"]["normalized"]["inferred_skill_level"] == "Beginner"
+    assert data["approved_facts"]["normalized"]["time_availability"] == "Focused"
+
+
+def test_dashboard_generate_route_stays_honest_for_no_history_users() -> None:
+    response = client.post(
+        "/dashboard/generate",
+        json={
+            "profile": {
+                "name": "Aarav",
+                "skill_level": "Beginner",
+                "progress": 0,
+                "user_role": "College Student (Undergraduate)",
+                "age_range": "19-22",
+                "primary_learning_goals": ["Artificial Intelligence & ML"],
+                "learning_pace": "Focused",
+            },
+            "personalization": {
+                "learner_summary": "Aarav wants to build AI projects and prefers guided practice.",
+                "approved_facts": {
+                    "confirmed_facts": ["Wants to build AI projects."],
+                    "likely_preferences": ["Prefers guided practice."],
+                    "uncertain_inferences": [],
+                    "missing_information": [],
+                    "normalized": {
+                        "target_goals": ["Artificial Intelligence & ML"],
+                        "inferred_skill_level": "Beginner",
+                        "prior_projects": [],
+                        "topics_of_interest": ["Neural networks"],
+                        "time_availability": "Focused",
+                        "preferred_learning_style": ["Guided practice"],
+                        "constraints": [],
+                    },
+                },
+            },
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["path"]["weekly_completed_sessions"] == 0
+    assert data["path"]["weekly_change_label"] == "No prior week yet"
+    assert data["path"]["next_session_date_day"] == "--"
+    assert data["path"]["next_session_time_label"] == "Pick a room to begin"
+    assert data["path"]["next_session_instructor_name"] == "Yantra Guide"
+    assert all(day["fill_height"] == 0 for day in data["weekly_activity"])
+
+
 def test_chat_service_caches_identical_requests(monkeypatch) -> None:
     service = ChatService()
     calls = {"retrieval": 0, "generate": 0}

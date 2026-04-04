@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { ArrowLeft, CheckCircle2, CirclePlay, Clock3, FileCode2, FlaskConical, Lightbulb, Sparkles, Target, TerminalSquare } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import YantraMobileMenu from '@/src/features/navigation/YantraMobileMenu';
+import GlobalSidebar from '@/src/features/navigation/GlobalSidebar';
 import RoomVoiceAssistant, { type RoomVoiceAssistantHandle } from '@/src/features/rooms/RoomVoiceAssistant';
 import {
   buildPythonRoomTranscriptLabel,
@@ -361,18 +361,7 @@ export default function PythonRoomShell() {
             </Link>
           </div>
 
-          <YantraMobileMenu
-            menuId="python-room-mobile-menu"
-            title="Python Room"
-            items={[
-              { label: 'Home', href: '/' },
-              { label: 'Dashboard', href: '/dashboard' },
-              { label: 'Docs', href: '/docs/first-dashboard-session' },
-              { label: 'Python Room', href: '/dashboard/rooms/python' },
-            ]}
-            footerItems={[{ label: 'Exit Room', href: '/dashboard', tone: 'primary' }]}
-            triggerClassName="flex-shrink-0 text-white hoverable md:hidden"
-          />
+          <GlobalSidebar />
         </div>
       </header>
 

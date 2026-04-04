@@ -100,11 +100,11 @@ The dashboard is no longer purely hardcoded. `src/lib/supabase/dashboard.ts` loa
 - `student_practice_rooms`
 - `student_weekly_activity`
 
-Important mismatch:
+Dashboard room persistence note:
 
 - the loader expects `student_practice_rooms`
-- `supabase/schema.sql` does not currently create that table
-- on a fresh schema, dashboard room data falls back to starter content instead of persisted room rows
+- `supabase/schema.sql` now creates that table with matching RLS policies
+- older Supabase projects still need the updated schema applied before room rows persist
 
 The broader limitation is that these records still represent starter product content, not a genuinely adaptive learner engine.
 
@@ -195,6 +195,5 @@ These are still useful inputs and should not be removed without approval, but th
 
 - replace seeded dashboard behavior with real learner-adaptive state
 - add broader tests around auth redirects, profile APIs, dashboard seeding, and chat/support routes
-- align `supabase/schema.sql` with the dashboard loader’s `student_practice_rooms` expectation
 - add internal review tooling for access requests
 - add observability for Yantra chat and Support Desk

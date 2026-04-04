@@ -1,15 +1,18 @@
 import {
-  buildStarterStudentDashboard,
-  starterStudentDashboardSeed,
+  buildStudentDashboardProfile,
   type StudentDashboardCurriculumNode,
   type StudentDashboardData,
   type StudentDashboardPath,
+  type StudentDashboardSeed,
   type StudentDashboardRoom,
   type StudentDashboardSkill,
   type StudentDashboardWeeklyActivity,
 } from '@/src/features/dashboard/student-dashboard-model';
+import { buildDeterministicDashboardSnapshot } from '@/src/features/dashboard/student-dashboard-generation';
+import { getAuthenticatedPersonalizationProfile } from './personalization';
 import { getAuthenticatedProfile } from './profiles';
 import { createClient } from './server';
+import { generateDashboardSnapshot } from '@/src/lib/yantra-personalization';
 
 type DashboardPathRow = {
   user_id: string;
@@ -119,15 +122,20 @@ function getErrorMessage(error: unknown) {
   return String((error as { message?: unknown }).message ?? '').toLowerCase();
 }
 
-function isMissingDashboardSchemaError(error: unknown) {
+export function isMissingDashboardSchemaError(error: unknown) {
   const code = getErrorCode(error);
   const message = getErrorMessage(error);
 
   return (
     code === '42P01' ||
+    code === '42703' ||
+    code === 'PGRST204' ||
     code === 'PGRST205' ||
     message.includes('relation') ||
+    message.includes('column') ||
     message.includes('could not find the table') ||
+    message.includes('could not find the column') ||
+    message.includes('schema cache') ||
     message.includes('does not exist')
   );
 }
@@ -139,7 +147,7 @@ function isDashboardAccessError(error: unknown) {
   return code === '42501' || message.includes('permission denied') || message.includes('row-level security');
 }
 
-function isRecoverableDashboardError(error: unknown) {
+export function isRecoverableDashboardError(error: unknown) {
   return isMissingDashboardSchemaError(error) || isDashboardAccessError(error);
 }
 
@@ -262,9 +270,30 @@ function isDashboardSeedMissing(data: DashboardQueryResult) {
   );
 }
 
-async function seedDashboardData(userId: string) {
+function isLegacyStarterDashboard(data: DashboardQueryResult) {
+  if (!data.pathRow) {
+    return false;
+  }
+
+  const legacySkillTitles = new Set(data.skillRows.map((row) => row.title));
+  const looksLikeLegacySkills =
+    legacySkillTitles.has('Python Basics') &&
+    legacySkillTitles.has('Logic Building') &&
+    legacySkillTitles.has('ML Foundations');
+  const looksLikeLegacyRooms = data.roomRows.some((row) => row.title === 'Neural Net Builder');
+
+  return (
+    data.pathRow.path_title === 'AI Foundations' &&
+    data.pathRow.learning_track_title === 'Machine Learning Starter Track' &&
+    data.pathRow.weekly_completed_sessions === 0 &&
+    looksLikeLegacySkills &&
+    looksLikeLegacyRooms
+  );
+}
+
+async function persistDashboardSeed(userId: string, seed: StudentDashboardSeed) {
   const supabase = await createClient();
-  const { path, skills, curriculumNodes, rooms, weeklyActivity } = starterStudentDashboardSeed;
+  const { path, skills, curriculumNodes, rooms, weeklyActivity } = seed;
 
   const pathPayload: DashboardPathRow = {
     user_id: userId,
@@ -366,9 +395,11 @@ async function seedDashboardData(userId: string) {
   throw error;
 }
 
-function mapDashboardData(data: DashboardQueryResult, profile: StudentDashboardData['profile']): StudentDashboardData {
-  const fallback = starterStudentDashboardSeed;
-
+function mapDashboardData(
+  data: DashboardQueryResult,
+  profile: StudentDashboardData['profile'],
+  fallback: StudentDashboardSeed,
+): StudentDashboardData {
   return {
     profile,
     path: data.pathRow ? mapPathRow(data.pathRow) : fallback.path,
@@ -379,6 +410,48 @@ function mapDashboardData(data: DashboardQueryResult, profile: StudentDashboardD
   };
 }
 
+function mapSeedToDashboardData(seed: StudentDashboardSeed, profile: StudentDashboardData['profile']): StudentDashboardData {
+  return {
+    profile,
+    path: seed.path,
+    skills: seed.skills,
+    curriculumNodes: seed.curriculumNodes,
+    rooms: seed.rooms,
+    weeklyActivity: seed.weeklyActivity,
+  };
+}
+
+async function buildGeneratedDashboardData(profileResult: AuthenticatedProfileResult) {
+  const email = profileResult.user.email ?? '';
+  const profile = buildStudentDashboardProfile(profileResult.profile, email);
+  const personalization = await getAuthenticatedPersonalizationProfile();
+  const generation = await generateDashboardSnapshot(profileResult.profile, personalization);
+
+  return {
+    seed: {
+      path: generation.snapshot.path,
+      skills: generation.snapshot.skills,
+      curriculumNodes: generation.snapshot.curriculumNodes,
+      rooms: generation.snapshot.rooms,
+      weeklyActivity: generation.snapshot.weeklyActivity,
+    } satisfies StudentDashboardSeed,
+    data: mapSeedToDashboardData(
+      {
+        path: generation.snapshot.path,
+        skills: generation.snapshot.skills,
+        curriculumNodes: generation.snapshot.curriculumNodes,
+        rooms: generation.snapshot.rooms,
+        weeklyActivity: generation.snapshot.weeklyActivity,
+      },
+      profile,
+    ),
+  };
+}
+
+export async function persistDashboardSnapshotForUser(userId: string, snapshot: StudentDashboardSeed) {
+  return persistDashboardSeed(userId, snapshot);
+}
+
 export async function getAuthenticatedDashboardData(profileResult?: AuthenticatedProfileResult | null) {
   const resolvedProfileResult = profileResult ?? (await getAuthenticatedProfile());
 
@@ -387,14 +460,15 @@ export async function getAuthenticatedDashboardData(profileResult?: Authenticate
   }
 
   const email = resolvedProfileResult.user.email ?? '';
-  const fallback = buildStarterStudentDashboard(resolvedProfileResult.profile, email);
-  const profile = fallback.profile;
+  const profile = buildStudentDashboardProfile(resolvedProfileResult.profile, email);
+  const fallbackSeed = buildDeterministicDashboardSnapshot(resolvedProfileResult.profile, null);
+  const fallback = mapSeedToDashboardData(fallbackSeed, profile);
 
   const initialLoad = await loadDashboardRows(resolvedProfileResult.user.id);
 
   if (initialLoad.error) {
     if (isRecoverableDashboardError(initialLoad.error)) {
-      return fallback;
+      return (await buildGeneratedDashboardData(resolvedProfileResult)).data;
     }
 
     throw initialLoad.error;
@@ -402,18 +476,19 @@ export async function getAuthenticatedDashboardData(profileResult?: Authenticate
 
   let dashboardRows = initialLoad.data;
 
-  if (isDashboardSeedMissing(dashboardRows)) {
-    const seeded = await seedDashboardData(resolvedProfileResult.user.id);
+  if (isDashboardSeedMissing(dashboardRows) || isLegacyStarterDashboard(dashboardRows)) {
+    const generated = await buildGeneratedDashboardData(resolvedProfileResult);
+    const seeded = await persistDashboardSeed(resolvedProfileResult.user.id, generated.seed);
 
     if (!seeded) {
-      return fallback;
+      return generated.data;
     }
 
     const reloaded = await loadDashboardRows(resolvedProfileResult.user.id);
 
     if (reloaded.error) {
       if (isRecoverableDashboardError(reloaded.error)) {
-        return fallback;
+        return generated.data;
       }
 
       throw reloaded.error;
@@ -422,5 +497,5 @@ export async function getAuthenticatedDashboardData(profileResult?: Authenticate
     dashboardRows = reloaded.data;
   }
 
-  return mapDashboardData(dashboardRows, profile);
+  return mapDashboardData(dashboardRows, profile, fallbackSeed);
 }

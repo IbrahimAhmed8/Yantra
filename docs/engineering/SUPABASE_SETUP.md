@@ -54,11 +54,11 @@ That script creates or updates:
 - row-level security policies so authenticated users can only read and update their own seeded dashboard rows
 - row-level security policies so anonymous visitors can submit access requests
 
-Important current mismatch:
+Dashboard room persistence note:
 
 - `src/lib/supabase/dashboard.ts` reads and seeds `student_practice_rooms`
-- `supabase/schema.sql` does not currently create `student_practice_rooms`
-- the dashboard therefore falls back to starter room data until that table exists
+- `supabase/schema.sql` now creates `student_practice_rooms` with matching RLS policies
+- if the Supabase project was initialized before this change, re-run `supabase/schema.sql` so room rows persist instead of falling back
 
 ## Current Profile Schema
 
@@ -89,13 +89,8 @@ The app maps that table to the `StudentProfile` type in `src/features/dashboard/
 - `public.student_dashboard_paths`
 - `public.student_skill_progress`
 - `public.student_curriculum_nodes`
-- `public.student_weekly_activity`
-
-The app also expects:
-
 - `public.student_practice_rooms`
-
-That table is not in the current schema file, so room persistence is the known gap.
+- `public.student_weekly_activity`
 
 ## App Integration Points
 
@@ -219,7 +214,7 @@ The seeded values come from:
 
 `/dashboard` then loads the dashboard starter-data tables. If rows are missing, the app inserts starter content and reloads it.
 
-If `student_practice_rooms` is missing, the dashboard still renders by falling back to starter room data.
+If `student_practice_rooms` is missing in an older Supabase project, the dashboard still renders by falling back to starter room data until the updated schema is applied.
 
 ## First Live Test Flow
 
@@ -247,7 +242,6 @@ If `student_practice_rooms` is missing, the dashboard still renders by falling b
 - the dashboard tables currently hold starter data, not a true adaptive engine
 - access requests persist but have no internal review UI
 - Support Desk uses local docs content and Gemini, not Supabase
-- the current schema file still omits `student_practice_rooms`
 
 ## Production Checklist
 
