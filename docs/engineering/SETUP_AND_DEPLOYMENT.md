@@ -201,7 +201,7 @@ npm run build
 12. Open `/docs`, use Support Desk once, and confirm the docs support route responds.
 13. Submit the landing-page access form and confirm the success state appears.
 14. Sign out, log back in from `/login`, and confirm the same account goes straight to `/dashboard`.
-15. Enable the Google provider in Supabase Auth and test Google sign-in from `/login` or `/signup`.
+15. Enable the Google and GitHub providers in Supabase Auth and test both OAuth sign-in paths from `/login` or `/signup`.
 
 ## Deployment
 
@@ -270,12 +270,30 @@ Yantra routes auth confirmations and Google sign-in back through `/auth/confirm`
 - new-account signup -> `/onboarding`
 - returning login -> `/dashboard`
 
+## GitHub OAuth Provider Setup
+
+Configure these in Supabase Auth -> Providers -> GitHub:
+
+- enable the GitHub provider
+- paste your GitHub OAuth app client ID
+- paste your GitHub OAuth app client secret
+
+In GitHub:
+
+- create an OAuth App
+- use the exact Supabase GitHub callback URL shown inside the Supabase GitHub provider screen as the Authorization callback URL
+
+Yantra routes GitHub sign-in back through `/auth/confirm`, which exchanges the code for the session cookie and then redirects by flow:
+
+- new-account signup -> `/onboarding`
+- returning login -> `/dashboard`
+
 ## Deployment Reality
 
 ### What depends on Supabase being configured
 
 - login and signup becoming usable
-- Google sign-in becoming usable
+- Google and GitHub sign-in becoming usable
 - onboarding becoming usable
 - protected dashboard and Python Room access
 - `/api/profile`

@@ -70,7 +70,7 @@ Use it to understand what is actually implemented now, what is seeded but limite
 Yantra now has:
 
 - a public marketing surface
-- login, signup, onboarding, password reset, and Google sign-in flows
+- login, signup, onboarding, password reset, and Google or GitHub sign-in flows
 - a public docs/help center with article pages and a separate Support Desk assistant
 - Supabase-backed protected learner routes
 - a persisted learner profile in `public.profiles`

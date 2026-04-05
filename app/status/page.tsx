@@ -17,7 +17,7 @@ export default function StatusPage() {
         {
           title: 'Authentication',
           body: [
-            'Email/password sign-in, password recovery, and Google sign-in rely on Supabase configuration in the deployment environment.',
+            'Email/password sign-in, password recovery, and Google or GitHub sign-in rely on Supabase configuration in the deployment environment.',
             'If those credentials are missing or incomplete, the UI surfaces a clear message instead of silently failing.',
           ],
         },

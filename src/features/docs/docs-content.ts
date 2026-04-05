@@ -65,7 +65,7 @@ export const docsGroups: DocsGroup[] = [
     id: 'account-access',
     label: 'Account & Access',
     shortLabel: 'Access',
-    description: 'Everything around signing in, profiles, Google login, password recovery, and secure access.',
+    description: 'Everything around signing in, profiles, Google and GitHub login, password recovery, and secure access.',
     accent: '03',
     featureSlugs: ['sign-in-and-google', 'password-reset', 'student-profile'],
   },
@@ -136,7 +136,7 @@ export const docsArticles: DocsArticle[] = [
           {
             type: 'list',
             items: [
-              'Account creation, email sign-in, Google sign-in, and password recovery',
+              'Account creation, email sign-in, Google or GitHub sign-in, and password recovery',
               'What Yantra AI is and how it supports focused learning',
               'What the dashboard, student profile, skills, rooms, and chat surfaces are for',
               'How learning paths and void-style focus spaces are meant to help',
@@ -154,7 +154,7 @@ export const docsArticles: DocsArticle[] = [
             items: [
               {
                 title: 'Create your account',
-                body: 'Use email and password to open your Yantra identity, or continue with Google if that fits your flow.',
+                body: 'Use email and password to open your Yantra identity, or continue with Google or GitHub if that fits your flow.',
               },
               {
                 title: 'Complete onboarding',
@@ -191,7 +191,7 @@ export const docsArticles: DocsArticle[] = [
             items: [
               'Use an email address you can access immediately',
               'Choose a password with at least 8 characters',
-              'If you already prefer Google sign-in, you can use that instead from the same auth surface',
+              'If you already prefer Google or GitHub sign-in, you can use that instead from the same auth surface',
             ],
           },
         ],
@@ -247,14 +247,14 @@ export const docsArticles: DocsArticle[] = [
   },
   {
     slug: 'sign-in-and-google',
-    title: 'Sign In With Email or Google',
+    title: 'Sign In With Email, Google, or GitHub',
     summary:
-      'Choose the auth path that fits you best, understand how Google sign-in works, and know what to do if one path feels blocked.',
+      'Choose the auth path that fits you best, understand how OAuth sign-in works, and know what to do if one path feels blocked.',
     eyebrow: 'Account & Access',
     readTime: '4 min read',
     group: 'account-access',
     heroLabel: 'Access / Sign In',
-    tags: ['login', 'sign in', 'google', 'oauth', 'email sign in', 'authenticate'],
+    tags: ['login', 'sign in', 'google', 'github', 'oauth', 'email sign in', 'authenticate'],
     related: ['create-account', 'password-reset', 'common-issues'],
     sections: [
       {
@@ -271,6 +271,10 @@ export const docsArticles: DocsArticle[] = [
               {
                 title: 'Google sign-in',
                 body: 'Best if you prefer account selection handled through Google rather than typing a password.',
+              },
+              {
+                title: 'GitHub sign-in',
+                body: 'Best if you want to use your GitHub identity instead of managing a separate password for Yantra.',
               },
               {
                 title: 'Recovery first',
@@ -302,7 +306,7 @@ export const docsArticles: DocsArticle[] = [
       },
       {
         id: 'google-sign-in',
-        title: 'Google Sign-In',
+        title: 'Google and GitHub Sign-In',
         blocks: [
           {
             type: 'list',
@@ -311,6 +315,7 @@ export const docsArticles: DocsArticle[] = [
               'Select the Google account you want tied to Yantra',
               'Approve the handoff and wait for the redirect back into the app',
               'If Google opens the wrong account, restart and choose the correct identity',
+              'Or choose Continue with GitHub from login or signup and finish the GitHub authorization flow',
             ],
           },
           {
@@ -319,7 +324,7 @@ export const docsArticles: DocsArticle[] = [
             label: 'Avoid Duplicate Accounts',
             title: 'Do not mix two different emails accidentally',
             body:
-              'If you signed up with one email and then use a different Google account, Yantra may treat that as a separate identity. Use the same address across both methods whenever possible.',
+              'If you signed up with one email and then use a different Google or GitHub account, Yantra may treat that as a separate identity. Use the same address across methods whenever possible.',
           },
         ],
       },
@@ -1055,7 +1060,7 @@ export const docsArticles: DocsArticle[] = [
           {
             type: 'list',
             items: [
-              'If you signed up with Google, try Google sign-in before assuming the password route is the right one',
+              'If you signed up with Google or GitHub, try that provider first before assuming the password route is the right one',
               'If the app keeps saying the reset was sent but nothing arrives, verify the email address and wait a little before retrying',
               'If you regain access, sign in and confirm the account is tied to the identity you actually want to keep using',
             ],
@@ -1084,7 +1089,7 @@ export const docsArticles: DocsArticle[] = [
             type: 'cards',
             items: [
               { title: 'No confirmation email yet', body: 'Wait a moment, check spam, and make sure you used the right email. Avoid creating a second account immediately.' },
-              { title: 'Google opened the wrong account', body: 'Restart Google sign-in and choose the correct account instead of continuing with the wrong identity.' },
+              { title: 'OAuth opened the wrong account', body: 'Restart Google or GitHub sign-in and choose the correct identity instead of continuing with the wrong account.' },
               { title: 'I keep landing on onboarding', body: 'The account likely has not completed role selection yet. Finish onboarding once and try again.' },
             ],
           },
@@ -1125,7 +1130,7 @@ export const docsArticles: DocsArticle[] = [
           {
             type: 'steps',
             items: [
-              { title: 'Confirm which identity you are using', body: 'Most confusion starts when the wrong email or Google account is used on the auth screen.' },
+              { title: 'Confirm which identity you are using', body: 'Most confusion starts when the wrong email, Google account, or GitHub account is used on the auth screen.' },
               { title: 'Check whether onboarding is actually complete', body: 'If you keep getting redirected, the role-selection flow may still be unfinished even if the account exists.' },
               { title: 'Reload once after profile or auth changes', body: 'A clean refresh is often enough to confirm whether the latest state persisted server-side.' },
               { title: 'Use Support Desk or the exact guide next', body: 'Do not guess from memory when the docs already have a specific path for the symptom you are seeing.' },
@@ -1191,7 +1196,7 @@ export const docsArticles: DocsArticle[] = [
           {
             type: 'steps',
             items: [
-              { title: 'Use one consistent identity', body: 'If you use Google sign-in, keep the same email aligned with your Yantra account to avoid fragmentation.' },
+              { title: 'Use one consistent identity', body: 'If you use Google or GitHub sign-in, keep the same email aligned with your Yantra account to avoid fragmentation.' },
               { title: 'Rotate passwords when needed', body: 'Use reset if you suspect the old password is weak or compromised.' },
               { title: 'Sign out on shared devices', body: 'Yantra supports a clean sign-out route, so use it whenever you are not on a personal machine.' },
             ],
@@ -1220,7 +1225,7 @@ export const docsArticles: DocsArticle[] = [
             type: 'cards',
             items: [
               { title: 'Do I need to verify my email?', body: 'Often yes. If verification is enabled, confirm your email before expecting the protected app to open normally.' },
-              { title: 'Can I use Google instead of a password?', body: 'Yes. Google sign-in is live through the same auth surface.' },
+              { title: 'Can I use Google or GitHub instead of a password?', body: 'Yes. Both Google and GitHub sign-in are live through the same auth surface.' },
               { title: 'Why am I seeing onboarding again?', body: 'Because the role-selection step probably has not been completed or saved yet.' },
             ],
           },

@@ -139,6 +139,14 @@ function GoogleIcon() {
   );
 }
 
+function GitHubIcon() {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.57.1.78-.25.78-.55 0-.27-.01-1.16-.02-2.1-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.05-.71.08-.69.08-.69 1.15.08 1.76 1.18 1.76 1.18 1.03 1.76 2.69 1.25 3.35.96.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.27-5.24-5.68 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.47.11-3.07 0 0 .96-.31 3.14 1.18a10.9 10.9 0 0 1 5.72 0c2.18-1.49 3.14-1.18 3.14-1.18.62 1.6.23 2.78.11 3.07.73.81 1.18 1.84 1.18 3.1 0 4.42-2.69 5.39-5.26 5.67.41.36.78 1.08.78 2.19 0 1.58-.01 2.85-.01 3.24 0 .3.2.66.79.55A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z" />
+    </svg>
+  );
+}
+
 function Switcher({ mode }: { mode: AuthMode }) {
   return (
     <nav className="mb-8 flex rounded-full border border-white/10 bg-white/[0.04] p-1 md:mb-10">
@@ -285,6 +293,17 @@ function describeAuthStatus(status: AuthStatus): AuthStatusPresentation | null {
       };
     }
 
+    if (normalized.includes('github sign-in')) {
+      return {
+        eyebrow: 'GitHub Handoff',
+        title: 'GitHub auth is routing through Supabase',
+        body: 'Continue in the GitHub authorization flow, then Yantra will return you to your dashboard.',
+        icon: Orbit,
+        chromeClassName: 'border-white/10 bg-black/28',
+        iconClassName: 'border-white/10 bg-white/[0.05] text-white/82',
+      };
+    }
+
     if (normalized.includes('supabase is not configured')) {
       return {
         eyebrow: 'System Keys Missing',
@@ -355,8 +374,9 @@ export default function AuthExperience({
   const [status, setStatus] = useState<AuthStatus>(initialStatus);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRecovering, setIsRecovering] = useState(false);
-  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
+  const [oauthSubmittingProvider, setOauthSubmittingProvider] = useState<'google' | 'github' | null>(null);
   const statusPresentation = describeAuthStatus(status);
+  const isOAuthSubmitting = oauthSubmittingProvider !== null;
 
   const updateField = <K extends keyof AuthFields>(key: K, value: AuthFields[K]) => {
     setFields((current) => ({
@@ -542,7 +562,7 @@ export default function AuthExperience({
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleOAuthSignIn = async (provider: 'google' | 'github') => {
     if (!supabaseConfigured) {
       setStatus({
         kind: 'error',
@@ -551,19 +571,23 @@ export default function AuthExperience({
       return;
     }
 
-    setIsGoogleSubmitting(true);
+    setOauthSubmittingProvider(provider);
 
     try {
       const supabase = createSupabaseBrowserClient();
       const nextPath = mode === 'signup' ? '/onboarding' : '/dashboard';
       const redirectTo = `${window.location.origin}/auth/confirm?next=${encodeURIComponent(nextPath)}`;
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
+        provider,
         options: {
           redirectTo,
-          queryParams: {
-            prompt: 'select_account',
-          },
+          ...(provider === 'google'
+            ? {
+                queryParams: {
+                  prompt: 'select_account',
+                },
+              }
+            : {}),
         },
       });
 
@@ -571,11 +595,12 @@ export default function AuthExperience({
         throw error;
       }
     } catch (error) {
+      const providerLabel = provider === 'google' ? 'Google' : 'GitHub';
       setStatus({
         kind: 'error',
-        message: error instanceof Error ? error.message : 'Yantra could not open Google sign-in right now.',
+        message: error instanceof Error ? error.message : `Yantra could not open ${providerLabel} sign-in right now.`,
       });
-      setIsGoogleSubmitting(false);
+      setOauthSubmittingProvider(null);
     }
   };
 
@@ -834,7 +859,7 @@ export default function AuthExperience({
                 <div className="space-y-5 pt-2">
                   <button
                     type="submit"
-                    disabled={isSubmitting || isGoogleSubmitting || !supabaseConfigured}
+                    disabled={isSubmitting || isOAuthSubmitting || !supabaseConfigured}
                     className="hoverable flex h-14 w-full items-center justify-center gap-2 rounded-[1.2rem] bg-white font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-black transition-all duration-300 hover:scale-[0.99] disabled:cursor-not-allowed disabled:bg-white/35"
                   >
                     <span>
@@ -865,19 +890,37 @@ export default function AuthExperience({
 
                 <button
                   type="button"
-                  disabled={isSubmitting || isGoogleSubmitting || !supabaseConfigured}
+                  disabled={isSubmitting || isOAuthSubmitting || !supabaseConfigured}
                   className="hoverable flex h-14 w-full items-center justify-center gap-3 rounded-[1.2rem] border border-white/12 bg-transparent font-mono text-[11px] uppercase tracking-[0.2em] text-white transition-colors hover:bg-white/[0.05] disabled:cursor-not-allowed disabled:border-white/8 disabled:bg-white/[0.02] disabled:text-white/35"
                   onClick={() => {
-                    void handleGoogleSignIn();
+                    void handleOAuthSignIn('google');
                   }}
                 >
                   <GoogleIcon />
                   <span>
-                    {isGoogleSubmitting
+                    {oauthSubmittingProvider === 'google'
                       ? 'Connecting Google...'
                       : mode === 'login'
                         ? 'Authenticate with Google'
                         : 'Continue with Google'}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={isSubmitting || isOAuthSubmitting || !supabaseConfigured}
+                  className="hoverable flex h-14 w-full items-center justify-center gap-3 rounded-[1.2rem] border border-white/12 bg-transparent font-mono text-[11px] uppercase tracking-[0.2em] text-white transition-colors hover:bg-white/[0.05] disabled:cursor-not-allowed disabled:border-white/8 disabled:bg-white/[0.02] disabled:text-white/35"
+                  onClick={() => {
+                    void handleOAuthSignIn('github');
+                  }}
+                >
+                  <GitHubIcon />
+                  <span>
+                    {oauthSubmittingProvider === 'github'
+                      ? 'Connecting GitHub...'
+                      : mode === 'login'
+                        ? 'Authenticate with GitHub'
+                        : 'Continue with GitHub'}
                   </span>
                 </button>
               </form>

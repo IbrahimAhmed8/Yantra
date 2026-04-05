@@ -130,7 +130,7 @@ Client-side access request form used by the marketing surface.
 
 ### `src/features/auth/`
 
-The login and signup experience, validation, browser-side Supabase auth calls, Google OAuth handoff, and status messaging.
+The login and signup experience, validation, browser-side Supabase auth calls, Google and GitHub OAuth handoff, and status messaging.
 
 ### `src/features/chat/`
 

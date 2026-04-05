@@ -3,7 +3,7 @@
 Yantra uses Supabase for:
 
 - email/password authentication
-- Google OAuth authentication
+- Google and GitHub OAuth authentication
 - SSR session handling
 - protected learner access for `/dashboard`, `/dashboard/student-profile`, and `/dashboard/rooms/python`
 - persisted learner profiles in `public.profiles`
@@ -146,6 +146,7 @@ Keep both local and production redirects:
 
 - signs in with `signInWithPassword()`
 - starts Google OAuth through `signInWithOAuth({ provider: 'google' })`
+- starts GitHub OAuth through `signInWithOAuth({ provider: 'github' })`
 - redirects authenticated users to `/dashboard`
 - triggers `resetPasswordForEmail()` from the forgot-password action
 
@@ -164,7 +165,7 @@ Keep both local and production redirects:
 ### `/auth/confirm`
 
 - verifies email confirmation links from Supabase when `token_hash` and `type` are present
-- completes Google OAuth sign-in by exchanging the provider `code` for a session cookie
+- completes Google or GitHub OAuth sign-in by exchanging the provider `code` for a session cookie
 - redirects to the `next` path from the auth URL
 - routes new-account confirmations to `/onboarding`
 - routes login and returning auth flows to `/dashboard`
@@ -233,7 +234,7 @@ If `student_practice_rooms` is missing in an older Supabase project, the dashboa
 13. Reload and confirm the updated profile persisted.
 14. Open `/dashboard/rooms/python` and confirm the protected room opens after auth.
 15. Open `/login`, request a password reset, and verify the recovery page lets you set a new password.
-16. Enable the Google provider in Supabase and test Google sign-in from `/login` or `/signup`.
+16. Enable the Google and GitHub providers in Supabase and test both OAuth sign-in paths from `/login` or `/signup`.
 17. Open the chat as an authenticated learner, send a message, reload, and confirm the conversation resumes.
 18. Submit the landing-page access form and confirm the record lands in `public.access_requests`.
 
@@ -252,4 +253,5 @@ If `student_practice_rooms` is missing in an older Supabase project, the dashboa
 5. Add the production `/auth/confirm` and `/auth/reset-password` URLs to Redirect URLs.
 6. In Supabase Auth, enable the Google provider and add the Google OAuth client ID and secret.
 7. In Google Cloud, add the exact Supabase Google callback URL from the provider setup screen as an authorized redirect URI.
+8. In Supabase Auth, enable the GitHub provider and add the GitHub OAuth client ID and secret.
 8. Separately configure the web app AI and Sarvam env vars so protected chat and room features work after deploy.
