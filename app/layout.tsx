@@ -49,8 +49,11 @@ export default function RootLayout({
       className={`${displayFont.variable} ${headingFont.variable} ${bodyFont.variable} ${monoFont.variable}`}
     >
       <body className="bg-black text-white antialiased selection:bg-white selection:text-black">
+        <a href="#main-content" className="skip-link">Skip to main content</a>
         <ExperienceProvider>
-          {children}
+          <main id="main-content" tabIndex={-1}>
+            {children}
+          </main>
           <Analytics />
         </ExperienceProvider>
       </body>

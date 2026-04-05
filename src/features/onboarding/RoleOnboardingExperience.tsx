@@ -482,8 +482,8 @@ export default function RoleOnboardingExperience({
       <header className="fixed inset-x-0 top-0 z-40 border-b border-white/8 bg-black/65 backdrop-blur-2xl">
         <div className="flex h-14 items-center justify-between px-4 lg:px-6">
           <div className="flex items-center gap-3">
-            <GlobalSidebar disableDesktop={true} className="flex h-8 w-8 items-center justify-center rounded-full border border-white/8 bg-white/[0.04] text-white/80 hover:bg-white/[0.1] lg:hidden cursor-pointer" />
-            <Link href="/" className="font-heading text-2xl tracking-wider text-white lg:text-3xl">
+            <GlobalSidebar disableDesktop={true} className="flex h-12 w-12 items-center justify-center rounded-full border border-white/8 bg-white/[0.04] text-white/80 hover:bg-white/[0.1] lg:hidden cursor-pointer" />
+            <Link href="/" className="inline-flex min-h-12 items-center font-heading text-2xl tracking-wider text-white lg:text-3xl">
               YANTRA
             </Link>
           </div>
@@ -491,8 +491,8 @@ export default function RoleOnboardingExperience({
             <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/42">
               Step {currentStep + 1} of {stepCopy.length}
             </span>
-            <Link href="/auth/signout" className="hidden h-8 w-8 items-center justify-center rounded-full border border-white/8 bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white lg:inline-flex" aria-label="Sign out">
-              <X size={15} />
+            <Link href="/auth/signout" className="hidden h-12 w-12 items-center justify-center rounded-full border border-white/8 bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white lg:inline-flex" aria-label="Sign out">
+              <X size={15} aria-hidden="true" />
             </Link>
           </div>
         </div>
@@ -556,7 +556,7 @@ export default function RoleOnboardingExperience({
                 type="button"
                 onClick={handleBack}
                 disabled={currentStep === 0 || isSubmitting}
-                className={`inline-flex items-center gap-2 rounded-full px-4 py-3 font-mono text-[10px] uppercase tracking-[0.18em] ${currentStep === 0 || isSubmitting ? 'cursor-not-allowed text-white/20' : 'text-white/56 hover:bg-white/[0.04] hover:text-white'}`}
+                className={`inline-flex min-h-12 items-center gap-2 rounded-full px-4 py-3 font-mono text-[10px] uppercase tracking-[0.18em] ${currentStep === 0 || isSubmitting ? 'cursor-not-allowed text-white/20' : 'text-white/56 hover:bg-white/[0.04] hover:text-white'}`}
               >
                 <ArrowLeft size={14} />
                 Back

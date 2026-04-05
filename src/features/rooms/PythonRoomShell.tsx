@@ -461,8 +461,9 @@ export default function PythonRoomShell() {
                     </div>
                   ) : (
                     <div className="p-4">
-                      <label className="mb-3 block font-mono text-[10px] uppercase tracking-[0.24em] text-white/42">Mobile editing surface</label>
+                      <label htmlFor="mobile-code-editor" className="mb-3 block font-mono text-[10px] uppercase tracking-[0.24em] text-white/42">Mobile editing surface</label>
                       <textarea
+                        id="mobile-code-editor"
                         ref={mobileEditorRef}
                         value={code}
                         onChange={(event) => handleCodeChange(event.target.value)}
@@ -492,7 +493,7 @@ export default function PythonRoomShell() {
                       onClick={handleRun}
                       disabled={runtimeState === 'warming' || runtimeState === 'running'}
                     >
-                      <CirclePlay size={16} />
+                      <CirclePlay size={16} aria-hidden="true" />
                       {runtimeState === 'warming' ? 'Loading Python' : runtimeState === 'running' ? 'Running' : 'Run Python'}
                     </button>
                   </div>
