@@ -47,9 +47,9 @@ import GlobalSidebar from '@/src/features/navigation/GlobalSidebar';
 
 type OnboardingStatus =
   | {
-      kind: 'error' | 'info' | 'success';
-      message: string;
-    }
+    kind: 'error' | 'info' | 'success';
+    message: string;
+  }
   | null;
 
 type RoleOnboardingExperienceProps = {
@@ -169,13 +169,12 @@ function StatusBanner({ status }: { status: OnboardingStatus }) {
 
   return (
     <div
-      className={`rounded-[1.4rem] border px-4 py-4 text-sm leading-relaxed ${
-        status.kind === 'error'
+      className={`rounded-[1.4rem] border px-4 py-4 text-sm leading-relaxed ${status.kind === 'error'
           ? 'border-red-300/25 bg-red-500/10 text-red-100'
           : status.kind === 'success'
             ? 'border-white/14 bg-white/[0.07] text-white'
             : 'border-white/10 bg-white/[0.04] text-white/72'
-      }`}
+        }`}
     >
       {status.message}
     </div>
@@ -185,14 +184,12 @@ function StatusBanner({ status }: { status: OnboardingStatus }) {
 function SidebarStep({ active, completed, icon: Icon, label }: { active: boolean; completed: boolean; icon: LucideIcon; label: string }) {
   return (
     <div
-      className={`flex items-center gap-3 rounded-full border px-3 py-3 ${
-        active ? 'border-white/10 bg-white/[0.06]' : completed ? 'border-white/8 bg-white/[0.025]' : 'border-transparent'
-      }`}
+      className={`flex items-center gap-3 rounded-full border px-3 py-3 ${active ? 'border-white/10 bg-white/[0.06]' : completed ? 'border-white/8 bg-white/[0.025]' : 'border-transparent'
+        }`}
     >
       <div
-        className={`flex h-8 w-8 items-center justify-center rounded-full border ${
-          active || completed ? 'border-white/14 bg-white/[0.06] text-white/82' : 'border-white/8 text-white/26'
-        }`}
+        className={`flex h-8 w-8 items-center justify-center rounded-full border ${active || completed ? 'border-white/14 bg-white/[0.06] text-white/82' : 'border-white/8 text-white/26'
+          }`}
       >
         <Icon size={14} />
       </div>
@@ -351,9 +348,8 @@ export default function RoleOnboardingExperience({
                 clearStatus();
                 setAgeRange(option);
               }}
-              className={`rounded-[1.9rem] border p-5 text-left transition-all ${
-                option === '29+' ? 'xl:col-span-2' : ''
-              } ${selected ? 'border-white bg-white/[0.12]' : 'border-white/8 bg-white/[0.03] hover:border-white/16 hover:bg-white/[0.05]'}`}
+              className={`rounded-[1.9rem] border p-5 text-left transition-all ${option === '29+' ? 'xl:col-span-2' : ''
+                } ${selected ? 'border-white bg-white/[0.12]' : 'border-white/8 bg-white/[0.03] hover:border-white/16 hover:bg-white/[0.05]'}`}
             >
               <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/22">
                 Category_{String(onboardingAgeRangeOptions.indexOf(option) + 1).padStart(2, '0')}

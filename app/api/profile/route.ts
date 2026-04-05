@@ -1,57 +1,42 @@
+import { createClient } from '@/src/lib/supabase/server';
 import { NextResponse } from 'next/server';
-import { hasSupabaseEnv } from '@/src/lib/supabase/env';
-import { getAuthenticatedProfile, updateAuthenticatedProfile } from '@/src/lib/supabase/profiles';
-import { normalizeStudentProfileInput } from '@/src/features/dashboard/student-profile-model';
 
+/**
+ * Phase 5: Profile API Extension
+ * Returns the student profile along with their current skill mastery data.
+ */
 export async function GET() {
-  if (!hasSupabaseEnv()) {
-    return NextResponse.json({ error: 'Supabase is not configured yet.' }, { status: 500 });
-  }
-
   try {
-    const result = await getAuthenticatedProfile();
+    const supabase = await createClient();
 
-    if (!result) {
-      return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
+    // 1. Identity Check
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    // 2. Fetch Profile and Mastery Data in parallel for optimal response time
+    const [profileResult, masteryResult] = await Promise.all([
+      supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single(),
+      supabase
+        .from('student_skill_mastery')
+        .select('*')
+        .eq('user_id', user.id)
+    ]);
+
+    if (profileResult.error) throw profileResult.error;
+    if (masteryResult.error) throw masteryResult.error;
 
     return NextResponse.json({
-      profile: result.profile,
-      defaultProfile: result.defaultProfile,
-      email: result.user.email ?? null,
+      ...profileResult.data,
+      mastery: masteryResult.data || []
     });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unable to load the current profile.';
-    return NextResponse.json({ error: message }, { status: 500 });
-  }
-}
-
-export async function PUT(request: Request) {
-  if (!hasSupabaseEnv()) {
-    return NextResponse.json({ error: 'Supabase is not configured yet.' }, { status: 500 });
-  }
-
-  try {
-    const body = await request.json();
-    const profile = normalizeStudentProfileInput(body);
-
-    if (!profile) {
-      return NextResponse.json({ error: 'Invalid student profile payload.' }, { status: 400 });
-    }
-
-    const result = await updateAuthenticatedProfile(profile);
-
-    if (!result) {
-      return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
-    }
-
-    return NextResponse.json({
-      profile: result.profile,
-      defaultProfile: result.defaultProfile,
-      email: result.user.email ?? null,
-    });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unable to save the current profile.';
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch (error: any) {
+    console.error('[PROFILE_GET_ERROR]', error);
+    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }
 }
