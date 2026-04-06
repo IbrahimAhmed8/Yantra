@@ -470,6 +470,7 @@ export default function PythonRoomShell() {
                         spellCheck={false}
                         className="w-full resize-none overflow-hidden rounded-[1.3rem] border border-white/8 bg-black/30 px-4 py-4 font-mono text-[13px] leading-6 text-white/84 outline-none"
                         style={{ touchAction: 'pan-y' }}
+                        aria-label="Terminal input"
                       />
                     </div>
                   )}
