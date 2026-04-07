@@ -90,6 +90,7 @@ function RoomDetailPanel({
             <button
               type="button"
               onClick={onClose}
+              aria-label="Close panel"
               className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-white/40 transition-colors hover:bg-white/[0.1] hover:text-white lg:hidden"
             >
               <X size={13} />
@@ -352,6 +353,7 @@ function PythonRoomsIndexContent({ learnerName }: PythonRoomsIndexPageProps) {
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
+                  aria-label="Search rooms"
                   placeholder="Search rooms..."
                   className="h-9 w-full rounded-xl border border-white/[0.06] bg-black/50 pl-8 pr-3 text-[13px] text-white placeholder:text-white/28 focus:border-white/18 focus:outline-none focus:ring-1 focus:ring-white/18 transition-all"
                 />
@@ -450,6 +452,7 @@ function PythonRoomsIndexContent({ learnerName }: PythonRoomsIndexPageProps) {
               <button
                 type="button"
                 onClick={() => setSheetOpen(false)}
+                aria-label="Close sheet"
                 className="h-1 w-12 rounded-full bg-white/20 transition-colors hover:bg-white/30"
               />
             </div>

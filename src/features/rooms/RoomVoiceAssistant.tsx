@@ -984,6 +984,7 @@ const RoomVoiceAssistant = forwardRef<RoomVoiceAssistantHandle, RoomVoiceAssista
                     onClick={() => {
                       void requestAssistantReply(stream.prompt, { speak: false });
                     }}
+                    aria-label={`Ask: ${stream.label}`}
                     className="w-full rounded-[1.35rem] border border-white/8 bg-white/[0.03] px-4 py-4 text-left transition-colors hover:border-white/14 hover:bg-white/[0.055]"
                   >
                     <div className="text-sm font-medium text-white/88">{stream.label}</div>
@@ -998,7 +999,7 @@ const RoomVoiceAssistant = forwardRef<RoomVoiceAssistantHandle, RoomVoiceAssista
                   <div className="max-h-40 overflow-y-auto break-words rounded-[1.2rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-relaxed text-white/76">
                     {error}
                   </div>
-                  <ActionButton onClick={retryAssistant}>
+                  <ActionButton onClick={retryAssistant} ariaLabel="Retry assistant">
                     <Sparkles size={15} />
                     <span>Try again</span>
                   </ActionButton>
@@ -1128,6 +1129,7 @@ const RoomVoiceAssistant = forwardRef<RoomVoiceAssistantHandle, RoomVoiceAssista
               <button
                 type="button"
                 onClick={() => setIsOpen(true)}
+                aria-label="Open Yantra Sidebar"
                 className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-full border border-white/10 bg-white/[0.045] px-5 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-white transition-colors hover:border-white/16 hover:bg-white/[0.08]"
               >
                 <Sparkles size={16} />
