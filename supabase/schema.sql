@@ -853,3 +853,36 @@ for each row execute function public.handle_updated_at();
 create trigger set_student_void_sessions_updated_at
 before update on public.student_void_sessions
 for each row execute function public.handle_updated_at();
+
+-- ==========================================
+-- PYTHON ROOM CONTENT BANK
+-- ==========================================
+
+create table if not exists public.python_rooms (
+    id uuid primary key default gen_random_uuid (),
+    slug text not null unique,
+    topic text not null,
+    difficulty integer not null check (
+        difficulty >= 1
+        and difficulty <= 5
+    ),
+    blueprint jsonb not null,
+    is_published boolean not null default true,
+    created_at timestamptz not null default timezone ('utc', now()),
+    updated_at timestamptz not null default timezone ('utc', now())
+);
+
+-- Enable RLS
+alter table public.python_rooms enable row level security;
+
+-- Content is public for all authenticated learners
+create policy "Authenticated users can view python rooms" on public.python_rooms for
+select to authenticated using (is_published = true);
+
+-- Apply updated_at trigger
+create trigger set_python_rooms_updated_at
+before update on public.python_rooms
+for each row execute function public.handle_updated_at();
+
+-- Index for fast lookup by slug
+create index if not exists idx_python_rooms_slug on public.python_rooms (slug);
