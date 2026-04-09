@@ -12,6 +12,7 @@ import {
   UserCircle2,
 } from 'lucide-react';
 import { startRouteTransition } from '@/src/features/motion/ExperienceProvider';
+import { readJsonResponse } from '@/src/lib/read-json-response';
 import YantraMobileMenu from '@/src/features/navigation/YantraMobileMenu';
 import StudentProfileCard, { type StudentProfileCardHandle } from './StudentProfileCard';
 import YantraAmbientBackground from './YantraAmbientBackground';
@@ -350,19 +351,19 @@ export default function StudentProfilePage({
       body: JSON.stringify(nextProfile),
     });
 
-    const payload = (await response.json()) as {
+    const payload = await readJsonResponse<{
       error?: string;
       profile?: StudentProfile;
       defaultProfile?: StudentProfile;
-    };
+    }>(response);
 
-    if (!response.ok || !payload.profile) {
+    if (!response.ok || !payload?.profile) {
       if (response.status === 401) {
         startRouteTransition({ href: '/login', label: 'Returning to Login' });
         window.location.href = '/login?message=Your%20session%20expired.%20Please%20log%20in%20again.&kind=error';
       }
 
-      throw new Error(payload.error || 'Yantra could not save the student profile right now.');
+      throw new Error(payload?.error || 'Yantra could not save the student profile right now.');
     }
 
     setProfile(payload.profile);

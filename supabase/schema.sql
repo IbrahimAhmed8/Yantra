@@ -357,3 +357,247 @@ for update
 to authenticated
 using ((select auth.uid()) = user_id)
 with check ((select auth.uid()) = user_id);
+
+create policy "Users can update their own weekly activity" on public.student_weekly_activity for
+update to authenticated using (
+    (
+        select auth.uid ()
+    ) = user_id
+)
+with
+    check (
+        (
+            select auth.uid ()
+        ) = user_id
+    );
+
+-- ==========================================
+-- NEW TABLES FOR SKILLS, QUIZZES, AND VOIDS
+-- ==========================================
+
+-- Reference bank for all available quizzes
+create table if not exists public.yantra_quiz_bank (
+    id uuid primary key default gen_random_uuid (),
+    skill_key text not null,
+    topic text not null,
+    difficulty integer not null check (
+        difficulty >= 1
+        and difficulty <= 5
+    ),
+    content jsonb not null, -- contains questions, options, and correct answers
+    created_at timestamptz not null default timezone ('utc', now())
+);
+
+-- Reference bank for all available void challenges
+create table if not exists public.yantra_challenges (
+    id uuid primary key default gen_random_uuid (),
+    skill_key text not null,
+    topic text not null,
+    difficulty integer not null check (
+        difficulty >= 1
+        and difficulty <= 5
+    ),
+    title text not null,
+    description text not null,
+    starter_code text,
+    test_cases jsonb, -- used for correctness checking
+    created_at timestamptz not null default timezone ('utc', now())
+);
+
+-- Stores the calculated mastery score for a user per skill
+create table if not exists public.student_skill_mastery (
+    user_id uuid not null references auth.users (id) on delete cascade,
+    skill_key text not null,
+    mastery_score integer not null default 0 check (
+        mastery_score >= 0
+        and mastery_score <= 100
+    ),
+    quizzes_passed integer not null default 0 check (quizzes_passed >= 0),
+    void_challenges_passed integer not null default 0 check (void_challenges_passed >= 0),
+    updated_at timestamptz not null default timezone ('utc', now()),
+    primary key (user_id, skill_key)
+);
+
+-- Records of practice room (Void) sessions
+create table if not exists public.student_void_sessions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  challenge_id uuid references public.yantra_challenges (id) on delete set null,
+  skill_key text not null,
+  status text not null check (status in ('started', 'completed', 'failed')),
+  code_snapshot text,
+  feedback_history jsonb not null default '[]'::jsonb,
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
+-- Records of quiz attempts and scores
+create table if not exists public.student_quiz_results (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  quiz_id uuid references public.yantra_quiz_bank (id) on delete set null,
+  skill_key text not null,
+  score integer not null check (score >= 0),
+  passed boolean not null default false,
+  answers jsonb not null default '[]'::jsonb,
+  created_at timestamptz not null default timezone('utc', now())
+);
+
+-- Issued certificates for skill completion
+create table if not exists public.student_certificates (
+    id uuid primary key default gen_random_uuid (),
+    user_id uuid not null references auth.users (id) on delete cascade,
+    skill_key text not null,
+    issued_at timestamptz not null default timezone ('utc', now()),
+    verification_hash text not null unique,
+    is_public boolean not null default false
+);
+
+-- Enable RLS on all new tables
+alter table public.yantra_quiz_bank enable row level security;
+
+alter table public.yantra_challenges enable row level security;
+
+alter table public.student_skill_mastery enable row level security;
+
+alter table public.student_void_sessions enable row level security;
+
+alter table public.student_quiz_results enable row level security;
+
+alter table public.student_certificates enable row level security;
+
+alter table public.student_practice_rooms enable row level security;
+
+-- Content Bank Policies (Viewable by any authenticated learner)
+create policy "Authenticated users can view quiz bank" on public.yantra_quiz_bank for
+select to authenticated using (true);
+
+create policy "Authenticated users can view challenges" on public.yantra_challenges for
+select to authenticated using (true);
+
+-- Student Data Policies (Owner-only access)
+create policy "Users can view their own mastery" on public.student_skill_mastery for
+select to authenticated using (
+        (
+            select auth.uid ()
+        ) = user_id
+    );
+
+create policy "Users can update their own mastery" on public.student_skill_mastery for
+update to authenticated using (
+    (
+        select auth.uid ()
+    ) = user_id
+);
+
+create policy "Users can insert their own mastery" on public.student_skill_mastery for
+insert
+    to authenticated
+with
+    check (
+        (
+            select auth.uid ()
+        ) = user_id
+    );
+
+create policy "Users can view their own void sessions" on public.student_void_sessions for
+select to authenticated using (
+        (
+            select auth.uid ()
+        ) = user_id
+    );
+
+create policy "Users can insert their own void sessions" on public.student_void_sessions for
+insert
+    to authenticated
+with
+    check (
+        (
+            select auth.uid ()
+        ) = user_id
+    );
+
+create policy "Users can update their own void sessions" on public.student_void_sessions for
+update to authenticated using (
+    (
+        select auth.uid ()
+    ) = user_id
+);
+
+create policy "Users can view their own quiz results" on public.student_quiz_results for
+select to authenticated using (
+        (
+            select auth.uid ()
+        ) = user_id
+    );
+
+create policy "Users can insert their own quiz results" on public.student_quiz_results for
+insert
+    to authenticated
+with
+    check (
+        (
+            select auth.uid ()
+        ) = user_id
+    );
+
+create policy "Users can view their own certificates" on public.student_certificates for
+select to authenticated using (
+        (
+            select auth.uid ()
+        ) = user_id
+        or is_public = true
+    );
+
+-- Generic Updated At Trigger Function
+create or replace function public.handle_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = timezone('utc', now());
+  return new;
+end;
+$$;
+
+-- Apply triggers
+create trigger set_student_skill_mastery_updated_at
+before update on public.student_skill_mastery
+for each row execute function public.handle_updated_at();
+
+create trigger set_student_void_sessions_updated_at
+before update on public.student_void_sessions
+for each row execute function public.handle_updated_at();
+
+-- ==========================================
+-- PYTHON ROOM CONTENT BANK
+-- ==========================================
+
+create table if not exists public.python_rooms (
+    id uuid primary key default gen_random_uuid (),
+    slug text not null unique,
+    topic text not null,
+    difficulty integer not null check (
+        difficulty >= 1
+        and difficulty <= 5
+    ),
+    blueprint jsonb not null,
+    is_published boolean not null default true,
+    created_at timestamptz not null default timezone ('utc', now()),
+    updated_at timestamptz not null default timezone ('utc', now())
+);
+
+-- Enable RLS
+alter table public.python_rooms enable row level security;
+
+-- Content is public for all authenticated learners
+create policy "Authenticated users can view python rooms" on public.python_rooms for
+select to authenticated using (is_published = true);
+
+-- Apply updated_at trigger
+create trigger set_python_rooms_updated_at
+before update on public.python_rooms
+for each row execute function public.handle_updated_at();
+
+-- Index for fast lookup by slug
+create index if not exists idx_python_rooms_slug on public.python_rooms (slug);

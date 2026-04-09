@@ -584,8 +584,8 @@ class ChatService:
                 "next_session_title": action_title,
                 "next_session_day_label": "No live schedule yet",
                 "next_session_time_label": "Pick a room to begin",
-                "next_session_instructor_name": "Yantra Guide",
-                "next_session_instructor_role": "AI Coach",
+                "next_session_instructor_name": "AI Teacher",
+                "next_session_instructor_role": "Mentor",
                 "next_session_instructor_image_url": "",
                 "weekly_completed_sessions": 0,
                 "weekly_change_label": "No prior week yet",
@@ -657,7 +657,7 @@ class ChatService:
                     "sort_order": 3,
                 },
             ],
-            recommended_rooms=[
+            rooms=[
                 {
                     "room_key": "python-room",
                     "title": "Python Room",

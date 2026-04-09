@@ -23,7 +23,7 @@ class StudentContext(BaseModel):
     active_rooms: list[str] = Field(default_factory=list)
     memory_summary: str = ""
     approved_learner_summary: str = ""
-    approved_import_facts: dict[str, object] | None = None
+    approved_import_facts: dict[str, object] | None = Field(default=None)
 
 
 class ChatRequest(BaseModel):
@@ -90,9 +90,9 @@ class PersonalizationExtractResponse(BaseModel):
     approved_facts: ApprovedFacts
     learner_summary: str
     confidence_summary: str
-    assumptions: list[str] = Field(default_factory=list)
     provider: str
-    model_used: str | None = None
+    assumptions: list[str] = Field(default_factory=list)
+    model_used: str | None = Field(default=None)
 
 
 class DashboardGenerationProfile(BaseModel):
@@ -150,11 +150,11 @@ class GeneratedDashboardSkill(BaseModel):
     title: str
     description: str
     level_label: str
-    progress: int | None = Field(default=None, ge=0, le=100)
-    icon_key: Literal["python", "logic", "ml", "data", "networks", "prompt"] | None = None
-    tone_key: Literal["primary", "soft", "muted"] | None = None
-    locked: bool | None = None
-    sort_order: int | None = Field(default=None, ge=0)
+    progress: int = Field(ge=0, le=100)
+    icon_key: Literal["python", "logic", "ml", "data", "networks", "prompt"]
+    tone_key: Literal["primary", "soft", "muted"]
+    locked: bool
+    sort_order: int = Field(ge=0)
 
 
 class GeneratedDashboardCurriculumNode(BaseModel):
@@ -163,8 +163,8 @@ class GeneratedDashboardCurriculumNode(BaseModel):
     title: str
     description: str
     status_label: str
-    unlocked: bool | None = None
-    sort_order: int | None = Field(default=None, ge=0)
+    unlocked: bool
+    sort_order: int = Field(ge=0)
 
 
 class GeneratedDashboardRoom(BaseModel):
@@ -199,11 +199,11 @@ class DashboardGenerationResponse(BaseModel):
     recommended_track: str
     recommended_action: RecommendedAction
     confidence_summary: str
-    assumptions: list[str] = Field(default_factory=list)
     path: GeneratedDashboardPath
-    skills: list[GeneratedDashboardSkill] = Field(default_factory=list)
-    curriculum_nodes: list[GeneratedDashboardCurriculumNode] = Field(default_factory=list)
-    recommended_rooms: list[GeneratedDashboardRoom] = Field(default_factory=list)
-    weekly_activity: list[GeneratedDashboardWeeklyActivity] = Field(default_factory=list)
     provider: str
-    model_used: str | None = None
+    assumptions: list[str] = Field(default_factory=list)
+    skills: list[GeneratedDashboardSkill]
+    curriculum_nodes: list[GeneratedDashboardCurriculumNode]
+    rooms: list[GeneratedDashboardRoom]
+    weekly_activity: list[GeneratedDashboardWeeklyActivity]
+    model_used: str | None = Field(default=None)

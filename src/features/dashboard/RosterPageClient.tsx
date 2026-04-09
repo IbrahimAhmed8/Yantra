@@ -6,6 +6,7 @@ import { useRef, useState } from 'react';
 import StudentProfileCard, { type StudentProfileCardHandle } from './StudentProfileCard';
 import { type StudentProfile } from './student-profile-model';
 import { startRouteTransition } from '@/src/features/motion/ExperienceProvider';
+import { readJsonResponse } from '@/src/lib/read-json-response';
 
 type Props = {
   initialProfileData: StudentProfile;
@@ -24,14 +25,14 @@ export default function RosterPageClient({ initialProfileData, defaultProfileDat
       body: JSON.stringify(nextProfile),
     });
 
-    const payload = (await response.json()) as { error?: string; profile?: StudentProfile };
+    const payload = await readJsonResponse<{ error?: string; profile?: StudentProfile }>(response);
 
-    if (!response.ok || !payload.profile) {
+    if (!response.ok || !payload?.profile) {
       if (response.status === 401) {
         startRouteTransition({ href: '/login', label: 'Returning to Login' });
         window.location.href = '/login?message=Your%20session%20expired.&kind=error';
       }
-      const msg = payload.error || 'Yantra could not save the student profile right now.';
+      const msg = payload?.error || 'Yantra could not save the student profile right now.';
       setStatusMessage(msg);
       throw new Error(msg);
     }

@@ -514,8 +514,8 @@ function buildPath(
     nextSessionTitle: blueprint.recommendedActionTitle,
     nextSessionDayLabel: 'No live schedule yet',
     nextSessionTimeLabel: 'Pick a room to begin',
-    nextSessionInstructorName: 'Yantra Guide',
-    nextSessionInstructorRole: 'AI Coach',
+    nextSessionInstructorName: 'AI Teacher',
+    nextSessionInstructorRole: 'Mentor',
     nextSessionInstructorImageUrl: '',
     weeklyCompletedSessions: 0,
     weeklyChangeLabel: 'No prior week yet',
@@ -628,11 +628,11 @@ function mergeGeneratedSkill(
     progress,
     iconKey:
       iconKey === 'python' ||
-      iconKey === 'logic' ||
-      iconKey === 'ml' ||
-      iconKey === 'data' ||
-      iconKey === 'networks' ||
-      iconKey === 'prompt'
+        iconKey === 'logic' ||
+        iconKey === 'ml' ||
+        iconKey === 'data' ||
+        iconKey === 'networks' ||
+        iconKey === 'prompt'
         ? iconKey
         : fallbackSkill.iconKey,
     toneKey:
@@ -792,13 +792,13 @@ function normalizePath(value: unknown, fallback: StudentDashboardPath): StudentD
     nextSessionTitle: requiredText.nextSessionTitle!,
     nextSessionDayLabel: requiredText.nextSessionDayLabel!,
     nextSessionTimeLabel: requiredText.nextSessionTimeLabel!,
-    nextSessionInstructorName: requiredText.nextSessionInstructorName!,
-    nextSessionInstructorRole: requiredText.nextSessionInstructorRole!,
+    nextSessionInstructorName: requiredText.nextSessionInstructorName ?? 'AI Teacher',
+    nextSessionInstructorRole: requiredText.nextSessionInstructorRole ?? 'Mentor',
     nextSessionInstructorImageUrl: requiredText.nextSessionInstructorImageUrl ?? '',
     weeklyCompletedSessions: numericFields.weeklyCompletedSessions!,
-    weeklyChangeLabel: requiredText.weeklyChangeLabel!,
-    momentumSummary: requiredText.momentumSummary!,
-    focusSummary: requiredText.focusSummary!,
+    weeklyChangeLabel: requiredText.weeklyChangeLabel ?? 'First week',
+    momentumSummary: requiredText.momentumSummary ?? 'New start',
+    focusSummary: requiredText.focusSummary ?? requiredText.currentFocus!,
     consistencySummary: requiredText.consistencySummary!,
   };
 }
@@ -829,7 +829,7 @@ export function buildDeterministicDashboardSnapshot(
     skills,
     curriculumNodes,
     rooms,
-    weeklyActivity: zeroWeeklyActivity,
+    weeklyActivity: [...zeroWeeklyActivity], // Ensure deep copy
     provider: 'deterministic-dashboard-fallback',
     modelUsed: null,
   };
@@ -849,15 +849,24 @@ export function normalizeGeneratedDashboardSnapshot(
   const path = normalizePath(candidate.path, fallback.path);
   const skills = Array.isArray(candidate.skills)
     ? (candidate.skills
-        .map((entry) => mergeGeneratedSkill(entry, fallback.skills))
-        .filter(Boolean) as StudentDashboardSkill[])
+      .map((entry) => mergeGeneratedSkill(entry, fallback.skills))
+      .filter(Boolean) as StudentDashboardSkill[])
     : [];
   const curriculumNodesValue = candidate.curriculumNodes ?? candidate.curriculum_nodes;
   const curriculumNodes = Array.isArray(curriculumNodesValue)
     ? (curriculumNodesValue
-        .map((entry) => mergeGeneratedCurriculumNode(entry, fallback.curriculumNodes))
-        .filter(Boolean) as StudentDashboardCurriculumNode[])
+      .map((entry) => mergeGeneratedCurriculumNode(entry, fallback.curriculumNodes))
+      .filter(Boolean) as StudentDashboardCurriculumNode[])
     : [];
+
+  const roomsValue = candidate.rooms ?? candidate.recommendedRooms ?? candidate.recommended_rooms;
+  const rooms = Array.isArray(roomsValue) ? (roomsValue as StudentDashboardRoom[]) : fallback.rooms;
+
+  const weeklyActivityValue = candidate.weeklyActivity ?? candidate.weekly_activity;
+  const weeklyActivity = Array.isArray(weeklyActivityValue)
+    ? (weeklyActivityValue as StudentDashboardWeeklyActivity[])
+    : fallback.weeklyActivity;
+
   const learnerSummary = normalizeText(candidate.learnerSummary ?? candidate.learner_summary, 400);
   const recommendedTrack = normalizeText(candidate.recommendedTrack ?? candidate.recommended_track, 120);
   const confidenceSummary = normalizeText(candidate.confidenceSummary ?? candidate.confidence_summary, 240);
@@ -866,10 +875,10 @@ export function normalizeGeneratedDashboardSnapshot(
   const recommendedAction =
     recommendedActionValue && typeof recommendedActionValue === 'object'
       ? {
-          title: normalizeText((recommendedActionValue as Record<string, unknown>).title, 120),
-          description: normalizeText((recommendedActionValue as Record<string, unknown>).description, 320),
-          prompt: normalizeText((recommendedActionValue as Record<string, unknown>).prompt, 240),
-        }
+        title: normalizeText((recommendedActionValue as Record<string, unknown>).title, 120),
+        description: normalizeText((recommendedActionValue as Record<string, unknown>).description, 320),
+        prompt: normalizeText((recommendedActionValue as Record<string, unknown>).prompt, 240),
+      }
       : null;
   const provider = normalizeText(candidate.provider, 80) ?? 'yantra-ai-service';
   const modelUsed = normalizeText(candidate.modelUsed ?? candidate.model_used, 120);
@@ -905,8 +914,8 @@ export function normalizeGeneratedDashboardSnapshot(
     },
     skills: skills.length > 0 ? skills : fallback.skills,
     curriculumNodes: curriculumNodes.length > 0 ? curriculumNodes : fallback.curriculumNodes,
-    rooms: fallback.rooms,
-    weeklyActivity: fallback.weeklyActivity,
+    rooms,
+    weeklyActivity,
     provider,
     modelUsed,
   };

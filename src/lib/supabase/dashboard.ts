@@ -297,7 +297,7 @@ function isLegacyStarterDashboard(data: DashboardQueryResult) {
   );
 }
 
-async function persistDashboardSeed(userId: string, seed: StudentDashboardSeed) {
+async function persistDashboardSeed(userId: string, seed: StudentDashboardSeed, clearExisting = false) {
   const supabase = await createClient();
   const { path, skills, curriculumNodes, rooms, weeklyActivity } = seed;
 
@@ -379,6 +379,17 @@ async function persistDashboardSeed(userId: string, seed: StudentDashboardSeed) 
     sort_order: day.sortOrder,
   }));
 
+  if (clearExisting) {
+    // If we are replacing a legacy/stale dashboard, we must clear old keys to prevent 
+    // curriculum nodes or skills from different tracks overlapping.
+    await Promise.all([
+      supabase.from('student_skill_progress').delete().eq('user_id', userId),
+      supabase.from('student_curriculum_nodes').delete().eq('user_id', userId),
+      supabase.from('student_practice_rooms').delete().eq('user_id', userId),
+      supabase.from('student_weekly_activity').delete().eq('user_id', userId),
+    ]);
+  }
+
   const [pathResult, skillsResult, curriculumResult, roomsResult, weeklyResult] = await Promise.all([
     supabase.from('student_dashboard_paths').upsert(pathPayload, { onConflict: 'user_id' }),
     supabase.from('student_skill_progress').upsert(skillPayload, { onConflict: 'user_id,skill_key' }),
@@ -459,8 +470,8 @@ async function buildGeneratedDashboardData(profileResult: AuthenticatedProfileRe
   };
 }
 
-export async function persistDashboardSnapshotForUser(userId: string, snapshot: StudentDashboardSeed) {
-  return persistDashboardSeed(userId, snapshot);
+export async function persistDashboardSnapshotForUser(userId: string, snapshot: StudentDashboardSeed, clearExisting = false) {
+  return persistDashboardSeed(userId, snapshot, clearExisting);
 }
 
 export async function getAuthenticatedDashboardData(profileResult?: AuthenticatedProfileResult | null) {
@@ -489,7 +500,7 @@ export async function getAuthenticatedDashboardData(profileResult?: Authenticate
 
   if (isDashboardSeedMissing(dashboardRows) || isLegacyStarterDashboard(dashboardRows)) {
     const generated = await buildGeneratedDashboardData(resolvedProfileResult);
-    const seeded = await persistDashboardSeed(resolvedProfileResult.user.id, generated.seed);
+    const seeded = await persistDashboardSeed(resolvedProfileResult.user.id, generated.seed, true);
 
     if (!seeded) {
       return generated.data;

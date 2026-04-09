@@ -40,7 +40,7 @@ export async function POST() {
       curriculumNodes: generation.snapshot.curriculumNodes,
       rooms: generation.snapshot.rooms,
       weeklyActivity: generation.snapshot.weeklyActivity,
-    });
+    }, true); // Pass true to wipe legacy/stale track data and ensure a clean slate
 
     if (!persisted) {
       throw new Error('Unable to persist the generated dashboard snapshot.');

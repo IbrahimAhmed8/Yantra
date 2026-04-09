@@ -8,6 +8,7 @@ export default function GlobalSidebar({ className, disableDesktop = false }: { c
 
   const links: YantraMobileMenuLink[] = [
     { label: 'Platform', href: '/' },
+    { label: 'Contributors', href: '/contributors' },
     { label: 'Dashboard', href: '/dashboard' },
     { label: 'Curriculum', href: '/dashboard/student-profile/curriculum' },
     { label: 'Docs', href: '/docs/first-dashboard-session' },

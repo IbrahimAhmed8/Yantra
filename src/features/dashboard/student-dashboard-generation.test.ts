@@ -24,7 +24,7 @@ test('buildDeterministicDashboardSnapshot keeps new-user history honest', () => 
   assert.equal(snapshot.path.nextSessionDateDay, '--');
   assert.equal(snapshot.path.nextSessionDateMonth, 'Suggested');
   assert.equal(snapshot.path.nextSessionTimeLabel, 'Pick a room to begin');
-  assert.equal(snapshot.path.nextSessionInstructorName, 'Yantra Guide');
+  assert.equal(snapshot.path.nextSessionInstructorName, 'AI Teacher');
   assert.equal(snapshot.path.weeklyCompletedSessions, 0);
   assert.ok(snapshot.weeklyActivity.every((bar) => bar.fillHeight === 0));
   assert.match(snapshot.confidenceSummary, /onboarding answers first/i);

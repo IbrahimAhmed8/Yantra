@@ -44,6 +44,7 @@ import {
 } from '@/src/features/dashboard/student-profile-model';
 import { usePageTransition } from '@/src/features/motion/ExperienceProvider';
 import GlobalSidebar from '@/src/features/navigation/GlobalSidebar';
+import { readJsonResponse } from '@/src/lib/read-json-response';
 
 type OnboardingStatus =
   | {
@@ -299,14 +300,14 @@ export default function RoleOnboardingExperience({
         } satisfies StudentProfile),
       });
 
-      const payload = (await response.json()) as { error?: string; profile?: StudentProfile };
-      if (!response.ok || !payload.profile) {
+      const payload = await readJsonResponse<{ error?: string; profile?: StudentProfile }>(response);
+      if (!response.ok || !payload?.profile) {
         if (response.status === 401) {
           window.location.href = '/login?message=Your%20session%20expired.%20Please%20log%20in%20again.&kind=error';
           return;
         }
 
-        throw new Error(payload.error || 'Yantra could not save your onboarding answers right now.');
+        throw new Error(payload?.error || 'Yantra could not save your onboarding answers right now.');
       }
 
       setStatus({ kind: 'info', message: 'Profile saved. Building your dashboard roadmap...' });

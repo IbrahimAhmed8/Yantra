@@ -34,6 +34,10 @@ type SmoothScrollControllerProps = {
   isOverlayActive: boolean;
 };
 
+type GlobalCustomCursorProps = {
+  reducedMotion: boolean;
+};
+
 const ExperienceContext = createContext<ExperienceContextValue | null>(null);
 
 const RouteTransitionOverlay = dynamic<RouteTransitionOverlayProps>(
@@ -46,6 +50,14 @@ const RouteTransitionOverlay = dynamic<RouteTransitionOverlayProps>(
 
 const SmoothScrollController = dynamic<SmoothScrollControllerProps>(
   () => import('./SmoothScrollController'),
+  {
+    ssr: false,
+    loading: () => null,
+  },
+);
+
+const GlobalCustomCursor = dynamic<GlobalCustomCursorProps>(
+  () => import('./GlobalCustomCursor'),
   {
     ssr: false,
     loading: () => null,
@@ -158,6 +170,7 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
   return (
     <ExperienceContext.Provider value={value}>
       {children}
+      <GlobalCustomCursor reducedMotion={reducedMotion} />
       <SmoothScrollController isOverlayActive={isOverlayActive} reducedMotion={reducedMotion} />
       <RouteTransitionOverlay
         reducedMotion={reducedMotion}
