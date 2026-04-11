@@ -147,8 +147,8 @@ export default function DocsArticlePage({ slug }: { slug: string }) {
   return (
     <DocsShell activeSlug={slug} toc={toc}>
       <motion.article
-        initial={{ opacity: 0, y: 22 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ y: 22 }}
+        animate={{ y: 0 }}
         transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
         className="space-y-12 pb-16"
       >

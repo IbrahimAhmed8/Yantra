@@ -103,8 +103,8 @@ export default function DocsHomePage() {
     <DocsShell isHome showRightRail={false}>
       <div className="space-y-24 pb-20">
         <motion.section
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ y: 24 }}
+          animate={{ y: 0 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           className="rounded-[2.6rem] bg-white/[0.03] px-6 py-12 shadow-[0_28px_90px_rgba(0,0,0,0.36)] sm:px-8 lg:px-12 lg:py-14"
         >
