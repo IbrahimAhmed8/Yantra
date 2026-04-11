@@ -198,7 +198,7 @@ export default function DocsSupportWidget({ activeSlug = null }: DocsSupportWidg
                 </div>
 
                 <p className="mt-4 max-w-[34rem] text-sm leading-relaxed text-white/56 md:text-[0.96rem]">
-                  Ask about accounts, onboarding, passwords, dashboard confusion, or anything covered in the docs.
+                  Ask about the dashboard, local profile behavior, editor flow, chat questions, or anything covered in the docs.
                 </p>
               </div>
 
@@ -291,7 +291,7 @@ export default function DocsSupportWidget({ activeSlug = null }: DocsSupportWidg
                     onChange={(event) => setInput(event.target.value)}
                     onKeyDown={handleKeyDown}
                     rows={1}
-                    placeholder="Ask about docs, access, onboarding, or problems..."
+                    placeholder="Ask about docs, dashboard, profile, editor, or problems..."
                     className="min-h-[1.35rem] max-h-24 flex-1 resize-none border-0 bg-transparent text-[14px] leading-6 text-white outline-none placeholder:text-white/30 focus:outline-none focus-visible:outline-none md:text-[15px]"
                   />
 

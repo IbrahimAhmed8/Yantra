@@ -627,7 +627,7 @@ export default function AuthExperience({
       <main className="relative z-10 mx-auto flex min-h-screen max-w-[1600px] flex-col px-4 pb-10 pt-24 md:flex-row md:items-center md:gap-10 md:px-8 md:pb-24 md:pt-24">
         <section className="mb-5 w-full md:hidden">
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
             className="rounded-[1.75rem] border border-white/10 bg-white/[0.03] p-5 backdrop-blur-[24px]"
@@ -661,7 +661,7 @@ export default function AuthExperience({
 
         <section className="hidden w-full flex-1 flex-col justify-center md:flex md:pr-10">
           <motion.div
-            initial={{ opacity: 0, y: 28 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
             className="space-y-8"
@@ -710,7 +710,7 @@ export default function AuthExperience({
 
         <section className="mt-0 flex w-full flex-1 justify-center md:mt-0 md:justify-end">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.85, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
             className="relative w-full max-w-[520px] overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/[0.045] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.38)] backdrop-blur-[32px] md:rounded-[2rem] md:p-10 md:shadow-[0_30px_120px_rgba(0,0,0,0.45)]"
@@ -927,7 +927,7 @@ export default function AuthExperience({
 
               {statusPresentation ? (
                 <motion.div
-                  initial={{ opacity: 0, y: 16, scale: 0.98 }}
+                  initial={false}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                   className={`relative mt-6 overflow-hidden rounded-[1.35rem] border p-4 md:rounded-[1.5rem] ${statusPresentation.chromeClassName}`}

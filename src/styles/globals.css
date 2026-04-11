@@ -9,11 +9,11 @@
   --color-accent-glow: rgba(255, 255, 255, 0.15);
   --color-border: rgba(255, 255, 255, 0.1);
 
-  --font-sans: var(--font-inter);
-  --font-display: var(--font-space-grotesk);
-  --font-heading: var(--font-bebas-neue);
-  --font-body: var(--font-inter);
-  --font-mono: var(--font-jetbrains-mono);
+  --font-sans: var(--font-inter, "Inter"), "Segoe UI", sans-serif;
+  --font-display: var(--font-space-grotesk, "Inter"), "Segoe UI", sans-serif;
+  --font-heading: var(--font-bebas-neue, "Inter"), "Segoe UI", sans-serif;
+  --font-body: var(--font-inter, "Inter"), "Segoe UI", sans-serif;
+  --font-mono: var(--font-jetbrains-mono, "JetBrains Mono"), "Cascadia Code", "SFMono-Regular", ui-monospace, monospace;
 }
 
 :root {

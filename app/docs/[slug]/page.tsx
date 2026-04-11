@@ -1,7 +1,11 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import DocsArticlePage from '@/src/features/docs/DocsArticlePage';
-import { docsArticles, getDocsArticleBySlug } from '@/src/features/docs/docs-content';
+import {
+  getDocsArticleBySlug,
+  getVisibleDocsArticles,
+  isHiddenDocsArticleSlug,
+} from '@/src/features/docs/docs-content';
 
 type DocsArticleRouteProps = {
   params: Promise<{
@@ -10,7 +14,7 @@ type DocsArticleRouteProps = {
 };
 
 export async function generateStaticParams() {
-  return docsArticles.map((article) => ({
+  return getVisibleDocsArticles().map((article) => ({
     slug: article.slug,
   }));
 }
@@ -33,6 +37,11 @@ export async function generateMetadata({ params }: DocsArticleRouteProps): Promi
 
 export default async function DocsArticleRoute({ params }: DocsArticleRouteProps) {
   const { slug } = await params;
+
+  if (isHiddenDocsArticleSlug(slug)) {
+    redirect('/docs');
+  }
+
   const article = getDocsArticleBySlug(slug);
 
   if (!article) {

@@ -42,10 +42,10 @@ export default function InfoPageShell({
               Home
             </Link>
             <Link
-              href="/login"
+              href="/docs"
               className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/62 transition-colors hover:bg-white/[0.08] hover:text-white"
             >
-              Log In
+              Docs
             </Link>
           </div>
           <GlobalSidebar disableDesktop={true} />

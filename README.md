@@ -1,46 +1,50 @@
 # Yantra
 
-Yantra is a Next.js 16 prototype for an AI-native learning platform. The live build currently combines:
+Yantra is a Next.js 16 prototype for an AI-native learning platform. The current build combines:
 
 - a public marketing site
-- Supabase-backed email/password authentication
-- Supabase-backed Google sign-in
-- a public docs/help center with article pages
-- protected learner routes
-- a persisted student profile
+- a public learner dashboard
+- a locally persisted student profile
+- a public editor with local project storage
+- a public docs/help center
+- optional Supabase-backed auth surfaces (email/password, Google, GitHub, password reset)
 - persisted access requests
-- authenticated chat history continuity
-- a configurable Python Yantra AI microservice under `ai/`, targeted first by the main chat and Python Room feedback routes
-- a room-only Sarvam-powered voice assistant layered onto the Python Room through Next.js server routes
+- authenticated chat history continuity when Supabase auth is available
+- a Render-backed Yantra chat assistant routed through the Python AI microservice when configured
+- a room-only Sarvam-powered voice assistant layered onto the Python Room
+- a separate Python AI microservice under `ai/`
 
-The app is no longer just a static marketing-plus-dashboard shell. Authentication, profile persistence, docs/help content, chat continuity, and the first real Python Room are live. Most learner-state, recommendation, and broader room logic are still seeded or presentation-led.
+The app is no longer just a static marketing shell. The public dashboard, student profile, editor, docs, and live Python room are real. Some learner-state, recommendation, and deeper roadmap logic are still seeded or presentation-led.
 
 ## Current Routes
 
 ### Public pages
 
 - `/` marketing landing page
-- `/login` email/password sign-in
-- `/signup` account creation
+- `/dashboard` student dashboard
+- `/dashboard/student-profile` editable student profile workspace
+- `/dashboard/rooms/python` Python room index
+- `/dashboard/rooms/python/control-flow-calibration` live Python room
+- `/editor` public editor workspace
+- `/editor/projects` local project list
+- `/editor/share/[shareSlug]` shared project view
 - `/docs` docs home
 - `/docs/[slug]` docs article pages
+- `/features`
+- `/guide`
+- `/login`
+- `/signup`
 - `/privacy`
 - `/terms`
 - `/status`
-- `/auth/reset-password` password recovery completion
-- `/reset-password` mirror of the reset-password experience
+- `/auth/reset-password`
+- `/reset-password`
 
-### Auth-required pages
+### Additional app routes
 
-- `/onboarding` onboarding flow for authenticated accounts
-- `/dashboard` student dashboard
-- `/dashboard/student-profile` editable student profile workspace
-- `/dashboard/rooms/python` Python Room
-
-### Auth handlers
-
-- `/auth/confirm` email confirmation and Google OAuth callback
-- `/auth/signout` sign-out route
+- `/onboarding`
+- `/auth/confirm`
+- `/auth/signout`
 
 ### API routes
 
@@ -54,32 +58,37 @@ The app is no longer just a static marketing-plus-dashboard shell. Authenticatio
 - `POST /api/rooms/python/feedback`
 - `POST /api/sarvam/stt`
 - `POST /api/sarvam/tts`
+- `GET /api/editor/projects`
+- `POST /api/editor/projects`
+- `GET /api/editor/projects/[projectId]`
+- `PATCH /api/editor/projects/[projectId]`
+- `PUT /api/editor/projects/[projectId]/files`
+- `POST /api/editor/projects/[projectId]/share`
+- `GET /api/editor/share/[shareSlug]`
 
 ## What Works Today
 
 - Next.js App Router runtime on a Vercel-compatible setup
-- Supabase SSR auth with cookie refresh handled through `proxy.ts`
-- automatic profile seeding in `public.profiles` for first-time signed-in users
-- onboarding shown after new account creation, with returning login going to the dashboard
+- public dashboard access with no required sign-in
 - profile persistence from `/dashboard/student-profile`
-- auth-required dashboard and Python Room redirects for signed-out visitors
-- password reset email flow and reset page
-- Google OAuth sign-in through Supabase
+- local editor projects and shared-project remix flows
+- Supabase-backed auth pages and recovery flows
 - reusable chat widget on the marketing site and dashboard
 - main Yantra chat routed through the Python AI service target resolved by `src/lib/yantra-ai-service.ts`
 - docs-only Support Desk answers powered by Gemini through `/api/docs-support`
-- authenticated chat history restore across sessions
+- authenticated chat history restore across sessions when Supabase auth is available
 - Python Room execution in-browser through Pyodide, with runtime-error line highlighting
 - Python Room feedback through `/api/rooms/python/feedback`, which targets the Python AI service first and can fall back to Gemini
 - room-only push-to-talk voice assistant using Sarvam STT/TTS plus `/api/chat`
-- automated coverage for the room-feedback route, Pyodide error parsing, and the Python service test suite
+- access-request form validation, persistence, and server handling
 
 ## What Is Still Seeded Or Limited
 
 - dashboard skills, progress cards, curriculum nodes, and recommendations are still starter data
-- most room cards outside the Python Room are still presentation-led
+- some room cards and roadmap visuals outside the live Python room remain presentation-led
 - Python Room correctness checking is still exception-only; successful-but-wrong output is not evaluated yet
 - chat moderation, analytics, and tool use are not built yet
+- cross-device sync for public-mode profiles and editor projects is still future work
 - adaptive roadmap logic and deeper learner memory are still future work
 
 ## Project Structure
@@ -169,7 +178,7 @@ Notes:
 
 ### Database setup
 
-Run the SQL in `supabase/schema.sql` against your Supabase project. It creates:
+Run the SQL in `supabase/schema.sql` against your Supabase project. That creates `public.profiles`, `public.access_requests`, `public.chat_histories`, plus the update triggers and row-level security policies used by access requests and any Supabase-backed legacy profile/chat persistence that is still enabled.
 
 - `public.profiles`
 - `public.access_requests`

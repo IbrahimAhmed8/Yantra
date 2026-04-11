@@ -44,14 +44,18 @@ export type DocsGroup = {
   featureSlugs: string[];
 };
 
+export const hiddenDocsArticleSlugs = ['create-account', 'sign-in-and-google', 'complete-onboarding', 'password-reset'] as const;
+
+const hiddenDocsArticleSlugSet = new Set<string>(hiddenDocsArticleSlugs);
+
 export const docsGroups: DocsGroup[] = [
   {
     id: 'getting-started',
     label: 'Getting Started',
     shortLabel: 'Start here',
-    description: 'Create your account, complete onboarding, and open your first guided Yantra session.',
+    description: 'Open the dashboard, understand the product surfaces, and get moving without setup friction.',
     accent: '01',
-    featureSlugs: ['create-account', 'complete-onboarding', 'first-dashboard-session'],
+    featureSlugs: ['welcome', 'first-dashboard-session', 'student-profile'],
   },
   {
     id: 'product',
@@ -63,19 +67,19 @@ export const docsGroups: DocsGroup[] = [
   },
   {
     id: 'account-access',
-    label: 'Account & Access',
-    shortLabel: 'Access',
-    description: 'Everything around signing in, profiles, Google and GitHub login, password recovery, and secure access.',
+    label: 'Profile & Access',
+    shortLabel: 'Profile',
+    description: 'Keep your learner profile current, understand local storage, and use sign-in or recovery flows when needed.',
     accent: '03',
-    featureSlugs: ['sign-in-and-google', 'password-reset', 'student-profile'],
+    featureSlugs: ['student-profile', 'security-and-privacy', 'faq'],
   },
   {
     id: 'support',
     label: 'Troubleshooting',
     shortLabel: 'Support',
-    description: 'Fast fixes for account issues, missing confirmations, dashboard confusion, and chat questions.',
+    description: 'Fast fixes for dashboard confusion, local profile questions, editor flow, and chat behavior.',
     accent: '04',
-    featureSlugs: ['common-issues', 'security-and-privacy', 'faq'],
+    featureSlugs: ['common-issues', 'faq', 'security-and-privacy'],
   },
 ];
 
@@ -85,13 +89,13 @@ export const docsArticles: DocsArticle[] = [
     title: 'Welcome to Yantra Docs',
     navLabel: 'Welcome',
     summary:
-      'Start here to understand what Yantra is, what is live today, and how to move from account creation to your first focused learning session.',
+      'Start here to understand what Yantra is, what is live today, and how to move from the public dashboard into your first focused learning session.',
     eyebrow: 'Introduction',
     readTime: '4 min read',
     group: 'getting-started',
     heroLabel: 'Docs / Overview',
     tags: ['welcome', 'overview', 'getting started', 'docs', 'start here'],
-    related: ['create-account', 'what-is-yantra-ai', 'common-issues'],
+    related: ['first-dashboard-session', 'what-is-yantra-ai', 'common-issues'],
     sections: [
       {
         id: 'what-yantra-is-today',
@@ -100,22 +104,22 @@ export const docsArticles: DocsArticle[] = [
           {
             type: 'paragraph',
             text:
-              'Yantra is an AI-native learning platform built to help learners understand what to learn next, stay focused, and turn progress into real-world outcomes. The account layer, onboarding, protected dashboard, editable profile, live AI chat, and access request flow are already real.',
+              'Yantra is an AI-native learning platform built to help learners understand what to learn next, stay focused, and turn progress into real-world outcomes. The public dashboard, editable local profile, editor, live AI chat, and access request flow are already real.',
           },
           {
             type: 'cards',
             items: [
               {
                 title: 'Public entry',
-                body: 'The landing page explains Yantra, opens onboarding, and collects access intent.',
+                body: 'The landing page explains Yantra, opens the dashboard and editor, and collects access intent.',
               },
               {
-                title: 'Protected learner space',
-                body: 'The dashboard, student profile, and Python Room open after authentication. Onboarding is part of the new-account flow, but auth is the current route gate.',
+                title: 'Learner space',
+                body: 'The dashboard and student profile open immediately in the public build, while auth routes remain available for sign-in, recovery, and future protected continuity.',
               },
               {
                 title: 'Live AI assistant',
-                body: 'Yantra chat can explain the product, answer learning questions, and resume for signed-in users.',
+                body: 'Yantra chat can explain the product and answer learning questions, though public sessions can still reset.',
               },
             ],
           },
@@ -125,7 +129,7 @@ export const docsArticles: DocsArticle[] = [
             label: 'Current Product Reality',
             title: 'Some learning visuals are still illustrative',
             body:
-              'Your identity, profile, auth, and chat continuity are real. Some dashboard metrics, room states, and progression cards are still curated presentation content while the deeper learning model evolves.',
+              'Your local profile, public dashboard, and editor flow are real. Some dashboard metrics, room states, and progression cards are still curated presentation content while the deeper learning model evolves.',
           },
         ],
       },
@@ -136,11 +140,10 @@ export const docsArticles: DocsArticle[] = [
           {
             type: 'list',
             items: [
-              'Account creation, email sign-in, Google or GitHub sign-in, and password recovery',
+              'What the dashboard, student profile, editor, chat, and account access surfaces are for',
               'What Yantra AI is and how it supports focused learning',
-              'What the dashboard, student profile, skills, rooms, and chat surfaces are for',
               'How learning paths and void-style focus spaces are meant to help',
-              'Common issues, recovery paths, and support-first troubleshooting',
+              'Common issues, privacy basics, and support-first troubleshooting',
             ],
           },
         ],
@@ -153,16 +156,20 @@ export const docsArticles: DocsArticle[] = [
             type: 'steps',
             items: [
               {
-                title: 'Create your account',
-                body: 'Use email and password to open your Yantra identity, or continue with Google or GitHub if that fits your flow.',
-              },
-              {
-                title: 'Complete onboarding',
-                body: 'Choose the role that best fits you so Yantra can open the right learner context.',
+                title: 'Use auth only if you need it',
+                body: 'The public build can be explored without sign-in, but login and recovery flows are available when you want to test account-linked paths.',
               },
               {
                 title: 'Open the dashboard',
-                body: 'Your dashboard is the protected home surface where your profile, guided path, and chat entry live.',
+                body: 'Start with the learner home surface to see the current path, profile area, and chat entry.',
+              },
+              {
+                title: 'Set your student profile',
+                body: 'Update the profile fields that matter so the dashboard reflects your current learning context on this device.',
+              },
+              {
+                title: 'Use chat or open the editor',
+                body: 'Ask Yantra what to do next, or jump into the editor when you want to practice directly.',
               },
             ],
           },
@@ -407,7 +414,7 @@ export const docsArticles: DocsArticle[] = [
     slug: 'first-dashboard-session',
     title: 'Open Your First Dashboard Session',
     summary:
-      'Learn what you will see the first time the dashboard opens, what is already personalized, and what to do next inside the protected learner surface.',
+      'Learn what you will see the first time the dashboard opens, what is already personalized, and what to do next inside the public learner surface.',
     eyebrow: 'Getting Started',
     readTime: '4 min read',
     group: 'getting-started',
@@ -422,12 +429,15 @@ export const docsArticles: DocsArticle[] = [
           {
             type: 'paragraph',
             text:
-              'The dashboard is the learner home surface. On first open, it greets you with your identity, a current path card, summary progress visuals, and a floating chat entry. Even in early product stages, it gives your learning context a place to settle.',
+              'The dashboard is the learner home surface. On first open, it gives you a current path card, summary progress visuals, a local profile context, and a floating chat entry. Even in early product stages, it gives your learning context a place to settle.',
           },
           {
             type: 'cards',
             items: [
-              { title: 'Identity', body: 'Your name and account-linked details are pulled from the real profile layer.' },
+              {
+                title: 'Profile context',
+                body: 'Your dashboard starts with a default learner profile and updates when you edit your profile on this device.',
+              },
               { title: 'Current path', body: 'You see a framed learning direction, focus label, and next-action area.' },
               { title: 'Yantra chat', body: 'The assistant stays close so you can ask what to learn next without leaving the page.' },
               {
@@ -448,7 +458,7 @@ export const docsArticles: DocsArticle[] = [
             label: 'Honest Product Reading',
             title: 'Not every dashboard tile is dynamic yet',
             body:
-              'Your auth, profile, and chat continuity are live. Some progress numbers, rooms, curriculum nodes, and momentum visuals are still curated presentation content while the full learning-state model is being built.',
+              'Your local profile and chat surface are live. Some progress numbers, rooms, curriculum nodes, and momentum visuals are still curated presentation content while the full learning-state model is being built.',
           },
           {
             type: 'steps',
@@ -515,7 +525,7 @@ export const docsArticles: DocsArticle[] = [
             items: [
               {
                 title: 'Identity-aware',
-                body: 'Your account, role, and profile are part of the learning context, not an afterthought.',
+                body: 'Your profile, dashboard state, and learning direction are part of the experience, not an afterthought.',
               },
               {
                 title: 'Guidance-first',
@@ -533,7 +543,7 @@ export const docsArticles: DocsArticle[] = [
             label: 'Best Mental Model',
             title: 'Treat Yantra as a guided foundation with a live AI layer',
             body:
-              'It already helps you create an identity, enter a protected learner space, and ask good questions. The broader adaptive system is being built on top of that foundation.',
+              'It already helps you open the dashboard, keep a local learner context, and ask good questions. The broader adaptive system is being built on top of that foundation.',
           },
         ],
       },
@@ -573,10 +583,13 @@ export const docsArticles: DocsArticle[] = [
           {
             type: 'cards',
             items: [
-              { title: 'Clear entry', body: 'Account creation, login, onboarding, and first dashboard access form a clean first-run path.' },
+              { title: 'Clear entry', body: 'The landing page, dashboard, docs, and editor form a clean first-run path.' },
               { title: 'Focused home surface', body: 'The dashboard and student profile create a stable place for your learner context.' },
               { title: 'Embedded help', body: 'Yantra chat can answer product questions and learning questions without sending you elsewhere.' },
-              { title: 'Persistent context', body: 'Signed-in chat history restores so the conversation does not reset every time you return.' },
+              {
+                title: 'Steady context',
+                body: 'Your local profile and current-session chat keep the experience from feeling disposable, even before sync features exist.',
+              },
             ],
           },
         ],
@@ -702,13 +715,13 @@ export const docsArticles: DocsArticle[] = [
     slug: 'student-profile',
     title: 'Student Profile',
     summary:
-      'Your student profile is the most concrete persisted learner surface in Yantra today. Here is what it stores and why keeping it current matters.',
+      'Your student profile is the clearest learner surface in Yantra today. Here is what it stores and why keeping it current matters.',
     eyebrow: 'Account & Access',
     readTime: '4 min read',
     group: 'account-access',
     heroLabel: 'Access / Profile',
     tags: ['profile', 'student profile', 'account details', 'save profile'],
-    related: ['first-dashboard-session', 'complete-onboarding', 'security-and-privacy'],
+    related: ['first-dashboard-session', 'security-and-privacy', 'faq'],
     sections: [
       {
         id: 'what-the-profile-stores',
@@ -717,10 +730,10 @@ export const docsArticles: DocsArticle[] = [
           {
             type: 'cards',
             items: [
-              { title: 'Name', body: 'Used across the protected learner surfaces so the product feels tied to your real identity.' },
+              { title: 'Name', body: 'Used across the dashboard and related learner surfaces so the product feels tied to your real context.' },
               { title: 'Class and year', body: 'Useful for grounding the learner context and keeping the experience aligned with your stage.' },
               { title: 'Skill level and progress', body: 'A lightweight baseline that helps Yantra frame the current learner state.' },
-              { title: 'Role and onboarding state', body: 'Used to decide whether the protected app can open and how the experience begins.' },
+              { title: 'Direction signals', body: 'Used to keep the dashboard framing and suggestions readable on this device.' },
             ],
           },
         ],
@@ -732,15 +745,15 @@ export const docsArticles: DocsArticle[] = [
           {
             type: 'list',
             items: [
-              'The profile is seeded automatically the first time the protected route loads',
-              'Changes are validated and sanitized before being saved',
-              'What you save persists across sessions instead of living only in browser memory',
+              'The profile loads with a safe default state the first time the dashboard opens',
+              'Changes are normalized before being saved',
+              'What you save stays on this device instead of requiring an account',
             ],
           },
           {
             type: 'steps',
             items: [
-              { title: 'Open the student profile page', body: 'Reach it from the protected learner area once you are authenticated.' },
+              { title: 'Open the student profile page', body: 'Reach it from the dashboard whenever you want to tune the learner context.' },
               { title: 'Edit the fields that changed', body: 'Update your name, class, skill level, progress, or academic year as needed.' },
               { title: 'Save and verify', body: 'Reload once after saving to confirm the latest values persisted correctly.' },
             ],
@@ -789,7 +802,7 @@ export const docsArticles: DocsArticle[] = [
             items: [
               'They reduce the feeling of “everything at once” by giving the dashboard structure',
               'They provide visual anchors for where a learner is supposed to look next',
-              'They make the protected app feel like a deliberate learning environment instead of a blank shell',
+              'They make the dashboard feel like a deliberate learning environment instead of a blank shell',
             ],
           },
           {
@@ -957,7 +970,9 @@ export const docsArticles: DocsArticle[] = [
             type: 'list',
             items: [
               'On the public marketing site as a product explainer and guided entry point',
-              'Inside the protected dashboard as a learner-contextual helper',
+              'Inside the dashboard as a learner-contextual helper',
+              'Inside the Python Room voice flow after speech is transcribed into text',
+              'Inside the dashboard as a learner-contextual helper',
               'Inside the Python Room voice flow after speech is transcribed into text',
               'As a shared widget that can open from guided prompts or the floating launcher',
             ],
@@ -965,10 +980,10 @@ export const docsArticles: DocsArticle[] = [
           {
             type: 'callout',
             tone: 'tip',
-            label: 'Signed-In Benefit',
-            title: 'Authenticated chat continuity is already live',
+            label: 'Current Behavior',
+            title: 'Public chat can still reset between sessions',
             body:
-              'When you chat while signed in, Yantra restores the recent rolling conversation after reload so you can pick up where you left off.',
+              'Yantra can keep context during the current session, but the public experience should still be treated as temporary unless a future sync system is added.',
           },
         ],
       },
@@ -988,9 +1003,9 @@ export const docsArticles: DocsArticle[] = [
             type: 'callout',
             tone: 'note',
             label: 'Scope Rule',
-            title: 'Use Support Desk for docs and access issues',
+            title: 'Use Support Desk for docs and product-use issues',
             body:
-              'On the docs surface, Support Desk is the dedicated customer care AI. It focuses on onboarding, recovery, troubleshooting, and product-use guidance from the documentation. Use Yantra when you want the learning or teaching side of the experience.',
+              'On the docs surface, Support Desk is the dedicated customer care AI. It focuses on dashboard, editor, profile, troubleshooting, and product-use guidance from the documentation. Use Yantra when you want the learning or teaching side of the experience.',
           },
         ],
       },
@@ -1073,24 +1088,25 @@ export const docsArticles: DocsArticle[] = [
     slug: 'common-issues',
     title: 'Common Issues and Fast Fixes',
     summary:
-      'A support-first troubleshooting guide for the issues users usually hit first: email confirmation delays, auth confusion, redirects, and missing expected state.',
+      'A support-first troubleshooting guide for the issues users usually hit first: generic dashboard state, local profile confusion, editor questions, and chat resets.',
     eyebrow: 'Troubleshooting',
     readTime: '5 min read',
     group: 'support',
     heroLabel: 'Support / Fast Fixes',
-    tags: ['issues', 'troubleshooting', 'errors', 'login issue', 'dashboard issue'],
-    related: ['password-reset', 'sign-in-and-google', 'faq'],
+    tags: ['issues', 'troubleshooting', 'errors', 'dashboard issue', 'profile issue'],
+    related: ['student-profile', 'security-and-privacy', 'faq'],
     sections: [
       {
-        id: 'auth-and-access',
-        title: 'Auth and Access',
+        id: 'getting-started-and-entry',
+        title: 'Getting Started and Entry',
         blocks: [
           {
             type: 'cards',
             items: [
-              { title: 'No confirmation email yet', body: 'Wait a moment, check spam, and make sure you used the right email. Avoid creating a second account immediately.' },
-              { title: 'OAuth opened the wrong account', body: 'Restart Google or GitHub sign-in and choose the correct identity instead of continuing with the wrong account.' },
-              { title: 'I keep landing on onboarding', body: 'The account likely has not completed role selection yet. Finish onboarding once and try again.' },
+              { title: 'Not sure where to start', body: 'Open the dashboard first, then update the student profile if the learner context feels too generic.' },
+              { title: 'Shared project looks read-only', body: 'That is expected. Use Remix This Project to copy it into your local editor and keep working there.' },
+              { title: 'Editor data is missing on another device', body: 'Local-mode projects stay in the current browser and do not sync across devices yet.' },
+              { title: 'Auth flow feels off', body: 'If you are testing Google, GitHub, or password recovery, confirm the right identity and reload once before assuming the route is broken.' },
             ],
           },
         ],
@@ -1116,8 +1132,8 @@ export const docsArticles: DocsArticle[] = [
           {
             type: 'list',
             items: [
-              'If chat resets on the public site, that is expected because public marketing chat remains temporary',
-              'If you are signed in and chat still does not restore, refresh once and make sure the session is active',
+              'If chat resets after reload, that is currently expected in the public experience',
+              'If chat errors immediately, the deployed AI service or API key may be unavailable for the moment',
               'If an answer feels too broad, ask a narrower follow-up instead of restarting the thread',
             ],
           },
@@ -1130,9 +1146,10 @@ export const docsArticles: DocsArticle[] = [
           {
             type: 'steps',
             items: [
-              { title: 'Confirm which identity you are using', body: 'Most confusion starts when the wrong email, Google account, or GitHub account is used on the auth screen.' },
-              { title: 'Check whether onboarding is actually complete', body: 'If you keep getting redirected, the role-selection flow may still be unfinished even if the account exists.' },
-              { title: 'Reload once after profile or auth changes', body: 'A clean refresh is often enough to confirm whether the latest state persisted server-side.' },
+              { title: 'Start from the visible page', body: 'Use the current surface as the clue: dashboard, profile, docs, or editor usually tells you where the fix belongs.' },
+              { title: 'Confirm identity only when auth is involved', body: 'If the issue is on login, signup, Google, GitHub, or reset routes, verify which account or email you are actually using.' },
+              { title: 'Update the student profile first', body: 'If the dashboard feels generic, save the current class, level, and progress before assuming something is broken.' },
+              { title: 'Reload once after local changes', body: 'A clean refresh is often enough to confirm whether the latest profile or editor state persisted locally.' },
               { title: 'Use Support Desk or the exact guide next', body: 'Do not guess from memory when the docs already have a specific path for the symptom you are seeing.' },
             ],
           },
@@ -1142,7 +1159,7 @@ export const docsArticles: DocsArticle[] = [
             label: 'Support Rule',
             title: 'Work from the symptom outward',
             body:
-              'If the issue is unclear, start with the visible symptom: wrong redirect, missing email, generic dashboard, or lost password. The docs are structured so each symptom leads you into the nearest fix instead of forcing you to understand the whole system first.',
+              'If the issue is unclear, start with the visible symptom: generic dashboard, local profile mismatch, read-only project, or chat reset. The docs are structured so each symptom leads you into the nearest fix instead of forcing you to understand the whole system first.',
           },
         ],
       },
@@ -1152,13 +1169,13 @@ export const docsArticles: DocsArticle[] = [
     slug: 'security-and-privacy',
     title: 'Security and Privacy Basics',
     summary:
-      'A plain-language overview of what Yantra stores today, how access is protected, and the user habits that make the experience safer.',
+      'A plain-language overview of what Yantra stores today, what stays local, and the habits that make the experience safer.',
     eyebrow: 'Account & Access',
     readTime: '4 min read',
     group: 'account-access',
     heroLabel: 'Access / Security',
     tags: ['security', 'privacy', 'data', 'safe access', 'account safety'],
-    related: ['password-reset', 'student-profile', 'faq'],
+    related: ['student-profile', 'faq', 'common-issues'],
     sections: [
       {
         id: 'what-yantra-stores',
@@ -1167,24 +1184,24 @@ export const docsArticles: DocsArticle[] = [
           {
             type: 'list',
             items: [
-              'Your account identity through Supabase authentication',
-              'Your learner profile fields such as name, class designation, skill level, progress, and academic year',
-              'Authenticated rolling chat history for signed-in users',
+              'Your local learner profile fields such as name, class designation, skill level, progress, and academic year',
+              'Editor projects saved in the current browser when you use local mode',
+              'Temporary chat context or service-backed chat history depending on the deployed configuration',
               'Public access requests when someone uses the landing-page access form',
             ],
           },
         ],
       },
       {
-        id: 'how-access-is-protected',
-        title: 'How Access Is Protected',
+        id: 'how-data-is-handled',
+        title: 'How Data Is Handled',
         blocks: [
           {
             type: 'cards',
             items: [
-              { title: 'Protected routes', body: 'The dashboard and student profile are checked server-side so unauthenticated users cannot open them casually.' },
-              { title: 'Session handling', body: 'Supabase SSR session cookies keep auth state moving through the app consistently.' },
-              { title: 'Validated writes', body: 'Profile and access-request inputs are validated and sanitized before persistence.' },
+              { title: 'Local-first profile storage', body: 'Dashboard profile edits stay on the device you are using unless a future sync system is introduced.' },
+              { title: 'Validated server routes', body: 'Access-request inputs and supported backend requests are validated before processing.' },
+              { title: 'Protected deployment secrets', body: 'AI keys and service URLs stay on the server and are not exposed directly in the UI.' },
             ],
           },
         ],
@@ -1196,9 +1213,10 @@ export const docsArticles: DocsArticle[] = [
           {
             type: 'steps',
             items: [
-              { title: 'Use one consistent identity', body: 'If you use Google or GitHub sign-in, keep the same email aligned with your Yantra account to avoid fragmentation.' },
-              { title: 'Rotate passwords when needed', body: 'Use reset if you suspect the old password is weak or compromised.' },
-              { title: 'Sign out on shared devices', body: 'Yantra supports a clean sign-out route, so use it whenever you are not on a personal machine.' },
+              { title: 'Use one device when possible', body: 'Local profile and editor state are easiest to keep consistent when you stay on the same browser and machine.' },
+              { title: 'Avoid sensitive personal data', body: 'Treat the public dashboard and editor as product surfaces, not a place for secrets or private records.' },
+              { title: 'Clear browser data on shared devices', body: 'If you are on a shared machine, clear local browser storage when you finish so your saved state does not remain available.' },
+              { title: 'Use one consistent identity when you test auth', body: 'If you use Google or GitHub sign-in, keep the same email aligned with your Yantra account to avoid fragmented test states.' },
             ],
           },
         ],
@@ -1209,24 +1227,25 @@ export const docsArticles: DocsArticle[] = [
     slug: 'faq',
     title: 'Frequently Asked Questions',
     summary:
-      'Quick answers to the most common Yantra questions around accounts, onboarding, dashboard behavior, chat, and what is already live.',
+      'Quick answers to the most common Yantra questions around the public dashboard, local profile behavior, chat, and what is already live.',
     eyebrow: 'Troubleshooting',
     readTime: '5 min read',
     group: 'support',
     heroLabel: 'Support / FAQ',
     tags: ['faq', 'questions', 'help', 'support answers'],
-    related: ['common-issues', 'what-is-yantra-ai', 'password-reset'],
+    related: ['common-issues', 'what-is-yantra-ai', 'student-profile'],
     sections: [
       {
-        id: 'accounts-and-access',
-        title: 'Accounts and Access',
+        id: 'dashboard-and-profile',
+        title: 'Dashboard and Profile',
         blocks: [
           {
             type: 'cards',
             items: [
-              { title: 'Do I need to verify my email?', body: 'Often yes. If verification is enabled, confirm your email before expecting the protected app to open normally.' },
-              { title: 'Can I use Google or GitHub instead of a password?', body: 'Yes. Both Google and GitHub sign-in are live through the same auth surface.' },
-              { title: 'Why am I seeing onboarding again?', body: 'Because the role-selection step probably has not been completed or saved yet.' },
+              { title: 'Do I need an account right now?', body: 'No. The current Yantra release opens the dashboard and editor without sign-in.' },
+              { title: 'Where is my profile stored?', body: 'Your profile is stored on the current device or browser in the public experience.' },
+              { title: 'Why does the dashboard still feel generic?', body: 'Because many learning visuals are still illustrative and the dashboard depends on the local profile you have saved.' },
+              { title: 'Can I still use Google or GitHub?', body: 'Yes. Those auth options are available when you want to test account-linked flows instead of the public path.' },
             ],
           },
         ],
@@ -1238,8 +1257,8 @@ export const docsArticles: DocsArticle[] = [
           {
             type: 'cards',
             items: [
-              { title: 'Is the dashboard fully adaptive already?', body: 'Not yet. The account, profile, and chat foundation are real; many learning visuals are still evolving.' },
-              { title: 'Does chat remember previous messages?', body: 'Yes for signed-in learners, no for public marketing chat.' },
+              { title: 'Is the dashboard fully adaptive already?', body: 'Not yet. The profile and chat foundation are real, but many learning visuals are still evolving.' },
+              { title: 'Does chat remember previous messages?', body: 'It can keep the current session moving, but the public experience should still be treated as temporary.' },
               { title: 'What are voids?', body: 'Voids are Yantra’s concept for focused learning spaces with less noise and better context continuity.' },
             ],
           },
@@ -1253,7 +1272,8 @@ export const docsArticles: DocsArticle[] = [
             type: 'list',
             items: [
               'Read What Is Yantra AI? if you want the product story',
-              'Read Create Your Yantra Account if you are entering the platform now',
+              'Read Open Your First Dashboard Session if you are entering the platform now',
+              'Read Student Profile if you want the fastest way to personalize the dashboard',
               'Read Common Issues and Fast Fixes if something already feels wrong',
               'Read Learning Paths and Voids if you want the clearest explanation of the product’s focus philosophy',
             ],
@@ -1264,15 +1284,15 @@ export const docsArticles: DocsArticle[] = [
   },
 ];
 
-export const docsHomeQuickStartSlugs = ['create-account', 'complete-onboarding', 'password-reset'];
+export const docsHomeQuickStartSlugs = ['welcome', 'first-dashboard-session', 'student-profile'];
 export const docsHomeCommonTaskSlugs = [
   'what-is-yantra-ai',
   'first-dashboard-session',
   'python-room',
   'chat-with-yantra',
-  'common-issues',
+  'security-and-privacy',
 ];
-export const docsHomeSupportSlugs = ['password-reset', 'common-issues', 'faq'];
+export const docsHomeSupportSlugs = ['common-issues', 'faq', 'student-profile'];
 
 export function getDocsArticleHref(slug: string) {
   return `/docs/${slug}`;
@@ -1282,12 +1302,26 @@ export function getDocsArticleBySlug(slug: string) {
   return docsArticles.find((article) => article.slug === slug) ?? null;
 }
 
+export function isHiddenDocsArticleSlug(slug: string) {
+  return hiddenDocsArticleSlugSet.has(slug);
+}
+
+export function getVisibleDocsArticles() {
+  return docsArticles.filter((article) => !isHiddenDocsArticleSlug(article.slug));
+}
+
+export function getVisibleDocsArticleBySlug(slug: string) {
+  const article = getDocsArticleBySlug(slug);
+  return article && !isHiddenDocsArticleSlug(article.slug) ? article : null;
+}
+
 export function getDocsArticlesByGroup(group: DocsGroupId) {
-  return docsArticles.filter((article) => article.group === group);
+  return getVisibleDocsArticles().filter((article) => article.group === group);
 }
 
 export function getDocsPrevNext(slug: string) {
-  const index = docsArticles.findIndex((article) => article.slug === slug);
+  const visibleArticles = getVisibleDocsArticles();
+  const index = visibleArticles.findIndex((article) => article.slug === slug);
 
   if (index === -1) {
     return {
@@ -1297,19 +1331,20 @@ export function getDocsPrevNext(slug: string) {
   }
 
   return {
-    previous: index > 0 ? docsArticles[index - 1] : null,
-    next: index < docsArticles.length - 1 ? docsArticles[index + 1] : null,
+    previous: index > 0 ? visibleArticles[index - 1] : null,
+    next: index < visibleArticles.length - 1 ? visibleArticles[index + 1] : null,
   };
 }
 
 export function searchDocsArticles(query: string) {
   const normalizedQuery = query.trim().toLowerCase();
+  const visibleArticles = getVisibleDocsArticles();
 
   if (!normalizedQuery) {
-    return docsArticles;
+    return visibleArticles;
   }
 
-  return docsArticles.filter((article) => {
+  return visibleArticles.filter((article) => {
     const searchSpace = [article.title, article.summary, article.eyebrow, ...article.tags]
       .join(' ')
       .toLowerCase();

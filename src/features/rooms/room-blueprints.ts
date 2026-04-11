@@ -1,6 +1,43 @@
 import type { RoomBlueprint } from './room-blueprint';
 
 export const roomBlueprints: RoomBlueprint[] = [
+  {
+    id: 'control-flow-calibration',
+    topic: 'Control Flow',
+    roomNumber: 0,
+    title: 'Control Flow Calibration',
+    learningGoal: 'Settle into the Yantra room flow and practice readable control flow with learner-score data.',
+    conceptSummary:
+      'This first live room is a quiet shell for focused Python work. The goal is to make one clean pass through learner data and get comfortable with Yantra’s room flow before the broader sequence opens up.',
+    difficulty: 'beginner',
+    estimatedMinutes: 18,
+    starterCode: `scores = [
+    ("Asha", 88),
+    ("Dev", 73),
+    ("Ira", 95),
+    ("Kabir", 61),
+]
+
+for name, score in scores:
+    # assign a label: Strong, Average, or Needs Work
+    # print: "Asha - 88 - Strong"
+    pass
+`,
+    expectedOutputHint: 'Asha - 88 - Strong\nDev - 73 - Average\nIra - 95 - Strong\nKabir - 61 - Needs Work',
+    successCriteria: [
+      'Loop through every learner score exactly once.',
+      'Assign a readable label for each learner based on the score.',
+      'Print one clean summary line per learner.',
+    ],
+    starterGuidance: [
+      'Use tuple unpacking inside the loop: for name, score in scores:',
+      'Choose labels like Strong, Average, and Needs Work with if/elif/else.',
+      'Keep the final output to one line per learner.',
+    ],
+    bannedConcepts: ['functions', 'while loops', 'list comprehension', 'classes'],
+    phaseLabel: 'Control Flow // Calibration',
+  },
+
 
   // ─── TOPIC 1: VARIABLES (3 rooms) ───────────────────────────
 

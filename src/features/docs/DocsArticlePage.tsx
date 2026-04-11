@@ -4,7 +4,13 @@ import Link from 'next/link';
 import { motion } from 'motion/react';
 import { AlertTriangle, ArrowLeft, ArrowRight, Lightbulb, ShieldCheck, type LucideIcon } from 'lucide-react';
 import DocsShell from './DocsShell';
-import { getDocsArticleBySlug, getDocsArticleHref, getDocsPrevNext, type DocsBlock } from './docs-content';
+import {
+  getDocsArticleBySlug,
+  getDocsArticleHref,
+  getDocsPrevNext,
+  getVisibleDocsArticleBySlug,
+  type DocsBlock,
+} from './docs-content';
 
 type DocsCalloutBlock = Extract<DocsBlock, { type: 'callout' }>;
 
@@ -129,10 +135,10 @@ export default function DocsArticlePage({ slug }: { slug: string }) {
   }
 
   const isArticle = (
-    candidate: ReturnType<typeof getDocsArticleBySlug>,
-  ): candidate is NonNullable<ReturnType<typeof getDocsArticleBySlug>> => Boolean(candidate);
+    candidate: ReturnType<typeof getVisibleDocsArticleBySlug>,
+  ): candidate is NonNullable<ReturnType<typeof getVisibleDocsArticleBySlug>> => Boolean(candidate);
   const { previous, next } = getDocsPrevNext(slug);
-  const relatedArticles = article.related.map(getDocsArticleBySlug).filter(isArticle);
+  const relatedArticles = article.related.map(getVisibleDocsArticleBySlug).filter(isArticle);
   const toc = article.sections.map((section) => ({
     id: section.id,
     title: section.title,

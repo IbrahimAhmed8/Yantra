@@ -86,14 +86,14 @@ export function warmPyodideRuntime(): Promise<boolean> {
   });
 }
 
-export function runPythonInBrowser(code: string): Promise<PythonRunResult> {
+export function runPythonInBrowser(code: string, stdin = ''): Promise<PythonRunResult> {
   return new Promise((resolve, reject) => {
     try {
       const worker = getPyodideWorker();
       const messageId = ++messageIdCounter;
       
       pendingRequests.set(messageId, { resolve, reject });
-      worker.postMessage({ id: messageId, code, action: 'run' });
+      worker.postMessage({ id: messageId, code, stdin, action: 'run' });
     } catch (error) {
       reject(error);
     }

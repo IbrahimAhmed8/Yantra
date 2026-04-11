@@ -7,13 +7,11 @@ import {
   BookOpen,
   Brain,
   CircleHelp,
-  KeyRound,
   LayoutDashboard,
   MessageSquareMore,
   Search,
   ShieldCheck,
   Sparkles,
-  UserPlus,
   Waypoints,
   type LucideIcon,
 } from 'lucide-react';
@@ -32,13 +30,13 @@ import {
 } from './docs-content';
 
 const articleIcons: Record<string, LucideIcon> = {
-  'create-account': UserPlus,
-  'complete-onboarding': Sparkles,
-  'password-reset': KeyRound,
+  welcome: Sparkles,
   'what-is-yantra-ai': Brain,
   'first-dashboard-session': LayoutDashboard,
   'chat-with-yantra': MessageSquareMore,
   'common-issues': CircleHelp,
+  'student-profile': ShieldCheck,
+  'security-and-privacy': ShieldCheck,
   faq: ShieldCheck,
   'learning-paths-and-voids': Waypoints,
 };
@@ -120,8 +118,8 @@ export default function DocsHomePage() {
               Documentation
             </h1>
             <p className="mt-7 max-w-3xl text-base leading-relaxed text-white/58 sm:text-lg lg:text-[1.22rem]">
-              Everything a learner needs to get started with Yantra, understand the product, recover access, read the
-              protected dashboard, and move through common issues without feeling lost.
+              Everything a learner needs to get started with Yantra, understand the product, use the public dashboard
+              and editor, and move through common issues without feeling lost.
             </p>
           </div>
 
@@ -132,7 +130,7 @@ export default function DocsHomePage() {
                 type="text"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search getting started, passwords, onboarding, Yantra AI, chat..."
+                placeholder="Search dashboard, profile, editor, Yantra AI, chat..."
                 className="w-full rounded-full border border-white/8 bg-black/28 py-4 pl-14 pr-24 text-sm text-white outline-none transition-colors placeholder:text-white/24 focus:border-white/20"
               />
               <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 rounded-full border border-white/8 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-white/24">
@@ -142,7 +140,7 @@ export default function DocsHomePage() {
           </div>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            {['Create account', 'Start onboarding', 'Reset password', 'Understand Yantra AI'].map((item) => (
+            {['Open dashboard', 'Update profile', 'Use editor', 'Understand Yantra AI'].map((item) => (
               <span
                 key={item}
                 className="rounded-full border border-white/8 bg-black/24 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/42"
@@ -181,8 +179,7 @@ export default function DocsHomePage() {
               <div className="rounded-[2rem] bg-white/[0.03] p-8 shadow-[0_24px_80px_rgba(0,0,0,0.32)]">
                 <p className="text-2xl font-semibold tracking-tight text-white">No exact match yet.</p>
                 <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/58">
-                  Try account, onboarding, dashboard, password, Google, or chat. Most support questions fall into one
-                  of those paths.
+                  Try dashboard, profile, editor, privacy, or chat. Most support questions fall into one of those paths.
                 </p>
               </div>
             )}
@@ -194,8 +191,8 @@ export default function DocsHomePage() {
                 <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/34">Quick Start Protocols</p>
                 <h2 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">Start without guessing</h2>
                 <p className="mt-3 text-sm leading-relaxed text-white/56 sm:text-base">
-                  The cleanest first path: create an account, complete onboarding, then recover access only if the usual
-                  flow breaks.
+                  The cleanest first path: open the dashboard, update your profile, then use chat or the editor when
+                  you want a clear next move.
                 </p>
               </div>
 
@@ -286,11 +283,11 @@ export default function DocsHomePage() {
                 <div className="rounded-[2.4rem] bg-white/[0.04] px-6 py-8 shadow-[0_28px_90px_rgba(0,0,0,0.34)] sm:px-8">
                   <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/32">Support Lane</p>
                   <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-                    Fast help for access, setup, and confusion
+                    Fast help for setup, profile questions, and confusion
                   </h2>
                   <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/56 sm:text-base">
                     Yantra is at its best when the user does not have to guess what broke. Start with the closest symptom,
-                    read one short guide, and move back into the protected app with less noise.
+                    read one short guide, and move back into the dashboard or editor with less noise.
                   </p>
 
                   <div className="mt-8 grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
@@ -314,13 +311,13 @@ export default function DocsHomePage() {
                     <div className="rounded-[1.4rem] bg-white/[0.04] p-4">
                       <p className="font-medium text-white">New here?</p>
                       <p className="mt-2 text-sm leading-relaxed text-white/56">
-                        Start with Create Account, then Complete Onboarding, then Open Your First Dashboard Session.
+                        Start with Welcome, then Open Your First Dashboard Session, then Student Profile.
                       </p>
                     </div>
                     <div className="rounded-[1.4rem] bg-white/[0.04] p-4">
                       <p className="font-medium text-white">Already blocked?</p>
                       <p className="mt-2 text-sm leading-relaxed text-white/56">
-                        Read Common Issues, then Password Reset, then FAQ if the symptom is still fuzzy.
+                        Read Common Issues, then FAQ, then Security and Privacy Basics if the symptom is still fuzzy.
                       </p>
                     </div>
                     <div className="rounded-[1.4rem] bg-white/[0.04] p-4">

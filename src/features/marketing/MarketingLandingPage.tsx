@@ -115,10 +115,10 @@ function Nav() {
             </Link>
 
             <Link
-              href="/signup"
+              href="/dashboard"
               className="hoverable rounded-full bg-white px-6 py-2.5 font-mono text-[11px] uppercase tracking-[0.22em] text-black transition-transform duration-300 hover:scale-[0.98]"
             >
-              Onboard
+              Dashboard
             </Link>
           </div>
 
@@ -175,10 +175,10 @@ function Hero() {
           transition={{ delay: 0.8, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
           <Link
-            href="/signup"
+            href="/dashboard"
             className="hoverable w-full rounded-full bg-white px-10 py-5 text-center text-sm font-bold uppercase tracking-widest text-black transition-transform duration-300 hover:scale-105 sm:w-auto"
           >
-            Start Onboarding
+            Open Dashboard
           </Link>
           <Link
             href="/editor"
@@ -495,8 +495,8 @@ function Footer() {
           >
             Demo
           </button>
-          <Link href="/signup" className="hoverable transition-colors hover:text-white">
-            Create Account
+          <Link href="/dashboard" className="hoverable transition-colors hover:text-white">
+            Dashboard
           </Link>
         </div>
         <div className="font-mono text-xs uppercase tracking-widest text-white/50">

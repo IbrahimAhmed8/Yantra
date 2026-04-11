@@ -1,15 +1,12 @@
-import { requireAuthenticatedProfile } from '@/src/lib/supabase/route-guards';
-import StudentProfileOverview from '@/src/features/dashboard/StudentProfileOverview';
+import StudentProfilePage from '@/src/features/dashboard/StudentProfilePage';
+import { defaultStudentProfile } from '@/src/features/dashboard/student-profile-model';
 
-export default async function StudentProfileIndexPage() {
-  const result = await requireAuthenticatedProfile({
-    unauthenticatedRedirect: '/login?message=Log%20in%20to%20open%20your%20profile.&kind=info',
-  });
-
+export default function DashboardStudentProfilePage() {
   return (
-    <StudentProfileOverview
-      initialProfileData={result.profile}
-      defaultProfileData={result.defaultProfile}
+    <StudentProfilePage
+      initialProfileData={defaultStudentProfile}
+      defaultProfileData={defaultStudentProfile}
+      publicMode
     />
   );
 }

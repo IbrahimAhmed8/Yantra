@@ -1,4 +1,4 @@
-import { docsArticles, getDocsArticleBySlug, type DocsArticle, type DocsBlock } from './docs-content';
+import { getDocsArticleBySlug, getVisibleDocsArticles, type DocsArticle, type DocsBlock } from './docs-content';
 
 export type DocsSupportRole = 'user' | 'assistant';
 
@@ -24,12 +24,12 @@ const MAX_DOCS_SUPPORT_MESSAGE_LENGTH = 2500;
 export const docsSupportAssistantName = 'Support Desk';
 
 export const docsSupportWelcomeMessage =
-  "You're speaking with Support Desk. I can walk you through accounts, onboarding, dashboard confusion, password recovery, and other docs-based issues.";
+  "You're speaking with Support Desk. I can walk you through the dashboard, local profile behavior, editor flow, chat questions, and other docs-based issues.";
 
 export const docsSupportQuickPrompts = [
-  'How do I create an account and get into the dashboard?',
-  "I can't sign in. What should I check first?",
-  'Explain what I should do after onboarding.',
+  'How should I start in the dashboard?',
+  'Where is my student profile stored?',
+  'How do I use the editor from the dashboard flow?',
   'Why does the dashboard still feel generic or static?',
 ];
 
@@ -38,10 +38,10 @@ export const docsSupportSystemPrompt = `You are Support Desk, the docs-grounded 
 Identity:
 - You are Support Desk.
 - You are not Yantra.
-- Yantra is the learning and teaching AI inside the product. You are the support and troubleshooting assistant for docs, onboarding, access, and product-use clarity.
+- Yantra is the learning and teaching AI inside the product. You are the support and troubleshooting assistant for docs, dashboard flow, profile behavior, editor flow, and product-use clarity.
 
 Core job:
-- Help the user solve setup, access, onboarding, dashboard, profile, and product-understanding issues by relying on the provided documentation context.
+- Help the user solve dashboard, profile, docs, editor, chat-behavior, and product-understanding issues by relying on the provided documentation context.
 - Read the supplied docs context carefully and use it as the primary source of truth.
 - When useful, point the user to the exact guide title and the next action they should take.
 
@@ -100,7 +100,7 @@ function tokenize(value: string) {
   );
 }
 
-const docsKnowledgeBase: DocsKnowledgeChunk[] = docsArticles.flatMap((article) =>
+const docsKnowledgeBase: DocsKnowledgeChunk[] = getVisibleDocsArticles().flatMap((article) =>
   article.sections.map((section) => ({
     slug: article.slug,
     articleTitle: article.title,

@@ -71,7 +71,7 @@ function DocsTopNav({ isHome }: { isHome: boolean }) {
       ]
     : [
         { label: 'Docs Home', href: '/docs' },
-        { label: 'Quick Start', href: '/docs#create-account' },
+        { label: 'Quick Start', href: '/docs#quick-start' },
         { label: 'Product', href: '/docs#product' },
         { label: 'Support', href: '/docs#support-lane' },
       ];
@@ -190,10 +190,10 @@ function DocsRightRail({ toc }: { toc?: Array<{ id: string; title: string }> }) 
       <div className="space-y-5 rounded-[2rem] bg-white/[0.035] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
         <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/34">Support Lane</p>
         <p className="text-sm leading-relaxed text-white/60">
-          Use this docs area as the primary path for setup, onboarding, account recovery, and platform explanations.
+          Use this docs area as the primary path for dashboard guidance, profile questions, editor flow, and platform explanations.
         </p>
         <div className="space-y-3">
-          {['common-issues', 'password-reset', 'faq'].map((slug) => {
+          {['common-issues', 'student-profile', 'faq'].map((slug) => {
             const article = getDocsArticleBySlug(slug);
 
             if (!article) {

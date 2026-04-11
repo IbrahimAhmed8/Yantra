@@ -6,7 +6,6 @@ import {
   HelpCircle,
   LayoutGrid,
   Lock,
-  LogOut,
   Rocket,
   ShieldAlert,
   Sparkles,
@@ -64,13 +63,13 @@ export const sideNavItems: StudentProfileNavItem[] = [
 export const supportNavItems: StudentProfileNavItem[] = [
   { label: 'Danger Zone', icon: ShieldAlert, href: '/dashboard/student-profile/danger-zone' },
   { label: 'Docs', icon: HelpCircle, href: '/docs/student-profile' },
-  { label: 'Logout', icon: LogOut, href: '/auth/signout' },
+  { label: 'Editor', icon: Rocket, href: '/editor' },
 ];
 
 export const helpFaqs = [
   {
     question: 'How do I edit my profile?',
-    answer: 'Open the profile overview card, choose Edit Profile, update your details, and press save. Your latest record syncs to your Yantra account.',
+    answer: 'Open the profile overview card, choose Edit Profile, update your details, and press save. Your latest record is stored for this device in the current public build.',
   },
   {
     question: 'What does skill level mean?',
@@ -78,7 +77,7 @@ export const helpFaqs = [
   },
   {
     question: 'Does my progress save automatically?',
-    answer: 'Profile edits save when you press the save button. The latest saved version is stored on your Yantra account and follows your session.',
+    answer: 'Profile edits save when you press the save button. In the current public build, the saved version stays on this device.',
   },
   {
     question: 'Where can I review my curriculum and performance?',

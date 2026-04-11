@@ -23,8 +23,21 @@ function normalizeLines(lines: string[]) {
   return lines.join('\n').split('\n').map((line) => line.trimEnd()).join('\n').trim();
 }
 
+function createStdinHandler(stdin = '') {
+  const normalized = stdin.replace(/\r\n/g, '\n');
+
+  if (!normalized) {
+    return () => null;
+  }
+
+  const lines = normalized.endsWith('\n') ? normalized.slice(0, -1).split('\n') : normalized.split('\n');
+  let index = 0;
+
+  return () => lines[index++] ?? null;
+}
+
 self.onmessage = async (event: MessageEvent) => {
-  const { id, code, action } = event.data;
+  const { id, code, stdin, action } = event.data;
 
   if (action === 'warmup') {
     try {
@@ -45,7 +58,7 @@ self.onmessage = async (event: MessageEvent) => {
 
     pyodide.setStdout({ batched: (output: string) => output && stdoutBuffer.push(output) });
     pyodide.setStderr({ batched: (output: string) => output && stderrBuffer.push(output) });
-    pyodide.setStdin({ stdin: () => null });
+    pyodide.setStdin({ stdin: createStdinHandler(stdin) });
 
     await pyodide.loadPackagesFromImports(code, {
       errorCallback: (message: string) => message && stderrBuffer.push(message),

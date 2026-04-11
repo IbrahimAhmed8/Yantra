@@ -11,7 +11,7 @@ export async function GET() {
     const result = await getAuthenticatedChatHistory();
 
     if (!result) {
-      return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
+      return NextResponse.json({ messages: [] });
     }
 
     return NextResponse.json({ messages: result.messages });

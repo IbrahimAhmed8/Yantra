@@ -1,6 +1,5 @@
-import ResetPasswordExperience from '@/src/features/auth/ResetPasswordExperience';
-import { hasSupabaseEnv } from '@/src/lib/supabase/env';
+import { redirect } from 'next/navigation';
 
 export default function ResetPasswordPage() {
-  return <ResetPasswordExperience supabaseConfigured={hasSupabaseEnv()} />;
+  redirect('/dashboard');
 }
