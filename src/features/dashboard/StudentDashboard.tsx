@@ -23,19 +23,21 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { motion, useInView } from 'motion/react';
-import { createContext, memo, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { ChatProvider, useChatWidgetActions } from '@/src/features/chat/ChatWidget';
 import { useScrollThreshold } from '@/src/features/motion/useScrollThreshold';
 import GlobalSidebar from '@/src/features/navigation/GlobalSidebar';
+import { DashboardDataContext, useDashboardData } from './DashboardDataContext';
 import {
   type DashboardRoomTextureKey,
   type DashboardSkillIconKey,
   type DashboardSkillToneKey,
-  type StudentDashboardCurriculumNode,
   type StudentDashboardData,
-  type StudentDashboardRoom,
   type StudentDashboardSkill,
 } from './student-dashboard-model';
+import DashboardCurriculumSection from './sections/DashboardCurriculumSection';
+import DashboardRoomsSection from './sections/DashboardRoomsSection';
+import DashboardSectionShell from './sections/DashboardSectionShell';
 const YantraAmbientBackground = dynamic(() => import('./YantraAmbientBackground'), { ssr: false });
 import type {
   DashboardCurriculumNode,
@@ -397,8 +399,6 @@ function buildDashboardViewModel(data: StudentDashboardData): DashboardViewModel
   };
 }
 
-const DashboardDataContext = createContext<StudentDashboardData | null>(null);
-
 const aiPrompts = [
   'Explain backpropagation simply',
   'What should I learn next?',
@@ -430,70 +430,6 @@ const roomTextureMap: Record<DashboardRoomTextureKey, string> = {
   'prompt-lab':
     'radial-gradient(circle at 30% 18%, rgba(255,255,255,0.08), transparent 26%), linear-gradient(150deg, rgba(9,9,9,0.96), rgba(20,20,20,0.84) 50%, rgba(11,11,13,0.98) 100%)',
 };
-
-function buildRoomHref(roomKey: string) {
-  if (roomKey === 'python-room') {
-    return '/dashboard/rooms/python';
-  }
-
-  return null;
-}
-
-function useDashboardData() {
-  const context = useContext(DashboardDataContext);
-
-  if (!context) {
-    throw new Error('useDashboardData must be used inside StudentDashboard.');
-  }
-
-  return context;
-}
-
-function SectionShell({
-  id,
-  number,
-  eyebrow,
-  title,
-  description,
-  action,
-  children,
-}: {
-  id: string;
-  number: string;
-  eyebrow: string;
-  title: string;
-  description: string;
-  action?: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <motion.section
-      id={id}
-      className="relative scroll-mt-28 space-y-10 md:space-y-12"
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-80px' }}
-      transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
-    >
-      <div className="pointer-events-none absolute -left-1 top-[-4rem] hidden select-none font-display text-[5rem] leading-none text-white/[0.028] sm:block lg:top-[-5rem] lg:text-[8rem] xl:top-[-6.5rem] xl:text-[11rem]">
-        {number}
-      </div>
-
-      <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-        <div className="max-w-3xl space-y-4">
-          <div className="font-mono text-[10px] uppercase tracking-[0.32em] text-white/38">{eyebrow}</div>
-          <h2 className="max-w-4xl font-display text-4xl font-semibold leading-[0.92] text-white md:text-6xl">
-            {title}
-          </h2>
-          <p className="max-w-2xl text-base font-light leading-relaxed text-white/56 md:text-lg">{description}</p>
-        </div>
-        {action}
-      </div>
-
-      <div className="relative z-10">{children}</div>
-    </motion.section>
-  );
-}
 
 function DashboardNav() {
   const { profile } = useDashboardData();
@@ -729,12 +665,12 @@ function HeroSection({
 
 function OverviewSection({ view }: { view: DashboardViewModel }) {
   const { openChat } = useChatWidgetActions();
-  const { path, curriculumNodes, weeklyActivity } = useDashboardData();
+  const { path, weeklyActivity } = useDashboardData();
   const masteryCircumference = 2 * Math.PI * 58;
   const masteryOffset = masteryCircumference - (masteryCircumference * path.masteryProgress) / 100;
 
   return (
-    <SectionShell
+    <DashboardSectionShell
       id="overview"
       number="01"
       eyebrow="Dashboard Snapshot"
@@ -952,54 +888,14 @@ function OverviewSection({ view }: { view: DashboardViewModel }) {
         </motion.article>
       </div>
 
-      <div className="mt-14">
-        <div className="font-mono text-[10px] uppercase tracking-[0.28em] text-white/30">Active Curriculum Nodes</div>
-
-        <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {curriculumNodes.map((node, index) => (
-            <CurriculumNodeCard key={node.nodeKey} node={node} index={index} />
-          ))}
-        </div>
-      </div>
-    </SectionShell>
-  );
-}
-
-function CurriculumNodeCard({ node, index }: { node: StudentDashboardCurriculumNode; index: number }) {
-  return (
-    <motion.article
-      className={`relative overflow-hidden rounded-[2rem] border border-white/8 bg-white/[0.035] p-6 backdrop-blur-[24px] ${
-        node.unlocked ? '' : 'opacity-65 grayscale-[0.15]'
-      }`}
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-50px' }}
-      transition={{ duration: 0.5, delay: 0.08 * index, ease: [0.16, 1, 0.3, 1] }}
-    >
-      <div className="flex items-center justify-between gap-4">
-        <span className={`h-1.5 w-1.5 rounded-full ${node.unlocked ? 'bg-white' : 'bg-white/20'}`} />
-        <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-white/30">{node.moduleLabel}</span>
-      </div>
-
-      <div className="mt-6">
-        <h4 className="font-display text-xl font-medium text-white">{node.title}</h4>
-        <p className="mt-3 text-sm leading-relaxed text-white/44">{node.description}</p>
-      </div>
-
-      <div className="mt-6 flex items-center justify-between gap-4">
-        <span className={`font-mono text-[9px] uppercase tracking-[0.16em] ${node.unlocked ? 'text-white/60' : 'text-white/36'}`}>
-          {node.statusLabel}
-        </span>
-        {node.unlocked ? <Sparkles size={16} className="text-white/56" /> : <Lock size={16} className="text-white/24" />}
-      </div>
-    </motion.article>
+    </DashboardSectionShell>
   );
 }
 
 function SkillsSection() {
   const { skills } = useDashboardData();
   return (
-    <SectionShell
+    <DashboardSectionShell
       id="skills"
       number="02"
       eyebrow="Skill Roadmap"
@@ -1020,7 +916,7 @@ function SkillsSection() {
           <SkillCard key={skill.skillKey} skill={skill} index={index} />
         ))}
       </div>
-    </SectionShell>
+    </DashboardSectionShell>
   );
 }
 
@@ -1069,98 +965,6 @@ const SkillCard = memo(function SkillCard({ skill, index }: { skill: StudentDash
 });
 
 SkillCard.displayName = 'SkillCard';
-
-const RoomCard = memo(function RoomCard({ room, index }: { room: StudentDashboardRoom; index: number }) {
-  const { openChat } = useChatWidgetActions();
-  const roomHref = buildRoomHref(room.roomKey);
-
-  return (
-    <motion.article
-      className={`relative overflow-hidden rounded-[2rem] border border-white/8 p-8 backdrop-blur-[20px] ${
-        room.featured ? 'min-h-[25rem]' : 'min-h-[20rem]'
-      }`}
-      style={{ backgroundImage: roomTextureMap[room.textureKey] }}
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-40px' }}
-      transition={{ duration: 0.6, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
-    >
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),transparent_26%,rgba(0,0,0,0.34)_100%)]" />
-      <div
-        className="absolute inset-0 opacity-20"
-        style={{
-          backgroundImage:
-            'linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)',
-          backgroundSize: room.featured ? '44px 44px' : '52px 52px',
-          maskImage: 'radial-gradient(circle at center, black 28%, transparent 86%)',
-        }}
-      />
-
-      <div className="relative z-10 flex h-full flex-col justify-between">
-        <div>
-          <div className="inline-flex items-center rounded-full border border-white/12 bg-white/[0.06] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.24em] text-white/64">
-            {room.statusLabel}
-          </div>
-
-          <div className="mt-5 max-w-[24rem]">
-            <h3 className="font-display text-3xl font-medium leading-[0.96] text-white md:text-4xl">{room.title}</h3>
-            <p className="mt-4 text-sm font-light leading-relaxed text-white/56">{room.description}</p>
-          </div>
-        </div>
-
-        <div className="mt-10 flex items-center justify-between gap-4">
-          {roomHref ? (
-            <Link
-              href={roomHref}
-              className={`rounded-full px-6 py-3 text-sm uppercase tracking-[0.18em] transition-colors hoverable ${
-                room.featured ? 'bg-white text-black hover:bg-white/92' : 'border border-white/12 bg-white/[0.05] text-white hover:bg-white/[0.08]'
-              }`}
-            >
-              {room.ctaLabel}
-            </Link>
-          ) : (
-            <button
-              type="button"
-              className={`rounded-full px-6 py-3 text-sm uppercase tracking-[0.18em] transition-colors hoverable ${
-                room.featured ? 'bg-white text-black hover:bg-white/92' : 'border border-white/12 bg-white/[0.05] text-white hover:bg-white/[0.08]'
-              }`}
-              onClick={() => openChat({ message: room.prompt })}
-            >
-              {room.ctaLabel}
-            </button>
-          )}
-
-          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-white/40">
-            <span>AI-guided</span>
-            <ArrowRight size={14} />
-          </div>
-        </div>
-      </div>
-    </motion.article>
-  );
-});
-
-RoomCard.displayName = 'RoomCard';
-
-function RoomsSection() {
-  const { rooms } = useDashboardData();
-
-  return (
-    <SectionShell
-      id="rooms"
-      number="03"
-      eyebrow="Practice Rooms"
-      title="Immersive rooms that stay tied to the learner’s current context."
-      description="The room system keeps the same four-entry structure from your sample, but the featured spaces now have more atmosphere and clearer energy around the next best action."
-    >
-      <div className="grid gap-6 md:grid-cols-2">
-        {rooms.map((room, index) => (
-          <RoomCard key={room.roomKey} room={room} index={index} />
-        ))}
-      </div>
-    </SectionShell>
-  );
-}
 
 function YantraAiSection({ view }: { view: DashboardViewModel }) {
   const { openChat } = useChatWidgetActions();
@@ -1281,8 +1085,9 @@ function DashboardExperience() {
       <main className="mx-auto flex w-full max-w-[1520px] flex-col gap-24 px-5 pb-20 md:gap-32 md:px-8 md:pb-24 xl:px-10">
         <HeroSection firstName={data.profile.firstName || 'Learner'} view={view} />
         <OverviewSection view={view} />
+        <DashboardCurriculumSection />
         <SkillsSection />
-        <RoomsSection />
+        <DashboardRoomsSection />
         <YantraAiSection view={view} />
       </main>
 
